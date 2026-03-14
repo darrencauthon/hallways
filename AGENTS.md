@@ -9,6 +9,7 @@
 - Prefer execution mode and plan in very small increments while implementing.
 - Propose small increments and wait for next instruction.
 - Explain changes briefly and clearly.
+- Keep this `AGENTS.md` up to date as new workflow/runtime constraints are discovered.
 
 ## Git Workflow
 - Do not create commits unless explicitly asked.
@@ -28,9 +29,14 @@
 - After each code change, state exactly how to run and what to check.
 - Call out known limitations and TODOs.
 - Use DragonRuby test mode with a test-path argument (example: `../dragonruby hallways --test app/test_runner.rb`).
-- For AI-driven execution, prefer `--test` runs; launching without `--test` starts the interactive game loop and may not exit on its own.
+- For AI-driven execution, prefer `--test` runs with a test path; launching without `--test` starts the interactive game loop and may not exit on its own.
 - Do not use `ruby` CLI checks (for example `ruby -c`) for validation; DragonRuby uses a Ruby subset and runtime behavior can differ.
 - Treat `../dragonruby hallways --test app/test_runner.rb` as the source of truth for automated verification.
+
+## Run Commands
+- Run game from parent directory: `../dragonruby ./hallways` (Git Bash on Windows).
+- Run tests from parent directory: `../dragonruby ./hallways --test app/test_runner.rb`.
+- Keep `README.md` and `AGENTS.md` aligned when run/test instructions change.
 
 ## Communication
 - Be direct and concise.
