@@ -1,5 +1,6 @@
 require "app/test_runner.rb"
 require "app/title_screen.rb"
+require "app/game_screen.rb"
 
 def tick(args)
   if test_mode?(args)
@@ -7,7 +8,11 @@ def tick(args)
     return
   end
 
-  title_screen(args).tick(args)
+  if current_screen(args) == :title
+    handle_title_action(args, title_screen(args).tick(args))
+  elsif current_screen(args) == :game
+    game_screen(args).tick(args)
+  end
 end
 
 def test_mode?(args)
@@ -44,4 +49,20 @@ end
 
 def title_screen(args)
   args.state.title_screen ||= TitleScreen.new
+end
+
+def game_screen(args)
+  args.state.game_screen ||= GameScreen.new
+end
+
+def current_screen(args)
+  args.state.current_screen ||= :title
+end
+
+def handle_title_action(args, action)
+  if action == :start
+    args.state.current_screen = :game
+  elsif action == :quit
+    request_quit(args)
+  end
 end
