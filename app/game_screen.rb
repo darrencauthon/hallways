@@ -28,7 +28,7 @@ class GameScreen
       b: 190
     }
 
-    game.squares.each do |square|
+    game.board.squares.each do |square|
       square.render(args, board_x, board_y, CELL_GAP)
     end
   end
