@@ -40,6 +40,8 @@
 - Agent must run tests directly before moving on; do not rely on user-run tests as the only signal.
 - A test run is not considered clean unless there are zero warnings and zero failures.
 - After each test run, inspect `test-output.txt` (custom runner summary) and `errors/last.txt` (runtime warning/exception signal).
+- When capturing DragonRuby console output via PowerShell transcript, write to `test-transcript.txt` (not `test-output.txt`) to avoid collisions with custom runner output.
+- When reading captured transcript output, use a high limit (`Get-Content ... -TotalCount 10000`) so failures/warnings are not truncated.
 
 ## Run Commands
 - Run game from parent directory: `../dragonruby ./hallways` (Git Bash on Windows).
