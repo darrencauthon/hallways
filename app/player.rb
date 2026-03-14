@@ -5,4 +5,8 @@ class Player
     @name = name
     @game = game
   end
+
+  def my_turn?
+    game.current_player == self
+  end
 end

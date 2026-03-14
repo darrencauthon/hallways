@@ -23,6 +23,13 @@ def test_game_initial_current_player_is_first_player(args, assert)
   assert.equal! game.players[0], game.current_player, "Expected first turn to belong to Player 1."
 end
 
+def test_player_my_turn_initial_state(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! true, game.players[0].my_turn?, "Expected Player 1 to report true for my_turn? at game start."
+  assert.equal! false, game.players[1].my_turn?, "Expected Player 2 to report false for my_turn? at game start."
+end
+
 def test_game_players_associated_with_pawns(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
