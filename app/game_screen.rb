@@ -11,6 +11,7 @@ class GameScreen
     board_y = 120
 
     draw_board(args, board_x, board_y)
+    draw_wall_wells(args, board_x, board_y)
     draw_wall_reserves(args, board_x, board_y)
     draw_player_names(args, board_x, board_y)
     draw_pawns(args, board_x, board_y)
@@ -47,15 +48,15 @@ class GameScreen
     wall_rects = {}
 
     game.walls.each do |wall|
+      next if wall.placed?
       x = start_x + (wall.slot * (wall_w + spacing))
       y = wall.lane == :top ? top_y : bottom_y
       wall_rects[wall] = { x: x, y: y, w: wall.width, h: wall.height }
     end
 
-    update_wall_drag_state(args, wall_rects)
+    update_wall_drag_state(args, wall_rects, board_x, board_y)
 
-    game.walls.each do |wall|
-      rect = wall_rects[wall]
+    wall_rects.each do |wall, rect|
       x = rect[:x]
       y = rect[:y]
       if wall == dragged_wall
@@ -67,6 +68,19 @@ class GameScreen
       draw_hover_border_if_needed(args, wall, x, y)
     end
 
+  end
+
+  def draw_wall_wells(args, board_x, board_y)
+    game.board.wall_wells.each do |wall_well|
+      wall_well.render(
+        args,
+        board_x,
+        board_y,
+        cell_width: CELL_SIZE,
+        cell_height: CELL_SIZE,
+        cell_gap: CELL_GAP
+      )
+    end
   end
 
   def draw_hover_border_if_needed(args, wall, x, y)
@@ -84,8 +98,12 @@ class GameScreen
     }
   end
 
-  def update_wall_drag_state(args, wall_rects)
+  def update_wall_drag_state(args, wall_rects, board_x, board_y)
     if mouse_released?(args)
+      if dragged_wall
+        wall_well = hovered_available_wall_well(args, board_x, board_y)
+        game.place_wall_in_well(dragged_wall, wall_well) if wall_well
+      end
       @dragged_wall = nil
       return
     end
@@ -101,6 +119,21 @@ class GameScreen
       @drag_offset_x = mouse_x(args) - rect[:x]
       @drag_offset_y = mouse_y(args) - rect[:y]
       break
+    end
+  end
+
+  def hovered_available_wall_well(args, board_x, board_y)
+    game.board.wall_wells.find do |wall_well|
+      next false if wall_well.occupied?
+
+      rect = wall_well.rect(
+        board_x,
+        board_y,
+        cell_width: CELL_SIZE,
+        cell_height: CELL_SIZE,
+        cell_gap: CELL_GAP
+      )
+      mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
     end
   end
 

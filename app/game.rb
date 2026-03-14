@@ -27,6 +27,15 @@ class Game
     players[@turn_index]
   end
 
+  def place_wall_in_well(wall, wall_well)
+    return if wall.nil? || wall_well.nil?
+    return if wall.placed?
+    return if wall_well.occupied?
+
+    wall.assign_to_wall_well(wall_well)
+    wall_well.assign_wall(wall)
+  end
+
   private
 
   def build_walls

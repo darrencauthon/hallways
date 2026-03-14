@@ -89,6 +89,23 @@ def test_game_initial_has_board(args, assert)
   assert.equal! false, game.board.nil?, "Expected game to initialize with a board."
 end
 
+def test_game_initial_has_wall_wells(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! 72, game.board.wall_wells.length, "Expected board to initialize with 72 wall wells."
+end
+
+def test_game_place_wall_in_well_associates_both_sides(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  wall = game.walls[0]
+  wall_well = game.board.wall_wells[0]
+
+  game.place_wall_in_well(wall, wall_well)
+
+  assert.equal! wall_well, wall.wall_well, "Expected wall to reference assigned wall well."
+  assert.equal! wall, wall_well.wall, "Expected wall well to reference assigned wall."
+end
+
 def test_game_initial_pawn_positions(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
