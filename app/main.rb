@@ -1,5 +1,6 @@
 require "app/test_runner.rb"
 require "app/title_screen.rb"
+require "app/pawn.rb"
 require "app/game_screen.rb"
 
 def tick(args)

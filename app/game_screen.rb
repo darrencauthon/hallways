@@ -83,42 +83,22 @@ class GameScreen
   end
 
   def draw_pawns(args, board_x, board_y)
-    # Placeholder pawn locations: centered on opposite board edges.
-    draw_pawn(args, board_x, board_y, col: 4, row: 8, color: [245, 245, 245])
-    draw_pawn(args, board_x, board_y, col: 4, row: 0, color: [50, 50, 50])
-  end
-
-  def draw_pawn(args, board_x, board_y, col:, row:, color:)
-    cell_x, cell_y = cell_origin(board_x, board_y, col, row)
-    pawn_size = 28
-    pawn_x = cell_x + ((CELL_SIZE - pawn_size) / 2)
-    pawn_y = cell_y + ((CELL_SIZE - pawn_size) / 2)
-
-    args.outputs.solids << {
-      x: pawn_x,
-      y: pawn_y,
-      w: pawn_size,
-      h: pawn_size,
-      r: color[0],
-      g: color[1],
-      b: color[2]
-    }
-
-    args.outputs.borders << {
-      x: pawn_x,
-      y: pawn_y,
-      w: pawn_size,
-      h: pawn_size,
-      r: 220,
-      g: 70,
-      b: 70
-    }
+    pawns.each do |pawn|
+      pawn.render(args, board_x, board_y, CELL_SIZE, CELL_GAP)
+    end
   end
 
   def cell_origin(board_x, board_y, col, row)
     [
       board_x + (col * (CELL_SIZE + CELL_GAP)),
       board_y + (row * (CELL_SIZE + CELL_GAP))
+    ]
+  end
+
+  def pawns
+    @pawns ||= [
+      Pawn.new(4, 8, [245, 245, 245]),
+      Pawn.new(4, 0, [50, 50, 50])
     ]
   end
 end
