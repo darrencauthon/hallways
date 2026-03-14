@@ -20,6 +20,11 @@ class Game
       Pawn.new(4, 0, [50, 50, 50], player: @players[1], cell_width: cell_width, cell_height: cell_height)
     ]
     @walls = build_walls
+    @turn_index = 0
+  end
+
+  def current_player
+    players[@turn_index]
   end
 
   private
