@@ -16,20 +16,13 @@ class Game
       Player.new("Player 2", game: self)
     ]
     @pawns = [
-      Pawn.new(4, 8, [245, 245, 245], cell_width: cell_width, cell_height: cell_height),
-      Pawn.new(4, 0, [50, 50, 50], cell_width: cell_width, cell_height: cell_height)
+      Pawn.new(4, 8, [245, 245, 245], player: @players[0], cell_width: cell_width, cell_height: cell_height),
+      Pawn.new(4, 0, [50, 50, 50], player: @players[1], cell_width: cell_width, cell_height: cell_height)
     ]
-    associate_players_and_pawns
     @walls = build_walls
   end
 
   private
-
-  def associate_players_and_pawns
-    players.each_with_index do |player, index|
-      player.assign_pawn(pawns[index])
-    end
-  end
 
   def build_walls
     walls = []

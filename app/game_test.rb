@@ -20,8 +20,8 @@ end
 def test_game_players_associated_with_pawns(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
-  assert.equal! game.pawns[0], game.players[0].pawn, "Expected Player 1 to be associated with pawn 1."
-  assert.equal! game.pawns[1], game.players[1].pawn, "Expected Player 2 to be associated with pawn 2."
+  assert.equal! game.players[0], game.pawns[0].player, "Expected pawn 1 to be associated with Player 1."
+  assert.equal! game.players[1], game.pawns[1].player, "Expected pawn 2 to be associated with Player 2."
 end
 
 def test_game_initial_has_twenty_walls(args, assert)

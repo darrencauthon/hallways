@@ -1,12 +1,12 @@
 def test_pawn_stores_grid_position(args, assert)
-  pawn = Pawn.new(3, 5, [100, 110, 120], cell_width: 48, cell_height: 48)
+  pawn = Pawn.new(3, 5, [100, 110, 120], player: PawnTestFakePlayer.new("Tester"), cell_width: 48, cell_height: 48)
 
   assert.equal! 3, pawn.col, "Expected pawn column to be stored."
   assert.equal! 5, pawn.row, "Expected pawn row to be stored."
 end
 
 def test_pawn_render_outputs_one_solid_and_one_border(args, assert)
-  pawn = Pawn.new(2, 4, [100, 110, 120], cell_width: 48, cell_height: 48)
+  pawn = Pawn.new(2, 4, [100, 110, 120], player: PawnTestFakePlayer.new("Tester"), cell_width: 48, cell_height: 48)
   fake_args = PawnTestFakeArgs.new
 
   pawn.render(fake_args, 100, 200, 6)
@@ -16,7 +16,7 @@ def test_pawn_render_outputs_one_solid_and_one_border(args, assert)
 end
 
 def test_pawn_render_places_pawn_in_expected_cell(args, assert)
-  pawn = Pawn.new(2, 4, [100, 110, 120], cell_width: 48, cell_height: 48)
+  pawn = Pawn.new(2, 4, [100, 110, 120], player: PawnTestFakePlayer.new("Tester"), cell_width: 48, cell_height: 48)
   fake_args = PawnTestFakeArgs.new
 
   pawn.render(fake_args, 100, 200, 6)
@@ -45,5 +45,13 @@ class PawnTestFakeArgs
 
   def initialize
     @outputs = PawnTestFakeOutputs.new
+  end
+end
+
+class PawnTestFakePlayer
+  attr_reader :name
+
+  def initialize(name)
+    @name = name
   end
 end

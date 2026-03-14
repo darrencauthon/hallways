@@ -1,10 +1,11 @@
 class Pawn
-  attr_reader :col, :row, :color, :cell_width, :cell_height
+  attr_reader :col, :row, :color, :cell_width, :cell_height, :player
 
-  def initialize(col, row, color, cell_width:, cell_height:)
+  def initialize(col, row, color, player:, cell_width:, cell_height:)
     @col = col
     @row = row
     @color = color
+    @player = player
     @cell_width = cell_width
     @cell_height = cell_height
   end
