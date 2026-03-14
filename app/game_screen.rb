@@ -12,6 +12,7 @@ class GameScreen
 
     draw_board(args, board_x, board_y)
     draw_wall_reserves(args, board_x, board_y)
+    draw_player_names(args, board_x, board_y)
     draw_pawns(args, board_x, board_y)
   end
 
@@ -75,6 +76,34 @@ class GameScreen
     game.pawns.each do |pawn|
       pawn.render(args, board_x, board_y, CELL_GAP)
     end
+  end
+
+  def draw_player_names(args, board_x, board_y)
+    top_name = game.players[1].name
+    bottom_name = game.players[0].name
+    center_x = board_x + (BOARD_PIXEL_SIZE / 2)
+
+    args.outputs.labels << {
+      x: center_x,
+      y: board_y + BOARD_PIXEL_SIZE + 78,
+      text: top_name,
+      alignment_enum: 1,
+      size_enum: 2,
+      r: 235,
+      g: 235,
+      b: 235
+    }
+
+    args.outputs.labels << {
+      x: center_x,
+      y: board_y - 80,
+      text: bottom_name,
+      alignment_enum: 1,
+      size_enum: 2,
+      r: 235,
+      g: 235,
+      b: 235
+    }
   end
 
   def game

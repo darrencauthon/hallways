@@ -4,6 +4,19 @@ def test_game_initial_has_two_pawns(args, assert)
   assert.equal! 2, game.pawns.length, "Expected game to start with two pawns."
 end
 
+def test_game_initial_has_two_players(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! 2, game.players.length, "Expected game to start with two players."
+end
+
+def test_game_initial_player_names(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! "Player 1", game.players[0].name, "Expected first player name to be Player 1."
+  assert.equal! "Player 2", game.players[1].name, "Expected second player name to be Player 2."
+end
+
 def test_game_initial_has_twenty_walls(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
