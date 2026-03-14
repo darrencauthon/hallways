@@ -29,6 +29,8 @@
 - Call out known limitations and TODOs.
 - Use `--test` to run automated checks through DragonRuby (example: `../dragonruby hallways --test`).
 - For AI-driven execution, prefer `--test` runs; launching without `--test` starts the interactive game loop and may not exit on its own.
+- Do not use `ruby` CLI checks (for example `ruby -c`) for validation; DragonRuby uses a Ruby subset and runtime behavior can differ.
+- Treat `../dragonruby hallways --test` as the source of truth for automated verification.
 
 ## Communication
 - Be direct and concise.

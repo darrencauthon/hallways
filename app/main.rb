@@ -56,12 +56,12 @@ def game_screen(args)
 end
 
 def current_screen(args)
-  args.state.current_screen ||= :title
+  args.state.screen_name ||= :title
 end
 
 def handle_title_action(args, action)
   if action == :start
-    args.state.current_screen = :game
+    args.state.screen_name = :game
   elsif action == :quit
     request_quit(args)
   end
