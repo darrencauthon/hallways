@@ -16,7 +16,7 @@ module TestRunner
         test[:fn].call
         passed += 1
         puts "[PASS] #{test[:name]}"
-      rescue StandardError => e
+      rescue Exception => e
         failed += 1
         puts "[FAIL] #{test[:name]}: #{e.message}"
       end

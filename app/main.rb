@@ -32,11 +32,16 @@ end
 def run_tests_and_quit(args)
   return if args.state.tests_finished
 
-  results = TestRunner.run
-  args.state.tests_finished = true
-  args.state.tests_failed = results[:failed] > 0
-
-  request_quit(args)
+  begin
+    results = TestRunner.run
+    args.state.tests_failed = results[:failed] > 0
+  rescue StandardError => e
+    args.state.tests_failed = true
+    puts "[TEST] Runner crashed: #{e.class}: #{e.message}"
+  ensure
+    args.state.tests_finished = true
+    request_quit(args)
+  end
 end
 
 def request_quit(args)
@@ -48,11 +53,11 @@ def request_quit(args)
 end
 
 def title_screen(args)
-  args.state.title_screen ||= TitleScreen.new
+  args.state.title_screen_instance ||= TitleScreen.new
 end
 
 def game_screen(args)
-  args.state.game_screen ||= GameScreen.new
+  args.state.game_screen_instance ||= GameScreen.new
 end
 
 def current_screen(args)
