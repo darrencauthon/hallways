@@ -28,19 +28,8 @@ class GameScreen
       b: 190
     }
 
-    BOARD_SIZE.times do |row|
-      BOARD_SIZE.times do |col|
-        x, y = cell_origin(board_x, board_y, col, row)
-        args.outputs.solids << {
-          x: x,
-          y: y,
-          w: CELL_SIZE,
-          h: CELL_SIZE,
-          r: 225,
-          g: 214,
-          b: 189
-        }
-      end
+    game.squares.each do |square|
+      square.render(args, board_x, board_y, CELL_GAP)
     end
   end
 
@@ -86,13 +75,6 @@ class GameScreen
     game.pawns.each do |pawn|
       pawn.render(args, board_x, board_y, CELL_GAP)
     end
-  end
-
-  def cell_origin(board_x, board_y, col, row)
-    [
-      board_x + (col * (CELL_SIZE + CELL_GAP)),
-      board_y + (row * (CELL_SIZE + CELL_GAP))
-    ]
   end
 
   def game
