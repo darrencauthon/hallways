@@ -143,6 +143,84 @@ def test_game_place_wall_in_well_does_not_advance_turn_when_invalid(args, assert
   assert.equal! game.players[0], game.current_player, "Expected invalid wall placement to keep the current player."
 end
 
+def test_game_move_pawn_to_adjacent_square_advances_turn(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+
+  moved = game.move_pawn_to(pawn, 4, 7)
+
+  assert.equal! true, moved, "Expected adjacent pawn move to succeed."
+  assert.equal! 4, pawn.col, "Expected pawn column to remain the same after moving forward."
+  assert.equal! 7, pawn.row, "Expected pawn row to update to the adjacent square."
+  assert.equal! game.players[1], game.current_player, "Expected successful pawn move to advance the turn."
+end
+
+def test_game_move_pawn_to_rejects_non_adjacent_square(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+
+  moved = game.move_pawn_to(pawn, 4, 6)
+
+  assert.equal! false, moved, "Expected non-adjacent pawn move to fail."
+  assert.equal! 8, pawn.row, "Expected pawn row to remain unchanged after invalid move."
+  assert.equal! game.players[0], game.current_player, "Expected invalid pawn move to keep the current player."
+end
+
+def test_game_move_pawn_to_requires_players_turn(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[1]
+
+  moved = game.move_pawn_to(pawn, 4, 1)
+
+  assert.equal! false, moved, "Expected pawn move to fail when it is not that player's turn."
+  assert.equal! 0, pawn.row, "Expected pawn position to remain unchanged."
+  assert.equal! game.players[0], game.current_player, "Expected current player to remain unchanged."
+end
+
+def test_game_move_pawn_to_rejects_occupied_square(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  other_pawn = game.pawns[1]
+  other_pawn.move_to(4, 7)
+
+  moved = game.move_pawn_to(pawn, 4, 7)
+
+  assert.equal! false, moved, "Expected pawn move to fail when the target square is occupied."
+  assert.equal! 8, pawn.row, "Expected pawn row to remain unchanged when the target square is occupied."
+end
+
+def test_game_move_pawn_to_rejects_move_blocked_by_horizontal_wall(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  wall = game.walls.find { |candidate| candidate.player == game.current_player }
+  wall_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 7
+  end
+
+  game.place_wall_in_well(wall, wall_well)
+  game.next_turn!
+  moved = game.move_pawn_to(pawn, 4, 7)
+
+  assert.equal! false, moved, "Expected pawn move to fail when a horizontal wall blocks the path."
+  assert.equal! 8, pawn.row, "Expected pawn row to remain unchanged when blocked by a wall."
+end
+
+def test_game_move_pawn_to_rejects_move_blocked_by_vertical_wall(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  wall = game.walls.find { |candidate| candidate.player == game.current_player }
+  wall_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :vertical && candidate.col == 4 && candidate.row == 8
+  end
+
+  game.place_wall_in_well(wall, wall_well)
+  game.next_turn!
+  moved = game.move_pawn_to(pawn, 5, 8)
+
+  assert.equal! false, moved, "Expected pawn move to fail when a vertical wall blocks the path."
+  assert.equal! 4, pawn.col, "Expected pawn column to remain unchanged when blocked by a wall."
+end
+
 def test_game_initial_pawn_positions(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 

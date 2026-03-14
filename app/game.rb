@@ -31,6 +31,19 @@ class Game
     @turn_index = (@turn_index + 1) % players.length
   end
 
+  def move_pawn_to(pawn, col, row)
+    return false if pawn.nil?
+    return false unless pawn.player == current_player
+    return false unless board.square_at(col, row)
+    return false unless adjacent?(pawn.col, pawn.row, col, row)
+    return false if board.path_blocked?(from_col: pawn.col, from_row: pawn.row, to_col: col, to_row: row)
+    return false if pawn_at?(col, row)
+
+    pawn.move_to(col, row)
+    next_turn!
+    true
+  end
+
   def place_wall_in_well(wall, wall_well)
     return if wall.nil? || wall_well.nil?
     return if wall.placed?
@@ -42,6 +55,14 @@ class Game
   end
 
   private
+
+  def adjacent?(from_col, from_row, to_col, to_row)
+    ((from_col - to_col).abs + (from_row - to_row).abs) == 1
+  end
+
+  def pawn_at?(col, row)
+    pawns.any? { |pawn| pawn.col == col && pawn.row == row }
+  end
 
   def build_walls
     walls = []

@@ -37,4 +37,9 @@ class Pawn
       b: 70
     }
   end
+
+  def move_to(col, row)
+    @col = col
+    @row = row
+  end
 end

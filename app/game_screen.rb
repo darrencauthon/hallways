@@ -10,6 +10,7 @@ class GameScreen
     board_x = ((args.grid.w - BOARD_PIXEL_SIZE) / 2).to_i
     board_y = 120
 
+    update_pawn_move_state(args, board_x, board_y)
     draw_board(args, board_x, board_y)
     draw_wall_wells(args, board_x, board_y)
     draw_wall_reserves(args, board_x, board_y)
@@ -141,6 +142,25 @@ class GameScreen
   def draw_pawns(args, board_x, board_y)
     game.pawns.each do |pawn|
       pawn.render(args, board_x, board_y, CELL_GAP)
+    end
+  end
+
+  def update_pawn_move_state(args, board_x, board_y)
+    return unless mouse_released?(args)
+    return if dragged_wall
+
+    square = hovered_square(args, board_x, board_y)
+    return if square.nil?
+
+    pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
+    game.move_pawn_to(pawn, square.col, square.row)
+  end
+
+  def hovered_square(args, board_x, board_y)
+    game.board.squares.find do |square|
+      x = board_x + (square.col * (CELL_SIZE + CELL_GAP))
+      y = board_y + (square.row * (CELL_SIZE + CELL_GAP))
+      mouse_inside_rect?(args, x: x, y: y, w: CELL_SIZE, h: CELL_SIZE)
     end
   end
 
