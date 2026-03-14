@@ -83,7 +83,7 @@ class GameScreen
   end
 
   def draw_pawns(args, board_x, board_y)
-    pawns.each do |pawn|
+    game.pawns.each do |pawn|
       pawn.render(args, board_x, board_y, CELL_GAP)
     end
   end
@@ -95,10 +95,7 @@ class GameScreen
     ]
   end
 
-  def pawns
-    @pawns ||= [
-      Pawn.new(4, 8, [245, 245, 245], cell_width: CELL_SIZE, cell_height: CELL_SIZE),
-      Pawn.new(4, 0, [50, 50, 50], cell_width: CELL_SIZE, cell_height: CELL_SIZE)
-    ]
+  def game
+    @game ||= Game.new(cell_width: CELL_SIZE, cell_height: CELL_SIZE)
   end
 end
