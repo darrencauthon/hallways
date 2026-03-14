@@ -51,9 +51,11 @@ Expected behavior:
 - Test output is printed to console.
 - DragonRuby exits automatically after tests complete.
 - Warnings in test output should be treated as failures to investigate, even if process exit is successful.
+- Custom test summary is written to `test-output.txt` for automation checks.
 
 ## Notes
 
 - Do not use standard Ruby CLI (`ruby`) for validation in this project.
 - Hallways uses DragonRuby runtime behavior as the source of truth.
 - Avoid naming non-test methods with a `test_` prefix; DragonRuby test discovery treats them as tests.
+- For automated review, check both `test-output.txt` and `errors/last.txt` after test runs.

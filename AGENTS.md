@@ -36,6 +36,7 @@
 - Treat warnings in DragonRuby test output as actionable problems and fix them before considering test runs clean.
 - Agent must run tests directly before moving on; do not rely on user-run tests as the only signal.
 - A test run is not considered clean unless there are zero warnings and zero failures.
+- After each test run, inspect `test-output.txt` (custom runner summary) and `errors/last.txt` (runtime warning/exception signal).
 
 ## Run Commands
 - Run game from parent directory: `../dragonruby ./hallways` (Git Bash on Windows).
