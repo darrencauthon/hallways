@@ -139,3 +139,49 @@ Run tests (DragonRuby built-in test mode, requires test path):
 2. Add wall-drop-point model (between squares) when ready.
 3. Begin move-validation rules for pawn movement and legal wall placement.
 4. Keep extending `Game` as the single aggregate for gameplay state.
+
+## Continuation Update (Later In Same Session)
+
+### Architecture changes
+
+- Added `Player` model (`name`, `game`).
+- Added player names rendered above and below the board in `GameScreen`.
+- Associated each `Pawn` with a `Player` directly at construction (`player:` keyword arg).
+- Added `Game#current_player` (initial turn is first player).
+- Added `Player#my_turn?` to check against `game.current_player`.
+- Kept `Board` as the grid model (9x9 squares).
+- Kept `Wall` as reserve/placeable wall pieces owned by `Game` (not `Board`).
+- Associated each `Wall` with its owning `Player` at game start (10 each).
+
+### Test coverage added in this stretch
+
+- `Game` initial players:
+  - has two players
+  - player names
+- Pawn/player association:
+  - each pawn points to its player
+- Turn ownership:
+  - `current_player` starts as Player 1
+  - `Player#my_turn?` returns correct values at start
+- Wall ownership:
+  - 20 total walls
+  - split 10/10 between players
+  - top lane owned by top-side player, bottom lane owned by bottom-side player
+
+### Output and workflow refinements
+
+- Removed noisy per-test custom `[PASS]` lines from `TestRunner`.
+- Kept custom test banners:
+  - start banner (`[TEST] Running N test(s)...`)
+  - summary banner
+  - success banner
+- Added/standardized transcript-capture guidance:
+  - use `test-transcript.txt` for PowerShell transcript output
+  - keep custom runner output in `test-output.txt`
+  - read transcript with high line limit (`-TotalCount 10000`)
+
+### Collaboration preferences confirmed
+
+- Keep work incremental.
+- Keep warnings as blockers.
+- Keep run/test instructions and conventions persisted in project docs (`README.md`, `AGENTS.md`, session notes).
