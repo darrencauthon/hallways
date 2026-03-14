@@ -27,6 +27,10 @@ class Game
     players[@turn_index]
   end
 
+  def next_turn!
+    @turn_index = (@turn_index + 1) % players.length
+  end
+
   def place_wall_in_well(wall, wall_well)
     return if wall.nil? || wall_well.nil?
     return if wall.placed?
@@ -34,6 +38,7 @@ class Game
 
     wall.assign_to_wall_well(wall_well)
     wall_well.assign_wall(wall)
+    next_turn!
   end
 
   private

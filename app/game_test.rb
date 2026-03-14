@@ -116,6 +116,33 @@ def test_game_place_wall_in_well_associates_both_sides(args, assert)
   assert.equal! wall, wall_well.wall, "Expected wall well to reference assigned wall."
 end
 
+def test_game_next_turn_switches_current_player(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  game.next_turn!
+
+  assert.equal! game.players[1], game.current_player, "Expected next_turn! to switch to Player 2."
+end
+
+def test_game_place_wall_in_well_advances_turn(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  wall = game.walls.find { |candidate| candidate.player == game.current_player }
+  wall_well = game.board.wall_wells[0]
+
+  game.place_wall_in_well(wall, wall_well)
+
+  assert.equal! game.players[1], game.current_player, "Expected placing a wall to advance to Player 2."
+end
+
+def test_game_place_wall_in_well_does_not_advance_turn_when_invalid(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  wall = game.walls.find { |candidate| candidate.player == game.current_player }
+
+  game.place_wall_in_well(wall, nil)
+
+  assert.equal! game.players[0], game.current_player, "Expected invalid wall placement to keep the current player."
+end
+
 def test_game_initial_pawn_positions(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
