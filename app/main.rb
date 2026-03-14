@@ -1,4 +1,4 @@
-﻿def tick(args)
+def tick(args)
   args.outputs.background_color = [20, 20, 28]
   args.outputs.labels << {
     x: 640,
