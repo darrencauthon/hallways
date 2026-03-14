@@ -27,6 +27,7 @@
 - As code grows, separate rendering and game logic.
 - Keep board-rule logic deterministic and testable.
 - Do not prefix non-test methods with `test_`; DragonRuby test discovery will treat them as tests.
+- Naming rule: `Board` is the 9x9 grid; `Wall` is a reserve/placeable wall piece.
 
 ## Verification
 - After each code change, state exactly how to run and what to check.
@@ -44,6 +45,12 @@
 - Run game from parent directory: `../dragonruby ./hallways` (Git Bash on Windows).
 - Run tests from parent directory: `../dragonruby ./hallways --test app/test_runner.rb`.
 - Keep `README.md` and `AGENTS.md` aligned when run/test instructions change.
+
+## Architecture Snapshot
+- `Game` owns top-level state objects.
+- `Game` currently contains `board`, `pawns`, and reserve `walls`.
+- `Board` contains `squares`.
+- Rendering primitives live on their owning objects where practical (`Pawn`, `Square`, `Wall`).
 
 ## Communication
 - Be direct and concise.

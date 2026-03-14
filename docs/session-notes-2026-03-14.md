@@ -38,6 +38,18 @@ This document captures a detailed printout-style record of our setup and early i
     - `metadata/game_metadata.txt`
 11. Added `README.md` with run/test instructions.
 12. Added basic Title Screen tests and fixed test harness issues.
+13. Extracted model classes and moved rendering/state ownership into domain objects:
+    - `Pawn`
+    - `Square`
+    - `Board`
+    - `Wall` (reserve/placeable wall pieces)
+    - `Game` as aggregate state holder.
+14. Moved board squares and reserve walls out of `GameScreen` into `Game`-owned objects.
+15. Added initial state tests for game setup:
+    - board exists
+    - 81 squares
+    - 2 pawns with expected start positions
+    - 20 walls split 10/10 by lane.
 
 ## Key Commands We Standardized
 
@@ -83,6 +95,14 @@ Run tests (DragonRuby built-in test mode, requires test path):
 - `app/title_screen.rb`
 - `app/game_screen.rb`
 - `app/test_runner.rb`
+- `app/game.rb`
+- `app/board.rb`
+- `app/square.rb`
+- `app/pawn.rb`
+- `app/wall.rb`
+- `app/title_screen_test.rb`
+- `app/pawn_test.rb`
+- `app/game_test.rb`
 
 ## Current Behavior Snapshot
 
@@ -100,6 +120,10 @@ Run tests (DragonRuby built-in test mode, requires test path):
   - Basic title-screen interaction tests
   - Custom `TestRunner` output
 - DragonRuby built-in `--test` runner is also active for discovered `test_...` methods.
+- Current status at end of this update:
+  - 14 tests passing
+  - 0 failing in latest captured run
+  - one environment-specific warning may appear in restricted sandboxes about logfile permissions.
 
 ## Conventions We Agreed To
 
@@ -111,7 +135,7 @@ Run tests (DragonRuby built-in test mode, requires test path):
 
 ## Suggested Next Steps
 
-1. Stabilize and green all title-screen tests.
-2. Separate game-state logic from rendering as gameplay begins.
-3. Start Quoridor board model tests (board coordinates, pawn moves, wall placement validity).
-4. Add a tiny helper script for test command convenience (optional).
+1. Add dedicated tests for `Board` and `Wall` objects directly.
+2. Add wall-drop-point model (between squares) when ready.
+3. Begin move-validation rules for pawn movement and legal wall placement.
+4. Keep extending `Game` as the single aggregate for gameplay state.
