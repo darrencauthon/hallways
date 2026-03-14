@@ -86,7 +86,6 @@ class TitleScreen
   end
 
   def confirm_pressed?(args)
-    keys = args.inputs.keyboard.key_down
-    keys.enter || keys.return
+    args.inputs.keyboard.key_down.enter
   end
 end

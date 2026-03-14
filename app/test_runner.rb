@@ -57,13 +57,18 @@ module TestRunner
     assert_equal :quit, action
   end
 
-  def build_fake_args(up: false, down: false, enter: false, return_key: false)
-    key_down = FakeKeyDown.new(up: up, down: down, enter: enter, return_key: return_key)
+  def build_fake_args(up: false, down: false, enter: false)
+    key_down = FakeKeyDown.new(up: up, down: down, enter: enter)
     keyboard = FakeKeyboard.new(key_down)
     inputs = FakeInputs.new(keyboard)
     outputs = FakeOutputs.new
     FakeArgs.new(inputs, outputs)
   end
+
+  module_function :title_enter_defaults_to_start,
+                  :title_down_then_enter_selects_quit,
+                  :title_up_wraps_and_selects_quit,
+                  :build_fake_args
 end
 
 def test_zero_equals_zero(args, assert)
@@ -93,14 +98,11 @@ end
 class FakeKeyDown
   attr_reader :up, :down, :enter
 
-  def initialize(up:, down:, enter:, return_key:)
+  def initialize(up:, down:, enter:)
     @up = up
     @down = down
     @enter = enter
-    @return_key = return_key
   end
-
-  define_method(:return) { @return_key }
 end
 
 class FakeKeyboard
