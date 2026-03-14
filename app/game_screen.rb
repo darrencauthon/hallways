@@ -49,8 +49,24 @@ class GameScreen
       x = start_x + (wall.slot * (wall_w + spacing))
       y = wall.lane == :top ? top_y : bottom_y
       wall.render(args, x, y)
+      draw_hover_border_if_needed(args, wall, x, y)
     end
 
+  end
+
+  def draw_hover_border_if_needed(args, wall, x, y)
+    return unless wall.player == game.current_player
+    return unless mouse_inside_rect?(args, x: x, y: y, w: wall.width, h: wall.height)
+
+    args.outputs.borders << {
+      x: x - 1,
+      y: y - 1,
+      w: wall.width + 2,
+      h: wall.height + 2,
+      r: 240,
+      g: 60,
+      b: 60
+    }
   end
 
   def draw_pawns(args, board_x, board_y)
@@ -89,5 +105,16 @@ class GameScreen
 
   def game
     @game ||= Game.new(cell_width: CELL_SIZE, cell_height: CELL_SIZE)
+  end
+
+  def mouse_inside_rect?(args, x:, y:, w:, h:)
+    mouse = args.inputs.mouse
+    return false unless mouse
+    return false if mouse.x.nil? || mouse.y.nil?
+
+    mouse.x >= x &&
+      mouse.x <= x + w &&
+      mouse.y >= y &&
+      mouse.y <= y + h
   end
 end
