@@ -15,14 +15,21 @@ class Game
       Player.new("Player 1", game: self),
       Player.new("Player 2", game: self)
     ]
-    @walls = build_walls
     @pawns = [
       Pawn.new(4, 8, [245, 245, 245], cell_width: cell_width, cell_height: cell_height),
       Pawn.new(4, 0, [50, 50, 50], cell_width: cell_width, cell_height: cell_height)
     ]
+    associate_players_and_pawns
+    @walls = build_walls
   end
 
   private
+
+  def associate_players_and_pawns
+    players.each_with_index do |player, index|
+      player.assign_pawn(pawns[index])
+    end
+  end
 
   def build_walls
     walls = []

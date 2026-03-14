@@ -17,6 +17,13 @@ def test_game_initial_player_names(args, assert)
   assert.equal! "Player 2", game.players[1].name, "Expected second player name to be Player 2."
 end
 
+def test_game_players_associated_with_pawns(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! game.pawns[0], game.players[0].pawn, "Expected Player 1 to be associated with pawn 1."
+  assert.equal! game.pawns[1], game.players[1].pawn, "Expected Player 2 to be associated with pawn 2."
+end
+
 def test_game_initial_has_twenty_walls(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 

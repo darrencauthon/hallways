@@ -5,6 +5,7 @@ errors/
 .replay/
 *.log
 test-output.txt
+test-transcript.txt
 test-results/
 *.test-output.txt
 
