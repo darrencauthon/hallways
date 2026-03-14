@@ -6,6 +6,7 @@
 
 ## Collaboration Style
 - Work step-by-step; do not jump ahead.
+- Prefer execution mode and plan in very small increments while implementing.
 - Propose small increments and wait for next instruction.
 - Explain changes briefly and clearly.
 
