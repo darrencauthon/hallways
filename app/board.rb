@@ -1,6 +1,6 @@
 require "app/square.rb"
 
-class Wall
+class Board
   attr_reader :squares, :size, :cell_width, :cell_height
 
   def initialize(size: 9, cell_width:, cell_height:)

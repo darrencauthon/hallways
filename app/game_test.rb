@@ -7,13 +7,13 @@ end
 def test_game_initial_has_eighty_one_squares(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
-  assert.equal! 81, game.wall.squares.length, "Expected game wall to have 9x9 squares."
+  assert.equal! 81, game.board.squares.length, "Expected game board to have 9x9 squares."
 end
 
-def test_game_initial_has_wall(args, assert)
+def test_game_initial_has_board(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
-  assert.equal! false, game.wall.nil?, "Expected game to initialize with a wall."
+  assert.equal! false, game.board.nil?, "Expected game to initialize with a board."
 end
 
 def test_game_initial_pawn_positions(args, assert)
