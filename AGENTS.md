@@ -34,6 +34,8 @@
 - Do not use `ruby` CLI checks (for example `ruby -c`) for validation; DragonRuby uses a Ruby subset and runtime behavior can differ.
 - Treat `../dragonruby hallways --test app/test_runner.rb` as the source of truth for automated verification.
 - Treat warnings in DragonRuby test output as actionable problems and fix them before considering test runs clean.
+- Agent must run tests directly before moving on; do not rely on user-run tests as the only signal.
+- A test run is not considered clean unless there are zero warnings and zero failures.
 
 ## Run Commands
 - Run game from parent directory: `../dragonruby ./hallways` (Git Bash on Windows).

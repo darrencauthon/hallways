@@ -4,6 +4,9 @@ tmp/
 errors/
 .replay/
 *.log
+test-output.txt
+test-results/
+*.test-output.txt
 
 # Editor/OS files
 .vscode/
