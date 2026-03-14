@@ -30,6 +30,30 @@ def test_game_initial_has_twenty_walls(args, assert)
   assert.equal! 20, game.walls.length, "Expected game to start with 20 reserve walls."
 end
 
+def test_game_initial_walls_split_evenly_between_players(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  player_one = game.players[0]
+  player_two = game.players[1]
+  player_one_walls = game.walls.count { |wall| wall.player == player_one }
+  player_two_walls = game.walls.count { |wall| wall.player == player_two }
+
+  assert.equal! 10, player_one_walls, "Expected Player 1 to start with 10 walls."
+  assert.equal! 10, player_two_walls, "Expected Player 2 to start with 10 walls."
+end
+
+def test_game_wall_lane_matches_player_side(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  player_one = game.players[0]
+  player_two = game.players[1]
+  top_walls_owned_by_player_two = game.walls.select { |wall| wall.lane == :top }.all? { |wall| wall.player == player_two }
+  bottom_walls_owned_by_player_one = game.walls.select { |wall| wall.lane == :bottom }.all? { |wall| wall.player == player_one }
+
+  assert.equal! true, top_walls_owned_by_player_two, "Expected top-lane walls to belong to Player 2."
+  assert.equal! true, bottom_walls_owned_by_player_one, "Expected bottom-lane walls to belong to Player 1."
+end
+
 def test_game_initial_walls_split_evenly_between_lanes(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 

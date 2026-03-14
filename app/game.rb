@@ -26,10 +26,12 @@ class Game
 
   def build_walls
     walls = []
+    player_bottom = players[0]
+    player_top = players[1]
 
     WALLS_PER_LANE.times do |slot|
-      walls << Wall.new(lane: :top, slot: slot, width: 36, height: 10, color: WALL_COLOR)
-      walls << Wall.new(lane: :bottom, slot: slot, width: 36, height: 10, color: WALL_COLOR)
+      walls << Wall.new(lane: :top, slot: slot, width: 36, height: 10, color: WALL_COLOR, player: player_top)
+      walls << Wall.new(lane: :bottom, slot: slot, width: 36, height: 10, color: WALL_COLOR, player: player_bottom)
     end
 
     walls
