@@ -51,25 +51,6 @@ class GameScreen
       wall.render(args, x, y)
     end
 
-    args.outputs.labels << {
-      x: board_x + (BOARD_PIXEL_SIZE / 2),
-      y: top_y + 30,
-      text: "Top Walls",
-      alignment_enum: 1,
-      r: 220,
-      g: 220,
-      b: 220
-    }
-
-    args.outputs.labels << {
-      x: board_x + (BOARD_PIXEL_SIZE / 2),
-      y: bottom_y - 10,
-      text: "Bottom Walls",
-      alignment_enum: 1,
-      r: 220,
-      g: 220,
-      b: 220
-    }
   end
 
   def draw_pawns(args, board_x, board_y)
