@@ -2,6 +2,8 @@ require "app/title_screen.rb"
 require "app/title_screen_test.rb"
 require "app/pawn.rb"
 require "app/pawn_test.rb"
+require "app/game.rb"
+require "app/game_test.rb"
 
 module TestRunner
   def self.run
