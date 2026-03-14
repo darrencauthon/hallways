@@ -27,6 +27,8 @@
 ## Verification
 - After each code change, state exactly how to run and what to check.
 - Call out known limitations and TODOs.
+- Use `--test` to run automated checks through DragonRuby (example: `../dragonruby hallways --test`).
+- For AI-driven execution, prefer `--test` runs; launching without `--test` starts the interactive game loop and may not exit on its own.
 
 ## Communication
 - Be direct and concise.

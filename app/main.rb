@@ -1,4 +1,80 @@
+module HallwaysTestRunner
+  module_function
+
+  def run
+    tests = [
+      { name: "sanity addition", fn: -> { assert_equal 4, 2 + 2 } }
+    ]
+
+    passed = 0
+    failed = 0
+
+    puts "[TEST] Running #{tests.length} test(s)..."
+
+    tests.each do |test|
+      begin
+        test[:fn].call
+        passed += 1
+        puts "[PASS] #{test[:name]}"
+      rescue StandardError => e
+        failed += 1
+        puts "[FAIL] #{test[:name]}: #{e.message}"
+      end
+    end
+
+    puts "[TEST] Summary: #{passed} passed, #{failed} failed"
+    { passed: passed, failed: failed }
+  end
+
+  def assert_equal(expected, actual)
+    return if expected == actual
+
+    raise "Expected #{expected.inspect}, got #{actual.inspect}"
+  end
+end
+
 def tick(args)
+  if test_mode?(args)
+    run_tests_and_quit(args)
+    return
+  end
+
+  render_title_screen(args)
+end
+
+def test_mode?(args)
+  command_line_args(args).include? "--test"
+end
+
+def command_line_args(args)
+  if args.gtk.respond_to?(:argv) && args.gtk.argv
+    args.gtk.argv
+  elsif defined?(ARGV) && ARGV
+    ARGV
+  else
+    []
+  end
+end
+
+def run_tests_and_quit(args)
+  return if args.state.tests_finished
+
+  results = HallwaysTestRunner.run
+  args.state.tests_finished = true
+  args.state.tests_failed = results[:failed] > 0
+
+  request_quit(args)
+end
+
+def request_quit(args)
+  if args.gtk.respond_to? :request_quit
+    args.gtk.request_quit
+  elsif defined?($gtk) && $gtk.respond_to?(:request_quit)
+    $gtk.request_quit
+  end
+end
+
+def render_title_screen(args)
   args.outputs.background_color = [20, 20, 28]
   args.outputs.labels << {
     x: 640,
