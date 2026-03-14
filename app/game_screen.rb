@@ -34,20 +34,20 @@ class GameScreen
   end
 
   def draw_wall_reserves(args, board_x, board_y)
-    wall_count = 10
-    wall_w = 36
-    wall_h = 10
+    wall_count = Game::WALLS_PER_LANE
     spacing = 10
+    wall_w = game.walls[0].width
+    wall_h = game.walls[0].height
     total_w = (wall_count * wall_w) + ((wall_count - 1) * spacing)
     start_x = ((args.grid.w - total_w) / 2).to_i
 
     top_y = board_y + BOARD_PIXEL_SIZE + 36
     bottom_y = board_y - 46
 
-    wall_count.times do |index|
-      x = start_x + (index * (wall_w + spacing))
-      args.outputs.solids << { x: x, y: top_y, w: wall_w, h: wall_h, r: 210, g: 165, b: 95 }
-      args.outputs.solids << { x: x, y: bottom_y, w: wall_w, h: wall_h, r: 210, g: 165, b: 95 }
+    game.walls.each do |wall|
+      x = start_x + (wall.slot * (wall_w + spacing))
+      y = wall.lane == :top ? top_y : bottom_y
+      wall.render(args, x, y)
     end
 
     args.outputs.labels << {

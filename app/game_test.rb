@@ -4,6 +4,22 @@ def test_game_initial_has_two_pawns(args, assert)
   assert.equal! 2, game.pawns.length, "Expected game to start with two pawns."
 end
 
+def test_game_initial_has_twenty_walls(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! 20, game.walls.length, "Expected game to start with 20 reserve walls."
+end
+
+def test_game_initial_walls_split_evenly_between_lanes(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  top_count = game.walls.count { |wall| wall.lane == :top }
+  bottom_count = game.walls.count { |wall| wall.lane == :bottom }
+
+  assert.equal! 10, top_count, "Expected 10 top-lane walls."
+  assert.equal! 10, bottom_count, "Expected 10 bottom-lane walls."
+end
+
 def test_game_initial_has_eighty_one_squares(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 

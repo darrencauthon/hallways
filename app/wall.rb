@@ -1,0 +1,23 @@
+class Wall
+  attr_reader :lane, :slot, :width, :height, :color
+
+  def initialize(lane:, slot:, width:, height:, color:)
+    @lane = lane
+    @slot = slot
+    @width = width
+    @height = height
+    @color = color
+  end
+
+  def render(args, x, y)
+    args.outputs.solids << {
+      x: x,
+      y: y,
+      w: width,
+      h: height,
+      r: color[0],
+      g: color[1],
+      b: color[2]
+    }
+  end
+end
