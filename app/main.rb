@@ -3,7 +3,7 @@ require "app/title_screen.rb"
 require "app/game_screen.rb"
 
 def tick(args)
-  if test_mode?(args)
+  if cli_test_mode?(args)
     run_tests_and_quit(args)
     return
   end
@@ -15,7 +15,7 @@ def tick(args)
   end
 end
 
-def test_mode?(args)
+def cli_test_mode?(args)
   command_line_args(args).include? "--test"
 end
 

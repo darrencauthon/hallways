@@ -3,6 +3,7 @@ module TestRunner
 
   def run
     tests = [
+      { name: "baseline: zero equals zero", fn: -> { assert_equal 0, 0 } },
       { name: "smoke: runner executes", fn: -> { assert_equal true, true } },
       { name: "sanity addition", fn: -> { assert_equal 4, 2 + 2 } }
     ]
@@ -34,6 +35,10 @@ module TestRunner
   end
 end
 
+def test_zero_equals_zero(args, assert)
+  assert.equal! 0, 0, "Expected zero to equal zero."
+end
+
 def dragonruby_cli_arguments
   return [] unless $gtk
   return [] unless $gtk.respond_to?(:cli_arguments)
@@ -49,5 +54,5 @@ if dragonruby_cli_arguments.include?("--test")
     raise "[TEST] #{results[:failed]} test(s) failed."
   end
 
-  puts "[TEST] SUCCESS: smoke test and sanity test passed."
+  puts "[TEST] SUCCESS: all custom tests passed."
 end
