@@ -24,7 +24,6 @@ module TestRunner
         test[:fn].call
         passed += 1
         results_log << { name: test[:name], status: :pass }
-        puts "[PASS] #{test[:name]}"
       rescue Exception => e
         failed += 1
         results_log << { name: test[:name], status: :fail, message: e.message }
