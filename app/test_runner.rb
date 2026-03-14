@@ -3,6 +3,7 @@ module TestRunner
 
   def run
     tests = [
+      { name: "smoke: runner executes", fn: -> { assert_equal true, true } },
       { name: "sanity addition", fn: -> { assert_equal 4, 2 + 2 } }
     ]
 
@@ -31,4 +32,13 @@ module TestRunner
 
     raise "Expected #{expected.inspect}, got #{actual.inspect}"
   end
+end
+
+if defined?(ARGV) && ARGV && ARGV.include?("--test")
+  results = TestRunner.run
+  if results[:failed] > 0
+    raise "[TEST] #{results[:failed]} test(s) failed."
+  end
+
+  puts "[TEST] SUCCESS: smoke test and sanity test passed."
 end
