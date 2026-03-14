@@ -34,7 +34,16 @@ module TestRunner
   end
 end
 
-if defined?(ARGV) && ARGV && ARGV.include?("--test")
+def dragonruby_cli_arguments
+  return [] unless $gtk
+  return [] unless $gtk.respond_to?(:cli_arguments)
+
+  $gtk.cli_arguments || []
+rescue Exception
+  []
+end
+
+if dragonruby_cli_arguments.include?("--test")
   results = TestRunner.run
   if results[:failed] > 0
     raise "[TEST] #{results[:failed]} test(s) failed."

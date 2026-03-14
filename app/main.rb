@@ -22,8 +22,8 @@ end
 def command_line_args(args)
   if args.gtk.respond_to?(:argv) && args.gtk.argv
     args.gtk.argv
-  elsif defined?(ARGV) && ARGV
-    ARGV
+  elsif args.gtk.respond_to?(:cli_arguments) && args.gtk.cli_arguments
+    args.gtk.cli_arguments
   else
     []
   end
@@ -47,7 +47,7 @@ end
 def request_quit(args)
   if args.gtk.respond_to? :request_quit
     args.gtk.request_quit
-  elsif defined?($gtk) && $gtk.respond_to?(:request_quit)
+  elsif $gtk && $gtk.respond_to?(:request_quit)
     $gtk.request_quit
   end
 end
