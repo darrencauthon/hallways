@@ -1,25 +1,25 @@
 def test_pawn_stores_grid_position(args, assert)
-  pawn = Pawn.new(3, 5, [100, 110, 120])
+  pawn = Pawn.new(3, 5, [100, 110, 120], cell_width: 48, cell_height: 48)
 
   assert.equal! 3, pawn.col, "Expected pawn column to be stored."
   assert.equal! 5, pawn.row, "Expected pawn row to be stored."
 end
 
 def test_pawn_render_outputs_one_solid_and_one_border(args, assert)
-  pawn = Pawn.new(2, 4, [100, 110, 120])
+  pawn = Pawn.new(2, 4, [100, 110, 120], cell_width: 48, cell_height: 48)
   fake_args = PawnTestFakeArgs.new
 
-  pawn.render(fake_args, 100, 200, 48, 6)
+  pawn.render(fake_args, 100, 200, 6)
 
   assert.equal! 1, fake_args.outputs.solids.length, "Expected one solid output."
   assert.equal! 1, fake_args.outputs.borders.length, "Expected one border output."
 end
 
 def test_pawn_render_places_pawn_in_expected_cell(args, assert)
-  pawn = Pawn.new(2, 4, [100, 110, 120])
+  pawn = Pawn.new(2, 4, [100, 110, 120], cell_width: 48, cell_height: 48)
   fake_args = PawnTestFakeArgs.new
 
-  pawn.render(fake_args, 100, 200, 48, 6)
+  pawn.render(fake_args, 100, 200, 6)
 
   solid = fake_args.outputs.solids[0]
   assert.equal! 218, solid[:x], "Expected pawn x to be centered in target cell."

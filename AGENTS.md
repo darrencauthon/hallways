@@ -19,6 +19,8 @@
 - Keep code simple and readable.
 - Prefer small methods and clear naming.
 - Avoid dependencies unless approved first.
+- Prefer `attr_reader` access for object state over strict getter encapsulation in gameplay classes.
+- Use method-level encapsulation (`private` methods) when helpful, but do not over-hide plain state.
 
 ## DragonRuby Conventions
 - Entry point: `app/main.rb`.
