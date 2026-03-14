@@ -16,8 +16,8 @@ class Game
       Player.new("Player 2", game: self)
     ]
     @pawns = [
-      Pawn.new(4, 8, [245, 245, 245], player: @players[0], cell_width: cell_width, cell_height: cell_height),
-      Pawn.new(4, 0, [50, 50, 50], player: @players[1], cell_width: cell_width, cell_height: cell_height)
+      Pawn.new(4, 0, [245, 245, 245], player: @players[0], cell_width: cell_width, cell_height: cell_height),
+      Pawn.new(4, 8, [50, 50, 50], player: @players[1], cell_width: cell_width, cell_height: cell_height)
     ]
     @walls = build_walls
     @turn_index = 0
