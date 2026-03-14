@@ -38,16 +38,31 @@ class GameScreen
     wall_count = Game::WALLS_PER_LANE
     spacing = 10
     wall_w = game.walls[0].width
-    wall_h = game.walls[0].height
     total_w = (wall_count * wall_w) + ((wall_count - 1) * spacing)
     start_x = ((args.grid.w - total_w) / 2).to_i
 
     top_y = board_y + BOARD_PIXEL_SIZE + 36
     bottom_y = board_y - 46
 
+    wall_rects = {}
+
     game.walls.each do |wall|
       x = start_x + (wall.slot * (wall_w + spacing))
       y = wall.lane == :top ? top_y : bottom_y
+      wall_rects[wall] = { x: x, y: y, w: wall.width, h: wall.height }
+    end
+
+    update_wall_drag_state(args, wall_rects)
+
+    game.walls.each do |wall|
+      rect = wall_rects[wall]
+      x = rect[:x]
+      y = rect[:y]
+      if wall == dragged_wall
+        x = mouse_x(args) - drag_offset_x
+        y = mouse_y(args) - drag_offset_y
+      end
+
       wall.render(args, x, y)
       draw_hover_border_if_needed(args, wall, x, y)
     end
@@ -67,6 +82,26 @@ class GameScreen
       g: 60,
       b: 60
     }
+  end
+
+  def update_wall_drag_state(args, wall_rects)
+    if mouse_released?(args)
+      @dragged_wall = nil
+      return
+    end
+
+    return unless mouse_pressed?(args)
+
+    game.walls.each do |wall|
+      rect = wall_rects[wall]
+      next unless wall.player == game.current_player
+      next unless mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
+
+      @dragged_wall = wall
+      @drag_offset_x = mouse_x(args) - rect[:x]
+      @drag_offset_y = mouse_y(args) - rect[:y]
+      break
+    end
   end
 
   def draw_pawns(args, board_x, board_y)
@@ -116,5 +151,39 @@ class GameScreen
       mouse.x <= x + w &&
       mouse.y >= y &&
       mouse.y <= y + h
+  end
+
+  def dragged_wall
+    @dragged_wall
+  end
+
+  def drag_offset_x
+    @drag_offset_x || 0
+  end
+
+  def drag_offset_y
+    @drag_offset_y || 0
+  end
+
+  def mouse_x(args)
+    args.inputs.mouse.x || 0
+  end
+
+  def mouse_y(args)
+    args.inputs.mouse.y || 0
+  end
+
+  def mouse_pressed?(args)
+    mouse = args.inputs.mouse
+    return false unless mouse
+
+    !!mouse.down
+  end
+
+  def mouse_released?(args)
+    mouse = args.inputs.mouse
+    return false unless mouse
+
+    !!mouse.up
   end
 end
