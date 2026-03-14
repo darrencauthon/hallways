@@ -1,4 +1,5 @@
 require "app/test_runner.rb"
+require "app/title_screen.rb"
 
 def tick(args)
   if test_mode?(args)
@@ -6,7 +7,7 @@ def tick(args)
     return
   end
 
-  render_title_screen(args)
+  title_screen(args).tick(args)
 end
 
 def test_mode?(args)
@@ -41,27 +42,6 @@ def request_quit(args)
   end
 end
 
-def render_title_screen(args)
-  args.outputs.background_color = [20, 20, 28]
-  args.outputs.labels << {
-    x: 640,
-    y: 380,
-    text: "Hallways",
-    alignment_enum: 1,
-    size_enum: 6,
-    r: 240,
-    g: 240,
-    b: 240
-  }
-
-  args.outputs.labels << {
-    x: 640,
-    y: 330,
-    text: "DragonRuby + Quoridor prototype",
-    alignment_enum: 1,
-    size_enum: 2,
-    r: 180,
-    g: 180,
-    b: 190
-  }
+def title_screen(args)
+  args.state.title_screen ||= TitleScreen.new
 end
