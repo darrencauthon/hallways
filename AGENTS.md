@@ -24,6 +24,7 @@
 - Entry point: `app/main.rb`.
 - As code grows, separate rendering and game logic.
 - Keep board-rule logic deterministic and testable.
+- Do not prefix non-test methods with `test_`; DragonRuby test discovery will treat them as tests.
 
 ## Verification
 - After each code change, state exactly how to run and what to check.
@@ -32,6 +33,7 @@
 - For AI-driven execution, prefer `--test` runs with a test path; launching without `--test` starts the interactive game loop and may not exit on its own.
 - Do not use `ruby` CLI checks (for example `ruby -c`) for validation; DragonRuby uses a Ruby subset and runtime behavior can differ.
 - Treat `../dragonruby hallways --test app/test_runner.rb` as the source of truth for automated verification.
+- Treat warnings in DragonRuby test output as actionable problems and fix them before considering test runs clean.
 
 ## Run Commands
 - Run game from parent directory: `../dragonruby ./hallways` (Git Bash on Windows).

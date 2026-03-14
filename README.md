@@ -50,8 +50,10 @@ On Windows Git Bash:
 Expected behavior:
 - Test output is printed to console.
 - DragonRuby exits automatically after tests complete.
+- Warnings in test output should be treated as failures to investigate, even if process exit is successful.
 
 ## Notes
 
 - Do not use standard Ruby CLI (`ruby`) for validation in this project.
 - Hallways uses DragonRuby runtime behavior as the source of truth.
+- Avoid naming non-test methods with a `test_` prefix; DragonRuby test discovery treats them as tests.
