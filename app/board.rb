@@ -32,7 +32,25 @@ class Board
 
     (size - 1).times do |row|
       size.times do |col|
-        wells << WallWell.new(col: col, row: row, width: 36, height: 10)
+        wells << WallWell.new(
+          col: col,
+          row: row,
+          width: 36,
+          height: 10,
+          orientation: :horizontal
+        )
+      end
+    end
+
+    size.times do |row|
+      (size - 1).times do |col|
+        wells << WallWell.new(
+          col: col,
+          row: row,
+          width: 10,
+          height: 36,
+          orientation: :vertical
+        )
       end
     end
 

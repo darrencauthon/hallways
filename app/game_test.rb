@@ -92,7 +92,17 @@ end
 def test_game_initial_has_wall_wells(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
-  assert.equal! 72, game.board.wall_wells.length, "Expected board to initialize with 72 wall wells."
+  assert.equal! 144, game.board.wall_wells.length, "Expected board to initialize with 144 wall wells."
+end
+
+def test_game_initial_wall_wells_split_evenly_between_orientations(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  horizontal_count = game.board.wall_wells.count { |wall_well| wall_well.orientation == :horizontal }
+  vertical_count = game.board.wall_wells.count { |wall_well| wall_well.orientation == :vertical }
+
+  assert.equal! 72, horizontal_count, "Expected 72 horizontal wall wells."
+  assert.equal! 72, vertical_count, "Expected 72 vertical wall wells."
 end
 
 def test_game_place_wall_in_well_associates_both_sides(args, assert)

@@ -112,6 +112,7 @@ class GameScreen
 
     game.walls.each do |wall|
       rect = wall_rects[wall]
+      next if rect.nil?
       next unless wall.player == game.current_player
       next unless mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
 
