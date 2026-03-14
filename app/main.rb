@@ -1,37 +1,4 @@
-module HallwaysTestRunner
-  module_function
-
-  def run
-    tests = [
-      { name: "sanity addition", fn: -> { assert_equal 4, 2 + 2 } }
-    ]
-
-    passed = 0
-    failed = 0
-
-    puts "[TEST] Running #{tests.length} test(s)..."
-
-    tests.each do |test|
-      begin
-        test[:fn].call
-        passed += 1
-        puts "[PASS] #{test[:name]}"
-      rescue StandardError => e
-        failed += 1
-        puts "[FAIL] #{test[:name]}: #{e.message}"
-      end
-    end
-
-    puts "[TEST] Summary: #{passed} passed, #{failed} failed"
-    { passed: passed, failed: failed }
-  end
-
-  def assert_equal(expected, actual)
-    return if expected == actual
-
-    raise "Expected #{expected.inspect}, got #{actual.inspect}"
-  end
-end
+require "app/test_runner.rb"
 
 def tick(args)
   if test_mode?(args)
@@ -59,7 +26,7 @@ end
 def run_tests_and_quit(args)
   return if args.state.tests_finished
 
-  results = HallwaysTestRunner.run
+  results = TestRunner.run
   args.state.tests_finished = true
   args.state.tests_failed = results[:failed] > 0
 
