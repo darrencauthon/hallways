@@ -12,8 +12,8 @@ class Game
   def initialize(cell_width:, cell_height:)
     @board = Board.new(cell_width: cell_width, cell_height: cell_height)
     @players = [
-      Player.new("Player 1"),
-      Player.new("Player 2")
+      Player.new("Player 1", game: self),
+      Player.new("Player 2", game: self)
     ]
     @walls = build_walls
     @pawns = [
