@@ -1,0 +1,12 @@
+﻿# DragonRuby local/runtime artifacts
+logs/
+tmp/
+errors/
+.replay/
+*.log
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
