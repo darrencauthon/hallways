@@ -54,12 +54,12 @@ class Game
     true
   end
 
-  def can_place_wall_in_well?(wall, wall_well)
+  def can_place_wall_in_well?(wall, wall_well, preferred_side: :positive)
     return false if winner
     return false if wall.nil? || wall_well.nil?
     return false if wall.player != current_player
     return false if wall.placed?
-    wall_span = board.wall_span_from(wall_well)
+    wall_span = board.wall_span_from(wall_well, preferred_side: preferred_side)
     return false if wall_span.nil?
     return false if wall_span.any?(&:occupied?)
 
@@ -74,9 +74,13 @@ class Game
   end
 
   def place_wall_in_well(wall, wall_well)
-    return false unless can_place_wall_in_well?(wall, wall_well)
+    place_wall_in_well_with_side(wall, wall_well, preferred_side: :positive)
+  end
 
-    wall_span = board.wall_span_from(wall_well)
+  def place_wall_in_well_with_side(wall, wall_well, preferred_side:)
+    return false unless can_place_wall_in_well?(wall, wall_well, preferred_side: preferred_side)
+
+    wall_span = board.wall_span_from(wall_well, preferred_side: preferred_side)
     wall.assign_to_wall_wells(wall_span)
     wall_span.each { |occupied_well| occupied_well.assign_wall(wall) }
     next_turn!

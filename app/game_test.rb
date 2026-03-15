@@ -154,6 +154,32 @@ def test_game_place_wall_in_well_requires_second_well_in_span(args, assert)
   assert.equal! nil, wall.wall_well, "Expected wall to remain unassigned when there is no two-well span."
 end
 
+def test_game_place_wall_in_well_can_extend_to_negative_side(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  wall = game.walls.find { |candidate| candidate.player == game.current_player }
+  wall_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 0
+  end
+
+  placed = game.place_wall_in_well_with_side(wall, wall_well, preferred_side: :negative)
+
+  assert.equal! true, placed, "Expected wall placement to succeed when extending to the negative side."
+  assert.equal! [3, 4], wall.wall_wells.map(&:col), "Expected wall to cover the hovered wall well and the one to the left."
+end
+
+def test_game_place_wall_in_well_can_extend_to_positive_side(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  wall = game.walls.find { |candidate| candidate.player == game.current_player }
+  wall_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 0
+  end
+
+  placed = game.place_wall_in_well_with_side(wall, wall_well, preferred_side: :positive)
+
+  assert.equal! true, placed, "Expected wall placement to succeed when extending to the positive side."
+  assert.equal! [4, 5], wall.wall_wells.map(&:col), "Expected wall to cover the hovered wall well and the one to the right."
+end
+
 def test_game_place_wall_in_well_does_not_advance_turn_when_invalid(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
   wall = game.walls.find { |candidate| candidate.player == game.current_player }

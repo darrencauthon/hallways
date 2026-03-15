@@ -47,26 +47,28 @@ class Board
     false
   end
 
-  def wall_span_from(wall_well)
+  def wall_span_from(wall_well, preferred_side: :positive)
     return nil if wall_well.nil?
 
     if wall_well.orientation == :horizontal
       second_well = wall_wells.find do |candidate|
         candidate.orientation == :horizontal &&
-          candidate.col == wall_well.col + 1 &&
+          candidate.col == wall_well.col + span_offset(preferred_side) &&
           candidate.row == wall_well.row
       end
     else
       second_well = wall_wells.find do |candidate|
         candidate.orientation == :vertical &&
           candidate.col == wall_well.col &&
-          candidate.row == wall_well.row + 1
+          candidate.row == wall_well.row + span_offset(preferred_side)
       end
     end
 
     return nil if second_well.nil?
 
-    [wall_well, second_well]
+    [wall_well, second_well].sort_by do |candidate|
+      wall_well.orientation == :horizontal ? candidate.col : candidate.row
+    end
   end
 
   private
@@ -159,5 +161,9 @@ class Board
     return true if Array(extra_occupied_wall_wells).include?(wall_well)
 
     wall_well.occupied?
+  end
+
+  def span_offset(preferred_side)
+    preferred_side == :negative ? -1 : 1
   end
 end

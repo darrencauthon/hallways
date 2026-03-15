@@ -119,8 +119,14 @@ class GameScreen
   def update_wall_drag_state(args, wall_rects, board_x, board_y)
     if mouse_released?(args)
       if dragged_wall
-        wall_well = hovered_available_wall_well(args, board_x, board_y)
-        game.place_wall_in_well(dragged_wall, wall_well) if wall_well
+        placement = hovered_available_wall_placement(args, board_x, board_y)
+        if placement
+          game.place_wall_in_well_with_side(
+            dragged_wall,
+            placement[:wall_well],
+            preferred_side: placement[:preferred_side]
+          )
+        end
       end
       @dragged_wall = nil
       return
@@ -141,8 +147,8 @@ class GameScreen
     end
   end
 
-  def hovered_available_wall_well(args, board_x, board_y)
-    game.board.wall_wells.find do |wall_well|
+  def hovered_available_wall_placement(args, board_x, board_y)
+    game.board.wall_wells.each do |wall_well|
       next false if wall_well.occupied?
 
       rect = wall_well.rect(
@@ -152,9 +158,15 @@ class GameScreen
         cell_height: CELL_SIZE,
         cell_gap: CELL_GAP
       )
-      mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h]) &&
-        game.can_place_wall_in_well?(dragged_wall, wall_well)
+      next false unless mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
+
+      preferred_side = preferred_wall_side(args, wall_well, rect)
+      next false unless game.can_place_wall_in_well?(dragged_wall, wall_well, preferred_side: preferred_side)
+
+      return { wall_well: wall_well, preferred_side: preferred_side }
     end
+
+    nil
   end
 
   def draw_pawns(args, board_x, board_y)
@@ -222,6 +234,14 @@ class GameScreen
       x = board_x + (square.col * (CELL_SIZE + CELL_GAP))
       y = board_y + (square.row * (CELL_SIZE + CELL_GAP))
       mouse_inside_rect?(args, x: x, y: y, w: CELL_SIZE, h: CELL_SIZE)
+    end
+  end
+
+  def preferred_wall_side(args, wall_well, rect)
+    if wall_well.orientation == :horizontal
+      mouse_x(args) < rect[:x] + (rect[:w] / 2) ? :negative : :positive
+    else
+      mouse_y(args) < rect[:y] + (rect[:h] / 2) ? :negative : :positive
     end
   end
 
