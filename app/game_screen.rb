@@ -169,8 +169,8 @@ class GameScreen
       next unless mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
 
       @dragged_wall = wall
-      @drag_offset_x = mouse_x(args) - rect[:x]
-      @drag_offset_y = mouse_y(args) - rect[:y]
+      @drag_offset_x = rect[:w] / 2
+      @drag_offset_y = rect[:h] / 2
       break
     end
   end
