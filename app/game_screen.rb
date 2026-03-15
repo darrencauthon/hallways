@@ -19,6 +19,8 @@ class GameScreen
     draw_available_pawn_drop_target(args, board_x, board_y)
     draw_player_names(args, board_x, board_y)
     draw_pawns(args, board_x, board_y)
+
+    return [:victory, game.winner.name] if game.winner
   end
 
   private

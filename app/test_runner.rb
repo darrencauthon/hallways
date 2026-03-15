@@ -1,5 +1,8 @@
 require "app/title_screen.rb"
 require "app/title_screen_test.rb"
+require "app/victory_screen.rb"
+require "app/victory_screen_test.rb"
+require "app/main_routing_test.rb"
 require "app/pawn.rb"
 require "app/pawn_test.rb"
 require "app/game.rb"

@@ -1,5 +1,6 @@
 require "app/test_runner.rb"
 require "app/title_screen.rb"
+require "app/victory_screen.rb"
 require "app/pawn.rb"
 require "app/game.rb"
 require "app/game_screen.rb"
@@ -13,7 +14,9 @@ def tick(args)
   if current_screen(args) == :title
     handle_title_action(args, title_screen(args).tick(args))
   elsif current_screen(args) == :game
-    game_screen(args).tick(args)
+    handle_game_action(args, game_screen(args).tick(args))
+  elsif current_screen(args) == :victory
+    handle_victory_action(args, victory_screen(args).tick(args, winner_name: stored_winner_name(args)))
   end
 end
 
@@ -62,14 +65,45 @@ def game_screen(args)
   args.state.game_screen_instance ||= GameScreen.new
 end
 
+def victory_screen(args)
+  args.state.victory_screen_instance ||= VictoryScreen.new
+end
+
 def current_screen(args)
   args.state.screen_name ||= :title
 end
 
 def handle_title_action(args, action)
   if action == :start
-    args.state.screen_name = :game
+    start_new_game(args)
   elsif action == :quit
     request_quit(args)
   end
+end
+
+def handle_game_action(args, action)
+  return if action.nil?
+
+  if action[0] == :victory
+    args.state.winner_name = action[1]
+    args.state.screen_name = :victory
+  end
+end
+
+def handle_victory_action(args, action)
+  if action == :play_again
+    start_new_game(args)
+  elsif action == :main_menu
+    args.state.screen_name = :title
+  end
+end
+
+def start_new_game(args)
+  args.state.game_screen_instance = GameScreen.new
+  args.state.winner_name = nil
+  args.state.screen_name = :game
+end
+
+def stored_winner_name(args)
+  args.state.winner_name || "Unknown Player"
 end
