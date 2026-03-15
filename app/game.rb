@@ -7,7 +7,7 @@ class Game
   WALLS_PER_LANE = 10
   WALL_COLOR = [210, 165, 95]
 
-  attr_reader :pawns, :board, :walls, :players
+  attr_reader :pawns, :board, :walls, :players, :winner
 
   def initialize(cell_width:, cell_height:)
     @board = Board.new(cell_width: cell_width, cell_height: cell_height)
@@ -32,6 +32,7 @@ class Game
   end
 
   def can_move_pawn_to?(pawn, col, row)
+    return false unless winner.nil?
     return false if pawn.nil?
     return false unless pawn.player == current_player
     return false unless board.square_at(col, row)
@@ -46,11 +47,13 @@ class Game
     return false unless can_move_pawn_to?(pawn, col, row)
 
     pawn.move_to(col, row)
-    next_turn!
+    @winner = pawn.player if winning_row_for?(pawn.player) == row
+    next_turn! if winner.nil?
     true
   end
 
   def place_wall_in_well(wall, wall_well)
+    return if winner
     return if wall.nil? || wall_well.nil?
     return if wall.placed?
     return if wall_well.occupied?
@@ -68,6 +71,12 @@ class Game
 
   def pawn_at?(col, row)
     pawns.any? { |pawn| pawn.col == col && pawn.row == row }
+  end
+
+  def winning_row_for?(player)
+    return board.size - 1 if player == players[0]
+
+    0
   end
 
   def build_walls

@@ -23,6 +23,12 @@ def test_game_initial_current_player_is_first_player(args, assert)
   assert.equal! game.players[0], game.current_player, "Expected first turn to belong to Player 1."
 end
 
+def test_game_initial_has_no_winner(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! nil, game.winner, "Expected game to start without a winner."
+end
+
 def test_player_my_turn_initial_state(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
@@ -155,6 +161,31 @@ def test_game_move_pawn_to_adjacent_square_advances_turn(args, assert)
   assert.equal! game.players[1], game.current_player, "Expected successful pawn move to advance the turn."
 end
 
+def test_game_move_pawn_to_sets_winner_on_far_side(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  game.pawns[1].move_to(3, 7)
+  pawn.move_to(4, 7)
+
+  moved = game.move_pawn_to(pawn, 4, 8)
+
+  assert.equal! true, moved, "Expected winning pawn move to succeed."
+  assert.equal! game.players[0], game.winner, "Expected Player 1 to win after reaching the far side."
+  assert.equal! game.players[0], game.current_player, "Expected turn to stop advancing after a winning move."
+end
+
+def test_game_move_pawn_to_rejects_moves_after_winner_declared(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  game.pawns[1].move_to(3, 7)
+  pawn.move_to(4, 7)
+  game.move_pawn_to(pawn, 4, 8)
+
+  moved = game.move_pawn_to(game.pawns[1], 4, 7)
+
+  assert.equal! false, moved, "Expected pawn moves to be rejected after the game has a winner."
+end
+
 def test_game_move_pawn_to_rejects_non_adjacent_square(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
   pawn = game.pawns[0]
@@ -219,6 +250,21 @@ def test_game_move_pawn_to_rejects_move_blocked_by_vertical_wall(args, assert)
 
   assert.equal! false, moved, "Expected pawn move to fail when a vertical wall blocks the path."
   assert.equal! 4, pawn.col, "Expected pawn column to remain unchanged when blocked by a wall."
+end
+
+def test_game_place_wall_in_well_rejects_placement_after_winner_declared(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  game.pawns[1].move_to(3, 7)
+  pawn.move_to(4, 7)
+  game.move_pawn_to(pawn, 4, 8)
+  wall = game.walls.find { |candidate| candidate.player == game.players[0] && !candidate.placed? }
+  wall_well = game.board.wall_wells[0]
+
+  game.place_wall_in_well(wall, wall_well)
+
+  assert.equal! nil, wall.wall_well, "Expected wall placement to be rejected after the game has a winner."
+  assert.equal! nil, wall_well.wall, "Expected wall well to remain empty after the game has a winner."
 end
 
 def test_game_initial_pawn_positions(args, assert)
