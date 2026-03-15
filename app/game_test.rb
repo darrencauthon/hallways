@@ -196,6 +196,29 @@ def test_game_place_wall_in_well_rejects_wall_that_blocks_opponent_path(args, as
   assert.equal! game.players[0], game.current_player, "Expected rejected wall placement to keep the current player."
 end
 
+def test_game_can_place_wall_in_well_rejects_wall_that_blocks_current_players_path(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  current_pawn = game.pawns[0]
+  current_pawn.move_to(0, 0)
+  game.pawns[1].move_to(8, 8)
+
+  first_wall = game.walls.find { |candidate| candidate.player == game.current_player }
+  first_wall_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :vertical && candidate.col == 0 && candidate.row == 0
+  end
+  game.place_wall_in_well(first_wall, first_wall_well)
+  game.next_turn!
+
+  blocking_wall = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
+  blocking_wall_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :horizontal && candidate.col == 0 && candidate.row == 0
+  end
+
+  allowed = game.can_place_wall_in_well?(blocking_wall, blocking_wall_well)
+
+  assert.equal! false, allowed, "Expected wall placement to be rejected when it removes the current player's last path."
+end
+
 def test_game_move_pawn_to_adjacent_square_advances_turn(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
   pawn = game.pawns[0]

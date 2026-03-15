@@ -59,18 +59,14 @@ class Game
     return false if wall.placed?
     return false if wall_well.occupied?
 
-    opponent = opponent_of(wall.player)
-    return true if opponent.nil?
-
-    opponent_pawn = pawns.find { |pawn| pawn.player == opponent }
-    return false if opponent_pawn.nil?
-
-    board.path_exists?(
-      start_col: opponent_pawn.col,
-      start_row: opponent_pawn.row,
-      goal_row: winning_row_for?(opponent),
-      extra_occupied_wall_well: wall_well
-    )
+    pawns.all? do |pawn|
+      board.path_exists?(
+        start_col: pawn.col,
+        start_row: pawn.row,
+        goal_row: winning_row_for?(pawn.player),
+        extra_occupied_wall_well: wall_well
+      )
+    end
   end
 
   def place_wall_in_well(wall, wall_well)
@@ -96,10 +92,6 @@ class Game
     return board.size - 1 if player == players[0]
 
     0
-  end
-
-  def opponent_of(player)
-    players.find { |candidate| candidate != player }
   end
 
   def build_walls
