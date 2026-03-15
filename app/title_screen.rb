@@ -1,5 +1,5 @@
 class TitleScreen
-  MENU_OPTIONS = ["Start", "Quit"].freeze
+  MENU_OPTIONS = ["Human vs Human", "Quit"].freeze
 
   def tick(args)
     handle_input(args)
@@ -29,7 +29,7 @@ class TitleScreen
 
     render_menu(args)
 
-    return :start if confirm_pressed?(args) && selected_option == "Start"
+    return :start if confirm_pressed?(args) && selected_option == "Human vs Human"
     return :quit if confirm_pressed?(args) && selected_option == "Quit"
 
     nil
