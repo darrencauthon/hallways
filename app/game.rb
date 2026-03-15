@@ -52,15 +52,34 @@ class Game
     true
   end
 
+  def can_place_wall_in_well?(wall, wall_well)
+    return false if winner
+    return false if wall.nil? || wall_well.nil?
+    return false if wall.player != current_player
+    return false if wall.placed?
+    return false if wall_well.occupied?
+
+    opponent = opponent_of(wall.player)
+    return true if opponent.nil?
+
+    opponent_pawn = pawns.find { |pawn| pawn.player == opponent }
+    return false if opponent_pawn.nil?
+
+    board.path_exists?(
+      start_col: opponent_pawn.col,
+      start_row: opponent_pawn.row,
+      goal_row: winning_row_for?(opponent),
+      extra_occupied_wall_well: wall_well
+    )
+  end
+
   def place_wall_in_well(wall, wall_well)
-    return if winner
-    return if wall.nil? || wall_well.nil?
-    return if wall.placed?
-    return if wall_well.occupied?
+    return false unless can_place_wall_in_well?(wall, wall_well)
 
     wall.assign_to_wall_well(wall_well)
     wall_well.assign_wall(wall)
     next_turn!
+    true
   end
 
   private
@@ -77,6 +96,10 @@ class Game
     return board.size - 1 if player == players[0]
 
     0
+  end
+
+  def opponent_of(player)
+    players.find { |candidate| candidate != player }
   end
 
   def build_walls

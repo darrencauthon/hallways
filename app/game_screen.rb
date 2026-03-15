@@ -136,7 +136,8 @@ class GameScreen
         cell_height: CELL_SIZE,
         cell_gap: CELL_GAP
       )
-      mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
+      mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h]) &&
+        game.can_place_wall_in_well?(dragged_wall, wall_well)
     end
   end
 

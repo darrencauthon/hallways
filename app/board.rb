@@ -18,8 +18,33 @@ class Board
     squares.find { |square| square.col == col && square.row == row }
   end
 
-  def path_blocked?(from_col:, from_row:, to_col:, to_row:)
-    wall_well_between(from_col: from_col, from_row: from_row, to_col: to_col, to_row: to_row)&.occupied? || false
+  def path_blocked?(from_col:, from_row:, to_col:, to_row:, extra_occupied_wall_well: nil)
+    wall_well = wall_well_between(from_col: from_col, from_row: from_row, to_col: to_col, to_row: to_row)
+    wall_well_occupied?(wall_well, extra_occupied_wall_well: extra_occupied_wall_well)
+  end
+
+  def path_exists?(start_col:, start_row:, goal_row:, extra_occupied_wall_well: nil)
+    frontier = [{ col: start_col, row: start_row }]
+    visited = { "#{start_col},#{start_row}" => true }
+
+    until frontier.empty?
+      current = frontier.shift
+      return true if current[:row] == goal_row
+
+      neighbor_positions(
+        current[:col],
+        current[:row],
+        extra_occupied_wall_well: extra_occupied_wall_well
+      ).each do |neighbor|
+        key = "#{neighbor[:col]},#{neighbor[:row]}"
+        next if visited[key]
+
+        visited[key] = true
+        frontier << neighbor
+      end
+    end
+
+    false
   end
 
   private
@@ -87,5 +112,30 @@ class Board
           wall_well.row == from_row
       end
     end
+  end
+
+  def neighbor_positions(col, row, extra_occupied_wall_well:)
+    [
+      { col: col + 1, row: row },
+      { col: col - 1, row: row },
+      { col: col, row: row + 1 },
+      { col: col, row: row - 1 }
+    ].select do |neighbor|
+      inside_bounds?(neighbor[:col], neighbor[:row]) &&
+        !path_blocked?(
+          from_col: col,
+          from_row: row,
+          to_col: neighbor[:col],
+          to_row: neighbor[:row],
+          extra_occupied_wall_well: extra_occupied_wall_well
+        )
+    end
+  end
+
+  def wall_well_occupied?(wall_well, extra_occupied_wall_well:)
+    return false if wall_well.nil?
+    return true if wall_well == extra_occupied_wall_well
+
+    wall_well.occupied?
   end
 end
