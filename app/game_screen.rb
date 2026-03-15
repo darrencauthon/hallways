@@ -14,6 +14,7 @@ class GameScreen
     draw_wall_wells(args, board_x, board_y)
     draw_wall_reserves(args, board_x, board_y)
     update_pawn_drag_state(args, board_x, board_y)
+    draw_available_pawn_drop_target(args, board_x, board_y)
     draw_player_names(args, board_x, board_y)
     draw_pawns(args, board_x, board_y)
   end
@@ -147,6 +148,27 @@ class GameScreen
         pawn.render(args, board_x, board_y, CELL_GAP)
       end
     end
+  end
+
+  def draw_available_pawn_drop_target(args, board_x, board_y)
+    return if dragged_pawn.nil?
+
+    square = hovered_square(args, board_x, board_y)
+    return if square.nil?
+    return unless game.can_move_pawn_to?(dragged_pawn, square.col, square.row)
+
+    x = board_x + (square.col * (CELL_SIZE + CELL_GAP))
+    y = board_y + (square.row * (CELL_SIZE + CELL_GAP))
+
+    args.outputs.borders << {
+      x: x - 2,
+      y: y - 2,
+      w: CELL_SIZE + 4,
+      h: CELL_SIZE + 4,
+      r: 240,
+      g: 60,
+      b: 60
+    }
   end
 
   def update_pawn_drag_state(args, board_x, board_y)

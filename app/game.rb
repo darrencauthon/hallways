@@ -31,13 +31,19 @@ class Game
     @turn_index = (@turn_index + 1) % players.length
   end
 
-  def move_pawn_to(pawn, col, row)
+  def can_move_pawn_to?(pawn, col, row)
     return false if pawn.nil?
     return false unless pawn.player == current_player
     return false unless board.square_at(col, row)
     return false unless adjacent?(pawn.col, pawn.row, col, row)
     return false if board.path_blocked?(from_col: pawn.col, from_row: pawn.row, to_col: col, to_row: row)
     return false if pawn_at?(col, row)
+
+    true
+  end
+
+  def move_pawn_to(pawn, col, row)
+    return false unless can_move_pawn_to?(pawn, col, row)
 
     pawn.move_to(col, row)
     next_turn!
