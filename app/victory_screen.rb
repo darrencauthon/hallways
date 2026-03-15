@@ -1,5 +1,10 @@
 class VictoryScreen
   MENU_OPTIONS = ["Play Again", "Main Menu"].freeze
+  MENU_X_CENTER = 640
+  MENU_Y_START = 260
+  MENU_Y_STEP = 45
+  MENU_HOVER_HALF_HEIGHT = 24
+  MENU_HOVER_X_PADDING = 220
 
   def tick(args, winner_name:)
     handle_input(args)
@@ -29,8 +34,9 @@ class VictoryScreen
 
     render_menu(args)
 
-    return :play_again if confirm_pressed?(args) && selected_option == "Play Again"
-    return :main_menu if confirm_pressed?(args) && selected_option == "Main Menu"
+    confirmed = confirm_pressed?(args) || mouse_click_confirm?(args)
+    return :play_again if confirmed && selected_option == "Play Again"
+    return :main_menu if confirmed && selected_option == "Main Menu"
 
     nil
   end
@@ -38,6 +44,9 @@ class VictoryScreen
   private
 
   def handle_input(args)
+    hovered_index = hovered_menu_index(args)
+    @selected_index = hovered_index unless hovered_index.nil?
+
     if up_pressed?(args)
       select_previous
     elsif down_pressed?(args)
@@ -49,8 +58,8 @@ class VictoryScreen
     MENU_OPTIONS.each_with_index do |option, index|
       selected = index == selected_index
       args.outputs.labels << {
-        x: 640,
-        y: 260 - (index * 45),
+        x: MENU_X_CENTER,
+        y: menu_option_y(index),
         text: selected ? "> #{option} <" : option,
         alignment_enum: 1,
         size_enum: 4,
@@ -87,5 +96,34 @@ class VictoryScreen
 
   def confirm_pressed?(args)
     args.inputs.keyboard.key_down.enter
+  end
+
+  def hovered_menu_index(args)
+    mouse = args.inputs.mouse
+    return nil unless mouse
+    return nil if mouse.x.nil? || mouse.y.nil?
+
+    MENU_OPTIONS.each_with_index do |_option, index|
+      option_y = menu_option_y(index)
+      if mouse.x >= (MENU_X_CENTER - MENU_HOVER_X_PADDING) &&
+         mouse.x <= (MENU_X_CENTER + MENU_HOVER_X_PADDING) &&
+         mouse.y >= (option_y - MENU_HOVER_HALF_HEIGHT) &&
+         mouse.y <= (option_y + MENU_HOVER_HALF_HEIGHT)
+        return index
+      end
+    end
+
+    nil
+  end
+
+  def menu_option_y(index)
+    MENU_Y_START - (index * MENU_Y_STEP)
+  end
+
+  def mouse_click_confirm?(args)
+    mouse = args.inputs.mouse
+    return false unless mouse
+
+    !!mouse.down && !hovered_menu_index(args).nil?
   end
 end

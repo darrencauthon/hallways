@@ -20,3 +20,13 @@ def test_victory_screen_up_wraps_to_main_menu(args, assert)
 
   assert.equal! :main_menu, action, "Expected Up from Play Again to wrap to Main Menu."
 end
+
+def test_victory_screen_mouse_click_main_menu(args, assert)
+  screen = VictoryScreen.new
+  action = screen.tick(
+    TitleScreenTestHelpers.build_fake_args(mouse_x: 640, mouse_y: 215, mouse_down: true),
+    winner_name: "Player 1"
+  )
+
+  assert.equal! :main_menu, action, "Expected mouse click over Main Menu to select Main Menu."
+end
