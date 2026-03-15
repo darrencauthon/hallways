@@ -369,6 +369,52 @@ def test_game_move_pawn_to_rejects_occupied_square(args, assert)
   assert.equal! 0, pawn.row, "Expected pawn row to remain unchanged when the target square is occupied."
 end
 
+def test_game_move_pawn_to_allows_straight_jump_over_adjacent_pawn(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  other_pawn = game.pawns[1]
+  other_pawn.move_to(4, 1)
+
+  moved = game.move_pawn_to(pawn, 4, 2)
+
+  assert.equal! true, moved, "Expected pawn to jump over an adjacent blocking pawn."
+  assert.equal! 2, pawn.row, "Expected pawn to land beyond the blocking pawn."
+  assert.equal! game.players[1], game.current_player, "Expected successful jump move to advance the turn."
+end
+
+def test_game_move_pawn_to_allows_diagonal_jump_when_straight_jump_blocked(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  other_pawn = game.pawns[1]
+  other_pawn.move_to(4, 1)
+
+  wall = game.walls.find { |candidate| candidate.player == game.current_player }
+  wall_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 1
+  end
+  game.place_wall_in_well_with_side(wall, wall_well, preferred_side: :positive)
+  game.next_turn!
+
+  moved = game.move_pawn_to(pawn, 3, 1)
+
+  assert.equal! true, moved, "Expected diagonal jump to be allowed when the straight jump is blocked."
+  assert.equal! 3, pawn.col, "Expected pawn to move diagonally around the blocking pawn."
+  assert.equal! 1, pawn.row, "Expected pawn to land beside the blocking pawn."
+end
+
+def test_game_move_pawn_to_rejects_diagonal_jump_when_straight_jump_is_open(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  other_pawn = game.pawns[1]
+  other_pawn.move_to(4, 1)
+
+  moved = game.move_pawn_to(pawn, 3, 1)
+
+  assert.equal! false, moved, "Expected diagonal move to be rejected while a straight jump is available."
+  assert.equal! 4, pawn.col, "Expected pawn column to remain unchanged after invalid diagonal move."
+  assert.equal! 0, pawn.row, "Expected pawn row to remain unchanged after invalid diagonal move."
+end
+
 def test_game_move_pawn_to_rejects_move_blocked_by_horizontal_wall(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
   pawn = game.pawns[0]

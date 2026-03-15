@@ -38,9 +38,7 @@ class Game
     return false if pawn.nil?
     return false unless pawn.player == current_player
     return false unless board.square_at(col, row)
-    return false unless adjacent?(pawn.col, pawn.row, col, row)
-    return false if board.path_blocked?(from_col: pawn.col, from_row: pawn.row, to_col: col, to_row: row)
-    return false if pawn_at?(col, row)
+    return false unless legal_moves_for(pawn).any? { |move| move[:col] == col && move[:row] == row }
 
     true
   end
@@ -94,8 +92,67 @@ class Game
     ((from_col - to_col).abs + (from_row - to_row).abs) == 1
   end
 
+  def legal_moves_for(pawn)
+    orthogonal_neighbors(pawn.col, pawn.row).flat_map do |neighbor|
+      next [] if board.path_blocked?(from_col: pawn.col, from_row: pawn.row, to_col: neighbor[:col], to_row: neighbor[:row])
+
+      occupant = pawn_at(neighbor[:col], neighbor[:row])
+      if occupant.nil?
+        [neighbor]
+      else
+        jump_moves_for(pawn, occupant)
+      end
+    end
+  end
+
   def pawn_at?(col, row)
     pawns.any? { |pawn| pawn.col == col && pawn.row == row }
+  end
+
+  def pawn_at(col, row)
+    pawns.find { |pawn| pawn.col == col && pawn.row == row }
+  end
+
+  def jump_moves_for(pawn, blocking_pawn)
+    dx = blocking_pawn.col - pawn.col
+    dy = blocking_pawn.row - pawn.row
+    jump_col = blocking_pawn.col + dx
+    jump_row = blocking_pawn.row + dy
+
+    if board.square_at(jump_col, jump_row) &&
+       !board.path_blocked?(from_col: blocking_pawn.col, from_row: blocking_pawn.row, to_col: jump_col, to_row: jump_row) &&
+       !pawn_at?(jump_col, jump_row)
+      [{ col: jump_col, row: jump_row }]
+    else
+      diagonal_jump_moves_for(blocking_pawn, dx: dx, dy: dy)
+    end
+  end
+
+  def diagonal_jump_moves_for(blocking_pawn, dx:, dy:)
+    if dx == 0
+      [
+        { col: blocking_pawn.col - 1, row: blocking_pawn.row },
+        { col: blocking_pawn.col + 1, row: blocking_pawn.row }
+      ]
+    else
+      [
+        { col: blocking_pawn.col, row: blocking_pawn.row - 1 },
+        { col: blocking_pawn.col, row: blocking_pawn.row + 1 }
+      ]
+    end.select do |move|
+      board.square_at(move[:col], move[:row]) &&
+        !board.path_blocked?(from_col: blocking_pawn.col, from_row: blocking_pawn.row, to_col: move[:col], to_row: move[:row]) &&
+        !pawn_at?(move[:col], move[:row])
+    end
+  end
+
+  def orthogonal_neighbors(col, row)
+    [
+      { col: col + 1, row: row },
+      { col: col - 1, row: row },
+      { col: col, row: row + 1 },
+      { col: col, row: row - 1 }
+    ].select { |move| board.square_at(move[:col], move[:row]) }
   end
 
   def winning_row_for?(player)
