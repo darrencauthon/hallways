@@ -1,7 +1,3 @@
-require "app/board_renderer.rb"
-require "app/wall_renderer.rb"
-require "app/pawn_renderer.rb"
-
 class GameScreen
   attr_reader :board_size, :cell_size, :cell_gap, :board_y
 
@@ -10,20 +6,6 @@ class GameScreen
     @cell_size = cell_size
     @cell_gap = cell_gap
     @board_y = board_y
-    @board_renderer = BoardRenderer.new(
-      cell_size: cell_size,
-      cell_gap: cell_gap,
-      board_pixel_size: board_pixel_size
-    )
-    @wall_renderer = WallRenderer.new(
-      cell_size: cell_size,
-      cell_gap: cell_gap,
-      board_pixel_size: board_pixel_size
-    )
-    @pawn_renderer = PawnRenderer.new(
-      cell_size: cell_size,
-      cell_gap: cell_gap
-    )
   end
 
   def tick(args)
@@ -32,30 +14,24 @@ class GameScreen
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
     update_wall_drag_state(args, board_x, board_y)
-    wall_drop_target = hovered_available_wall_placement(args, board_x, board_y) if dragged_wall
-    board_renderer.render(args, game, board_x, board_y)
-    wall_renderer.render_wall_drop_target(args, board_x, board_y, wall_drop_target)
-    wall_renderer.render_placed_walls(args, game, board_x, board_y)
-    wall_renderer.render_reserve_walls(
-      args,
-      game,
-      board_x,
-      board_y,
-      dragged_wall: dragged_wall,
-      dragged_rect: dragged_wall ? dragged_wall_rect(args, board_x, board_y, dragged_wall) : nil,
-      hover_wall: hovered_reserve_wall(args, game, board_x, board_y)
-    )
     update_pawn_drag_state(args, board_x, board_y)
-    pawn_renderer.render_drop_target(args, board_x, board_y, available_pawn_drop_target(args, board_x, board_y))
-    draw_player_names(args, board_x, board_y)
-    pawn_renderer.render(
+    wall_drop_target = hovered_available_wall_placement(args, board_x, board_y) if dragged_wall
+    pawn_drop_target = available_pawn_drop_target(args, board_x, board_y)
+
+    game.render(
       args,
-      game,
-      board_x,
-      board_y,
+      board_x: board_x,
+      board_y: board_y,
+      cell_gap: cell_gap,
+      board_pixel_size: board_pixel_size,
+      dragged_wall: dragged_wall,
+      dragged_wall_rect: dragged_wall ? dragged_wall_rect(args, board_x, board_y, dragged_wall) : nil,
+      hover_wall: hovered_reserve_wall(args, game, board_x, board_y),
+      wall_drop_target: wall_drop_target,
       dragged_pawn: dragged_pawn,
       dragged_pawn_x: dragged_pawn_x(args),
-      dragged_pawn_y: dragged_pawn_y(args)
+      dragged_pawn_y: dragged_pawn_y(args),
+      pawn_drop_target: pawn_drop_target
     )
 
     return [:victory, game.winner.name] if game.winner
@@ -185,48 +161,8 @@ class GameScreen
     end
   end
 
-  def draw_player_names(args, board_x, board_y)
-    top_name = game.players[1].name
-    bottom_name = game.players[0].name
-    center_x = board_x + (board_pixel_size / 2)
-
-    args.outputs.labels << {
-      x: center_x,
-      y: board_y + board_pixel_size + 78,
-      text: top_name,
-      alignment_enum: 1,
-      size_enum: 2,
-      r: 235,
-      g: 235,
-      b: 235
-    }
-
-    args.outputs.labels << {
-      x: center_x,
-      y: board_y - 80,
-      text: bottom_name,
-      alignment_enum: 1,
-      size_enum: 2,
-      r: 235,
-      g: 235,
-      b: 235
-    }
-  end
-
   def game
     @game ||= Game.new(cell_width: cell_size, cell_height: cell_size)
-  end
-
-  def board_renderer
-    @board_renderer
-  end
-
-  def wall_renderer
-    @wall_renderer
-  end
-
-  def pawn_renderer
-    @pawn_renderer
   end
 
   def mouse_inside_rect?(args, x:, y:, w:, h:)

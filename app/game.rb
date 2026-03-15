@@ -2,6 +2,9 @@ require "app/pawn.rb"
 require "app/board.rb"
 require "app/wall.rb"
 require "app/player.rb"
+require "app/board_renderer.rb"
+require "app/wall_renderer.rb"
+require "app/pawn_renderer.rb"
 
 class Game
   WALLS_PER_LANE = 10
@@ -86,7 +89,109 @@ class Game
     true
   end
 
+  def render(
+    args,
+    board_x:,
+    board_y:,
+    cell_gap:,
+    board_pixel_size:,
+    dragged_wall:,
+    dragged_wall_rect:,
+    hover_wall:,
+    wall_drop_target:,
+    dragged_pawn:,
+    dragged_pawn_x:,
+    dragged_pawn_y:,
+    pawn_drop_target:
+  )
+    configure_renderers(cell_gap: cell_gap, board_pixel_size: board_pixel_size)
+
+    board_renderer.render(args, self, board_x, board_y)
+    wall_renderer.render_wall_drop_target(args, board_x, board_y, wall_drop_target)
+    wall_renderer.render_placed_walls(args, self, board_x, board_y)
+    wall_renderer.render_reserve_walls(
+      args,
+      self,
+      board_x,
+      board_y,
+      dragged_wall: dragged_wall,
+      dragged_rect: dragged_wall_rect,
+      hover_wall: hover_wall
+    )
+    pawn_renderer.render_drop_target(args, board_x, board_y, pawn_drop_target)
+    render_player_names(args, board_x, board_y, board_pixel_size)
+    pawn_renderer.render(
+      args,
+      self,
+      board_x,
+      board_y,
+      dragged_pawn: dragged_pawn,
+      dragged_pawn_x: dragged_pawn_x,
+      dragged_pawn_y: dragged_pawn_y
+    )
+  end
+
   private
+
+  def configure_renderers(cell_gap:, board_pixel_size:)
+    return if @renderer_config == { cell_gap: cell_gap, board_pixel_size: board_pixel_size }
+
+    @renderer_config = { cell_gap: cell_gap, board_pixel_size: board_pixel_size }
+    @board_renderer = BoardRenderer.new(
+      cell_size: board.cell_width,
+      cell_gap: cell_gap,
+      board_pixel_size: board_pixel_size
+    )
+    @wall_renderer = WallRenderer.new(
+      cell_size: board.cell_width,
+      cell_gap: cell_gap,
+      board_pixel_size: board_pixel_size
+    )
+    @pawn_renderer = PawnRenderer.new(
+      cell_size: board.cell_width,
+      cell_gap: cell_gap
+    )
+  end
+
+  def board_renderer
+    @board_renderer
+  end
+
+  def wall_renderer
+    @wall_renderer
+  end
+
+  def pawn_renderer
+    @pawn_renderer
+  end
+
+  def render_player_names(args, board_x, board_y, board_pixel_size)
+    top_name = players[1].name
+    bottom_name = players[0].name
+    center_x = board_x + (board_pixel_size / 2)
+
+    args.outputs.labels << {
+      x: center_x,
+      y: board_y + board_pixel_size + 78,
+      text: top_name,
+      alignment_enum: 1,
+      size_enum: 2,
+      r: 235,
+      g: 235,
+      b: 235
+    }
+
+    args.outputs.labels << {
+      x: center_x,
+      y: board_y - 80,
+      text: bottom_name,
+      alignment_enum: 1,
+      size_enum: 2,
+      r: 235,
+      g: 235,
+      b: 235
+    }
+  end
 
   def adjacent?(from_col, from_row, to_col, to_row)
     ((from_col - to_col).abs + (from_row - to_row).abs) == 1
