@@ -1,3 +1,7 @@
+require "app/board_renderer.rb"
+require "app/wall_renderer.rb"
+require "app/pawn_renderer.rb"
+
 class GameScreen
   attr_reader :board_size, :cell_size, :cell_gap, :board_y
 
@@ -6,6 +10,20 @@ class GameScreen
     @cell_size = cell_size
     @cell_gap = cell_gap
     @board_y = board_y
+    @board_renderer = BoardRenderer.new(
+      cell_size: cell_size,
+      cell_gap: cell_gap,
+      board_pixel_size: board_pixel_size
+    )
+    @wall_renderer = WallRenderer.new(
+      cell_size: cell_size,
+      cell_gap: cell_gap,
+      board_pixel_size: board_pixel_size
+    )
+    @pawn_renderer = PawnRenderer.new(
+      cell_size: cell_size,
+      cell_gap: cell_gap
+    )
   end
 
   def tick(args)
@@ -13,149 +31,39 @@ class GameScreen
 
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
-    draw_board(args, board_x, board_y)
-    draw_wall_wells(args, board_x, board_y)
-    draw_available_wall_drop_target(args, board_x, board_y)
-    draw_placed_walls(args, board_x, board_y)
-    draw_wall_reserves(args, board_x, board_y)
+    update_wall_drag_state(args, board_x, board_y)
+    wall_drop_target = hovered_available_wall_placement(args, board_x, board_y) if dragged_wall
+    board_renderer.render(args, game, board_x, board_y)
+    wall_renderer.render_wall_drop_target(args, board_x, board_y, wall_drop_target)
+    wall_renderer.render_placed_walls(args, game, board_x, board_y)
+    wall_renderer.render_reserve_walls(
+      args,
+      game,
+      board_x,
+      board_y,
+      dragged_wall: dragged_wall,
+      dragged_rect: dragged_wall ? dragged_wall_rect(args, board_x, board_y, dragged_wall) : nil,
+      hover_wall: hovered_reserve_wall(args, game, board_x, board_y)
+    )
     update_pawn_drag_state(args, board_x, board_y)
-    draw_available_pawn_drop_target(args, board_x, board_y)
+    pawn_renderer.render_drop_target(args, board_x, board_y, available_pawn_drop_target(args, board_x, board_y))
     draw_player_names(args, board_x, board_y)
-    draw_pawns(args, board_x, board_y)
+    pawn_renderer.render(
+      args,
+      game,
+      board_x,
+      board_y,
+      dragged_pawn: dragged_pawn,
+      dragged_pawn_x: dragged_pawn_x(args),
+      dragged_pawn_y: dragged_pawn_y(args)
+    )
 
     return [:victory, game.winner.name] if game.winner
   end
 
   private
 
-  def draw_board(args, board_x, board_y)
-    args.outputs.borders << {
-      x: board_x - 10,
-      y: board_y - 10,
-      w: board_pixel_size + 20,
-      h: board_pixel_size + 20,
-      r: 190,
-      g: 190,
-      b: 190
-    }
-
-    game.board.squares.each do |square|
-      square.render(args, board_x, board_y, cell_gap)
-    end
-  end
-
-  def draw_wall_reserves(args, board_x, board_y)
-    wall_count = Game::WALLS_PER_LANE
-    spacing = 10
-    wall_w = game.walls[0].width
-    total_w = (wall_count * wall_w) + ((wall_count - 1) * spacing)
-    start_x = ((args.grid.w - total_w) / 2).to_i
-
-    top_y = board_y + board_pixel_size + 36
-    bottom_y = board_y - 46
-
-    wall_rects = {}
-
-    game.walls.each do |wall|
-      next if wall.placed?
-      x = start_x + (wall.slot * (wall_w + spacing))
-      y = wall.lane == :top ? top_y : bottom_y
-      wall_rects[wall] = { x: x, y: y, w: wall.width, h: wall.height }
-    end
-
-    update_wall_drag_state(args, wall_rects, board_x, board_y)
-
-    wall_rects.each do |wall, rect|
-      x = rect[:x]
-      y = rect[:y]
-      width = rect[:w]
-      height = rect[:h]
-      if wall == dragged_wall
-        dragged_rect = dragged_wall_rect(args, board_x, board_y, wall)
-        x = dragged_rect[:x]
-        y = dragged_rect[:y]
-        width = dragged_rect[:w]
-        height = dragged_rect[:h]
-      end
-
-      wall.render(args, x, y, width, height)
-      draw_hover_border_if_needed(args, wall, x, y)
-    end
-
-  end
-
-  def draw_wall_wells(args, board_x, board_y)
-    game.board.wall_wells.each do |wall_well|
-      wall_well.render(
-        args,
-        board_x,
-        board_y,
-        cell_width: cell_size,
-        cell_height: cell_size,
-        cell_gap: cell_gap
-      )
-    end
-  end
-
-  def draw_placed_walls(args, board_x, board_y)
-    game.walls.each do |wall|
-      next unless wall.placed?
-
-      wall.render_on_board(
-        args,
-        board_x,
-        board_y,
-        cell_width: cell_size,
-        cell_height: cell_size,
-        cell_gap: cell_gap
-      )
-    end
-  end
-
-  def draw_available_wall_drop_target(args, board_x, board_y)
-    return if dragged_wall.nil?
-
-    placement = hovered_available_wall_placement(args, board_x, board_y)
-    return if placement.nil?
-
-    placement[:wall_span].each do |wall_well|
-      rect = wall_well.rect(
-        board_x,
-        board_y,
-        cell_width: cell_size,
-        cell_height: cell_size,
-        cell_gap: cell_gap
-      )
-
-      args.outputs.borders << {
-        x: rect[:x] - 2,
-        y: rect[:y] - 2,
-        w: rect[:w] + 4,
-        h: rect[:h] + 4,
-        r: 240,
-        g: 60,
-        b: 60
-      }
-    end
-  end
-
-  def draw_hover_border_if_needed(args, wall, x, y)
-    return unless wall.player == game.current_player
-    preview_rect = dragged_wall == wall ? dragged_wall_rect(args, nil, nil, wall) : { w: wall.width, h: wall.height }
-    return unless mouse_inside_rect?(args, x: x, y: y, w: preview_rect[:w], h: preview_rect[:h])
-
-    args.outputs.borders << {
-      x: x - 1,
-      y: y - 1,
-      w: preview_rect[:w] + 2,
-      h: preview_rect[:h] + 2,
-      r: 240,
-      g: 60,
-      b: 60
-    }
-  end
-
-  def update_wall_drag_state(args, wall_rects, board_x, board_y)
+  def update_wall_drag_state(args, board_x, board_y)
     if mouse_released?(args)
       if dragged_wall
         placement = hovered_available_wall_placement(args, board_x, board_y)
@@ -173,8 +81,7 @@ class GameScreen
 
     return unless mouse_pressed?(args)
 
-    game.walls.each do |wall|
-      rect = wall_rects[wall]
+    reserve_wall_rects(args, game, board_x, board_y).each do |wall, rect|
       next if rect.nil?
       next unless wall.player == game.current_player
       next unless mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
@@ -223,37 +130,6 @@ class GameScreen
     end
   end
 
-  def draw_pawns(args, board_x, board_y)
-    game.pawns.each do |pawn|
-      if pawn == dragged_pawn
-        pawn.render_at(args, dragged_pawn_x(args), dragged_pawn_y(args))
-      else
-        pawn.render(args, board_x, board_y, cell_gap)
-      end
-    end
-  end
-
-  def draw_available_pawn_drop_target(args, board_x, board_y)
-    return if dragged_pawn.nil?
-
-    square = hovered_square(args, board_x, board_y)
-    return if square.nil?
-    return unless game.can_move_pawn_to?(dragged_pawn, square.col, square.row)
-
-    x = board_x + (square.col * (cell_size + cell_gap))
-    y = board_y + (square.row * (cell_size + cell_gap))
-
-    args.outputs.borders << {
-      x: x - 2,
-      y: y - 2,
-      w: cell_size + 4,
-      h: cell_size + 4,
-      r: 240,
-      g: 60,
-      b: 60
-    }
-  end
-
   def update_pawn_drag_state(args, board_x, board_y)
     if mouse_released?(args)
       if dragged_pawn
@@ -289,6 +165,16 @@ class GameScreen
       y = board_y + (square.row * (cell_size + cell_gap))
       mouse_inside_rect?(args, x: x, y: y, w: cell_size, h: cell_size)
     end
+  end
+
+  def available_pawn_drop_target(args, board_x, board_y)
+    return nil if dragged_pawn.nil?
+
+    square = hovered_square(args, board_x, board_y)
+    return nil if square.nil?
+    return nil unless game.can_move_pawn_to?(dragged_pawn, square.col, square.row)
+
+    square
   end
 
   def preferred_wall_side(args, wall_well, rect)
@@ -329,6 +215,18 @@ class GameScreen
 
   def game
     @game ||= Game.new(cell_width: cell_size, cell_height: cell_size)
+  end
+
+  def board_renderer
+    @board_renderer
+  end
+
+  def wall_renderer
+    @wall_renderer
+  end
+
+  def pawn_renderer
+    @pawn_renderer
   end
 
   def mouse_inside_rect?(args, x:, y:, w:, h:)
@@ -408,6 +306,36 @@ class GameScreen
       w: width,
       h: height
     }
+  end
+
+  def reserve_wall_rects(args, game, board_x, board_y)
+    wall_count = Game::WALLS_PER_LANE
+    spacing = 10
+    wall_w = game.walls[0].width
+    total_w = (wall_count * wall_w) + ((wall_count - 1) * spacing)
+    start_x = ((args.grid.w - total_w) / 2).to_i
+    top_y = board_y + board_pixel_size + 36
+    bottom_y = board_y - 46
+
+    rects = {}
+    game.walls.each do |wall|
+      next if wall.placed?
+
+      rects[wall] = {
+        x: start_x + (wall.slot * (wall_w + spacing)),
+        y: wall.lane == :top ? top_y : bottom_y,
+        w: wall.width,
+        h: wall.height
+      }
+    end
+
+    rects
+  end
+
+  def hovered_reserve_wall(args, game, board_x, board_y)
+    reserve_wall_rects(args, game, board_x, board_y).find do |_wall, rect|
+      mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
+    end&.first
   end
 
   def mouse_x(args)
