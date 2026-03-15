@@ -74,8 +74,10 @@ def current_screen(args)
 end
 
 def handle_title_action(args, action)
-  if action == :start
-    start_new_game(args)
+  if action == :start_human_vs_human
+    start_new_game(args, mode: :human_vs_human)
+  elsif action == :start_human_vs_computer
+    start_new_game(args, mode: :human_vs_computer)
   elsif action == :quit
     request_quit(args)
   end
@@ -92,14 +94,15 @@ end
 
 def handle_victory_action(args, action)
   if action == :play_again
-    start_new_game(args)
+    start_new_game(args, mode: args.state.game_mode || :human_vs_human)
   elsif action == :main_menu
     args.state.screen_name = :title
   end
 end
 
-def start_new_game(args)
-  args.state.game_screen_instance = GameScreen.new
+def start_new_game(args, mode: :human_vs_human)
+  args.state.game_mode = mode
+  args.state.game_screen_instance = GameScreen.new(mode: mode)
   args.state.winner_name = nil
   args.state.screen_name = :game
 end

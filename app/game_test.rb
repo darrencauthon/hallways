@@ -17,6 +17,20 @@ def test_game_initial_player_names(args, assert)
   assert.equal! "Player 2", game.players[1].name, "Expected second player name to be Player 2."
 end
 
+def test_game_default_mode_uses_two_human_controllers(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! true, game.players[0].controller.is_a?(HumanPlayerController), "Expected Player 1 to use HumanPlayerController."
+  assert.equal! true, game.players[1].controller.is_a?(HumanPlayerController), "Expected Player 2 to use HumanPlayerController in default mode."
+end
+
+def test_game_human_vs_computer_mode_uses_computer_player_two(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, mode: :human_vs_computer)
+
+  assert.equal! true, game.players[0].controller.is_a?(HumanPlayerController), "Expected Player 1 to use HumanPlayerController."
+  assert.equal! true, game.players[1].controller.is_a?(ComputerPlayerController), "Expected Player 2 to use ComputerPlayerController in Human vs Computer mode."
+end
+
 def test_game_initial_players_have_winning_rows(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 

@@ -1,11 +1,12 @@
 class GameScreen
   attr_reader :board_size, :cell_size, :cell_gap, :board_y
 
-  def initialize(board_size: 9, cell_size: 48, cell_gap: 6, board_y: 120)
+  def initialize(board_size: 9, cell_size: 48, cell_gap: 6, board_y: 120, mode: :human_vs_human)
     @board_size = board_size
     @cell_size = cell_size
     @cell_gap = cell_gap
     @board_y = board_y
+    @mode = mode
   end
 
   def tick(args)
@@ -14,8 +15,13 @@ class GameScreen
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
     apply_current_player_controller_action(args)
-    update_wall_drag_state(args, board_x, board_y)
-    update_pawn_drag_state(args, board_x, board_y)
+    if human_turn?
+      update_wall_drag_state(args, board_x, board_y)
+      update_pawn_drag_state(args, board_x, board_y)
+    else
+      @dragged_wall = nil
+      clear_dragged_pawn
+    end
     wall_drop_target = hovered_available_wall_placement(args, board_x, board_y) if dragged_wall
     pawn_drop_target = available_pawn_drop_target(args, board_x, board_y)
     game.sync_render_state(
@@ -42,7 +48,9 @@ class GameScreen
     action = game.current_player_controller.next_action(args: args, game: game)
     return if action.nil?
 
-    # Controller-driven actions will be handled here as we move logic out of GameScreen.
+    if action[:type] == :move_pawn
+      game.move_pawn_to(action[:pawn], action[:col], action[:row])
+    end
   end
 
   def update_wall_drag_state(args, board_x, board_y)
@@ -154,7 +162,11 @@ class GameScreen
   end
 
   def game
-    @game ||= Game.new(cell_width: cell_size, cell_height: cell_size, cell_gap: cell_gap)
+    @game ||= Game.new(cell_width: cell_size, cell_height: cell_size, cell_gap: cell_gap, mode: @mode)
+  end
+
+  def human_turn?
+    game.current_player_controller.is_a?(HumanPlayerController)
   end
 
   def mouse_inside_rect?(args, x:, y:, w:, h:)

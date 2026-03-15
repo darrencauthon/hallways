@@ -4,6 +4,7 @@ require "app/wall.rb"
 require "app/player.rb"
 require "app/null_player_controller.rb"
 require "app/human_player_controller.rb"
+require "app/computer_player_controller.rb"
 require "app/board_renderer.rb"
 require "app/wall_renderer.rb"
 require "app/pawn_renderer.rb"
@@ -14,14 +15,15 @@ class Game
   WALL_WIDTH = 90
   WALL_HEIGHT = 10
 
-  attr_reader :pawns, :board, :walls, :players, :winner, :cell_gap
+  attr_reader :pawns, :board, :walls, :players, :winner, :cell_gap, :mode
 
-  def initialize(cell_width:, cell_height:, cell_gap: 6)
+  def initialize(cell_width:, cell_height:, cell_gap: 6, mode: :human_vs_human)
+    @mode = mode
     @cell_gap = cell_gap
     @board = Board.new(cell_width: cell_width, cell_height: cell_height)
     @players = [
       Player.new("Player 1", game: self, winning_row: board.size - 1, controller: HumanPlayerController.new),
-      Player.new("Player 2", game: self, winning_row: 0, controller: HumanPlayerController.new)
+      Player.new("Player 2", game: self, winning_row: 0, controller: player_two_controller_for(mode))
     ]
     @pawns = [
       Pawn.new(4, 0, [245, 245, 245], player: @players[0], cell_width: cell_width, cell_height: cell_height),
@@ -162,6 +164,12 @@ class Game
   end
 
   private
+
+  def player_two_controller_for(mode)
+    return ComputerPlayerController.new if mode == :human_vs_computer
+
+    HumanPlayerController.new
+  end
 
   def configure_renderers
     return if @renderer_config == { cell_gap: cell_gap, board_pixel_size: board_pixel_size }

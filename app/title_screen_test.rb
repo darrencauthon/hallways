@@ -1,21 +1,29 @@
 def test_title_screen_default_enter_starts(args, assert)
   screen = TitleScreen.new
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
-  assert.equal! :start, action, "Expected Enter on default selection to start."
+  assert.equal! :start_human_vs_human, action, "Expected Enter on default selection to start Human vs Human."
 end
 
-def test_title_screen_down_then_enter_quits(args, assert)
+def test_title_screen_down_then_enter_starts_human_vs_computer(args, assert)
   screen = TitleScreen.new
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
-  assert.equal! :quit, action, "Expected Down then Enter to choose Quit."
+  assert.equal! :start_human_vs_computer, action, "Expected Down then Enter to choose Human vs Computer."
+end
+
+def test_title_screen_down_twice_then_enter_quits(args, assert)
+  screen = TitleScreen.new
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
+  assert.equal! :quit, action, "Expected selecting Quit then Enter to quit."
 end
 
 def test_title_screen_up_wraps_to_quit(args, assert)
   screen = TitleScreen.new
   screen.tick(TitleScreenTestHelpers.build_fake_args(up: true))
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
-  assert.equal! :quit, action, "Expected Up from Start to wrap to Quit."
+  assert.equal! :quit, action, "Expected Up from first option to wrap to Quit."
 end
 
 module TitleScreenTestHelpers
