@@ -103,6 +103,7 @@ class Game
     @dragged_pawn = dragged_pawn
     @dragged_pawn_offset_x = dragged_pawn_offset_x
     @dragged_pawn_offset_y = dragged_pawn_offset_y
+    @dragged_wall_orientation = nil if dragged_wall.nil?
   end
 
   def reserve_wall_rects(args, board_x, board_y)
@@ -245,7 +246,9 @@ class Game
     return nil if @dragged_wall.nil?
 
     hovered_well = hovered_wall_well(args, board_x, board_y)
-    if hovered_well&.orientation == :vertical
+    @dragged_wall_orientation = hovered_well.orientation if hovered_well
+
+    if @dragged_wall_orientation == :vertical
       width = @dragged_wall.height
       height = @dragged_wall.width
     else
