@@ -12,6 +12,7 @@ class GameScreen
 
     draw_board(args, board_x, board_y)
     draw_wall_wells(args, board_x, board_y)
+    draw_placed_walls(args, board_x, board_y)
     draw_wall_reserves(args, board_x, board_y)
     update_pawn_drag_state(args, board_x, board_y)
     draw_available_pawn_drop_target(args, board_x, board_y)
@@ -75,6 +76,21 @@ class GameScreen
   def draw_wall_wells(args, board_x, board_y)
     game.board.wall_wells.each do |wall_well|
       wall_well.render(
+        args,
+        board_x,
+        board_y,
+        cell_width: CELL_SIZE,
+        cell_height: CELL_SIZE,
+        cell_gap: CELL_GAP
+      )
+    end
+  end
+
+  def draw_placed_walls(args, board_x, board_y)
+    game.walls.each do |wall|
+      next unless wall.placed?
+
+      wall.render_on_board(
         args,
         board_x,
         board_y,

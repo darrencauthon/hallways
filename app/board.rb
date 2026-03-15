@@ -18,12 +18,12 @@ class Board
     squares.find { |square| square.col == col && square.row == row }
   end
 
-  def path_blocked?(from_col:, from_row:, to_col:, to_row:, extra_occupied_wall_well: nil)
+  def path_blocked?(from_col:, from_row:, to_col:, to_row:, extra_occupied_wall_wells: nil)
     wall_well = wall_well_between(from_col: from_col, from_row: from_row, to_col: to_col, to_row: to_row)
-    wall_well_occupied?(wall_well, extra_occupied_wall_well: extra_occupied_wall_well)
+    wall_well_occupied?(wall_well, extra_occupied_wall_wells: extra_occupied_wall_wells)
   end
 
-  def path_exists?(start_col:, start_row:, goal_row:, extra_occupied_wall_well: nil)
+  def path_exists?(start_col:, start_row:, goal_row:, extra_occupied_wall_wells: nil)
     frontier = [{ col: start_col, row: start_row }]
     visited = { "#{start_col},#{start_row}" => true }
 
@@ -34,7 +34,7 @@ class Board
       neighbor_positions(
         current[:col],
         current[:row],
-        extra_occupied_wall_well: extra_occupied_wall_well
+        extra_occupied_wall_wells: extra_occupied_wall_wells
       ).each do |neighbor|
         key = "#{neighbor[:col]},#{neighbor[:row]}"
         next if visited[key]
@@ -45,6 +45,28 @@ class Board
     end
 
     false
+  end
+
+  def wall_span_from(wall_well)
+    return nil if wall_well.nil?
+
+    if wall_well.orientation == :horizontal
+      second_well = wall_wells.find do |candidate|
+        candidate.orientation == :horizontal &&
+          candidate.col == wall_well.col + 1 &&
+          candidate.row == wall_well.row
+      end
+    else
+      second_well = wall_wells.find do |candidate|
+        candidate.orientation == :vertical &&
+          candidate.col == wall_well.col &&
+          candidate.row == wall_well.row + 1
+      end
+    end
+
+    return nil if second_well.nil?
+
+    [wall_well, second_well]
   end
 
   private
@@ -114,7 +136,7 @@ class Board
     end
   end
 
-  def neighbor_positions(col, row, extra_occupied_wall_well:)
+  def neighbor_positions(col, row, extra_occupied_wall_wells:)
     [
       { col: col + 1, row: row },
       { col: col - 1, row: row },
@@ -127,14 +149,14 @@ class Board
           from_row: row,
           to_col: neighbor[:col],
           to_row: neighbor[:row],
-          extra_occupied_wall_well: extra_occupied_wall_well
+          extra_occupied_wall_wells: extra_occupied_wall_wells
         )
     end
   end
 
-  def wall_well_occupied?(wall_well, extra_occupied_wall_well:)
+  def wall_well_occupied?(wall_well, extra_occupied_wall_wells:)
     return false if wall_well.nil?
-    return true if wall_well == extra_occupied_wall_well
+    return true if Array(extra_occupied_wall_wells).include?(wall_well)
 
     wall_well.occupied?
   end

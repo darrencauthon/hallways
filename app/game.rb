@@ -6,6 +6,8 @@ require "app/player.rb"
 class Game
   WALLS_PER_LANE = 10
   WALL_COLOR = [210, 165, 95]
+  WALL_WIDTH = 90
+  WALL_HEIGHT = 10
 
   attr_reader :pawns, :board, :walls, :players, :winner
 
@@ -57,14 +59,16 @@ class Game
     return false if wall.nil? || wall_well.nil?
     return false if wall.player != current_player
     return false if wall.placed?
-    return false if wall_well.occupied?
+    wall_span = board.wall_span_from(wall_well)
+    return false if wall_span.nil?
+    return false if wall_span.any?(&:occupied?)
 
     pawns.all? do |pawn|
       board.path_exists?(
         start_col: pawn.col,
         start_row: pawn.row,
         goal_row: winning_row_for?(pawn.player),
-        extra_occupied_wall_well: wall_well
+        extra_occupied_wall_wells: wall_span
       )
     end
   end
@@ -72,8 +76,9 @@ class Game
   def place_wall_in_well(wall, wall_well)
     return false unless can_place_wall_in_well?(wall, wall_well)
 
-    wall.assign_to_wall_well(wall_well)
-    wall_well.assign_wall(wall)
+    wall_span = board.wall_span_from(wall_well)
+    wall.assign_to_wall_wells(wall_span)
+    wall_span.each { |occupied_well| occupied_well.assign_wall(wall) }
     next_turn!
     true
   end
@@ -100,8 +105,8 @@ class Game
     player_top = players[1]
 
     WALLS_PER_LANE.times do |slot|
-      walls << Wall.new(lane: :top, slot: slot, width: 36, height: 10, color: WALL_COLOR, player: player_top)
-      walls << Wall.new(lane: :bottom, slot: slot, width: 36, height: 10, color: WALL_COLOR, player: player_bottom)
+      walls << Wall.new(lane: :top, slot: slot, width: WALL_WIDTH, height: WALL_HEIGHT, color: WALL_COLOR, player: player_top)
+      walls << Wall.new(lane: :bottom, slot: slot, width: WALL_WIDTH, height: WALL_HEIGHT, color: WALL_COLOR, player: player_bottom)
     end
 
     walls
