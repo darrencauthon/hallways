@@ -293,7 +293,7 @@ class Game
   end
 
   def legal_moves_for(pawn)
-    orthogonal_neighbors(pawn.col, pawn.row).flat_map do |neighbor|
+    orthogonal_neighbors(pawn).flat_map do |neighbor|
       next [] if board.path_blocked?(from_col: pawn.col, from_row: pawn.row, to_col: neighbor[:col], to_row: neighbor[:row])
 
       occupant = pawn_at(neighbor[:col], neighbor[:row])
@@ -346,12 +346,12 @@ class Game
     end
   end
 
-  def orthogonal_neighbors(col, row)
+  def orthogonal_neighbors(pawn)
     [
-      { col: col + 1, row: row },
-      { col: col - 1, row: row },
-      { col: col, row: row + 1 },
-      { col: col, row: row - 1 }
+      { col: pawn.col + 1, row: pawn.row },
+      { col: pawn.col - 1, row: pawn.row },
+      { col: pawn.col, row: pawn.row + 1 },
+      { col: pawn.col, row: pawn.row - 1 }
     ].select { |move| board.square_at(move[:col], move[:row]) }
   end
 
