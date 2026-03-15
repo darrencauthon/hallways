@@ -62,6 +62,7 @@ class Game
     wall_span = board.wall_span_from(wall_well, preferred_side: preferred_side)
     return false if wall_span.nil?
     return false if wall_span.any?(&:occupied?)
+    return false if crosses_existing_wall_span?(wall_span)
 
     pawns.all? do |pawn|
       board.path_exists?(
@@ -101,6 +102,33 @@ class Game
     return board.size - 1 if player == players[0]
 
     0
+  end
+
+  def crosses_existing_wall_span?(wall_span)
+    walls.any? do |existing_wall|
+      next false unless existing_wall.placed?
+
+      spans_cross?(wall_span, existing_wall.wall_wells)
+    end
+  end
+
+  def spans_cross?(first_span, second_span)
+    first_orientation = first_span.first.orientation
+    second_orientation = second_span.first.orientation
+    return false if first_orientation == second_orientation
+
+    first_anchor = span_anchor(first_span)
+    second_anchor = span_anchor(second_span)
+
+    first_anchor[:col] == second_anchor[:col] &&
+      first_anchor[:row] == second_anchor[:row]
+  end
+
+  def span_anchor(span)
+    {
+      col: span.first.col,
+      row: span.first.row
+    }
   end
 
   def build_walls

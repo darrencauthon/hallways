@@ -259,6 +259,45 @@ def test_game_can_place_wall_in_well_rejects_wall_that_blocks_current_players_pa
   assert.equal! false, allowed, "Expected wall placement to be rejected when it removes the current player's last path."
 end
 
+def test_game_can_place_wall_in_well_rejects_crossing_existing_wall(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  first_wall = game.walls.find { |candidate| candidate.player == game.current_player }
+  first_wall_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 4
+  end
+  game.place_wall_in_well_with_side(first_wall, first_wall_well, preferred_side: :positive)
+  game.next_turn!
+
+  crossing_wall = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
+  crossing_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :vertical && candidate.col == 4 && candidate.row == 4
+  end
+
+  allowed = game.can_place_wall_in_well?(crossing_wall, crossing_well, preferred_side: :positive)
+
+  assert.equal! false, allowed, "Expected wall placement to be rejected when it would cross an existing wall."
+end
+
+def test_game_place_wall_in_well_rejects_crossing_existing_wall(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  first_wall = game.walls.find { |candidate| candidate.player == game.current_player }
+  first_wall_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :vertical && candidate.col == 4 && candidate.row == 4
+  end
+  game.place_wall_in_well_with_side(first_wall, first_wall_well, preferred_side: :positive)
+  game.next_turn!
+
+  crossing_wall = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
+  crossing_well = game.board.wall_wells.find do |candidate|
+    candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 4
+  end
+
+  placed = game.place_wall_in_well_with_side(crossing_wall, crossing_well, preferred_side: :positive)
+
+  assert.equal! false, placed, "Expected crossing wall placement to fail."
+  assert.equal! nil, crossing_wall.wall_well, "Expected rejected crossing wall to remain unassigned."
+end
+
 def test_game_move_pawn_to_adjacent_square_advances_turn(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
   pawn = game.pawns[0]
