@@ -10,10 +10,10 @@ class GameScreen
     board_x = ((args.grid.w - BOARD_PIXEL_SIZE) / 2).to_i
     board_y = 120
 
-    update_pawn_move_state(args, board_x, board_y)
     draw_board(args, board_x, board_y)
     draw_wall_wells(args, board_x, board_y)
     draw_wall_reserves(args, board_x, board_y)
+    update_pawn_drag_state(args, board_x, board_y)
     draw_player_names(args, board_x, board_y)
     draw_pawns(args, board_x, board_y)
   end
@@ -141,19 +141,41 @@ class GameScreen
 
   def draw_pawns(args, board_x, board_y)
     game.pawns.each do |pawn|
-      pawn.render(args, board_x, board_y, CELL_GAP)
+      if pawn == dragged_pawn
+        pawn.render_at(args, dragged_pawn_x(args), dragged_pawn_y(args))
+      else
+        pawn.render(args, board_x, board_y, CELL_GAP)
+      end
     end
   end
 
-  def update_pawn_move_state(args, board_x, board_y)
-    return unless mouse_released?(args)
+  def update_pawn_drag_state(args, board_x, board_y)
+    if mouse_released?(args)
+      if dragged_pawn
+        square = hovered_square(args, board_x, board_y)
+        game.move_pawn_to(dragged_pawn, square.col, square.row) if square
+      end
+      clear_dragged_pawn
+      return
+    end
+
+    return unless mouse_pressed?(args)
     return if dragged_wall
+    return if dragged_pawn
 
-    square = hovered_square(args, board_x, board_y)
-    return if square.nil?
+    pawn = game.pawns.find do |candidate|
+      next false unless candidate.player == game.current_player
 
-    pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
-    game.move_pawn_to(pawn, square.col, square.row)
+      rect = pawn_rect(candidate, board_x, board_y)
+      mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
+    end
+
+    return if pawn.nil?
+
+    rect = pawn_rect(pawn, board_x, board_y)
+    @dragged_pawn = pawn
+    @dragged_pawn_offset_x = mouse_x(args) - rect[:x]
+    @dragged_pawn_offset_y = mouse_y(args) - rect[:y]
   end
 
   def hovered_square(args, board_x, board_y)
@@ -211,12 +233,50 @@ class GameScreen
     @dragged_wall
   end
 
+  def dragged_pawn
+    @dragged_pawn
+  end
+
   def drag_offset_x
     @drag_offset_x || 0
   end
 
   def drag_offset_y
     @drag_offset_y || 0
+  end
+
+  def dragged_pawn_offset_x
+    @dragged_pawn_offset_x || 0
+  end
+
+  def dragged_pawn_offset_y
+    @dragged_pawn_offset_y || 0
+  end
+
+  def dragged_pawn_x(args)
+    mouse_x(args) - dragged_pawn_offset_x
+  end
+
+  def dragged_pawn_y(args)
+    mouse_y(args) - dragged_pawn_offset_y
+  end
+
+  def clear_dragged_pawn
+    @dragged_pawn = nil
+    @dragged_pawn_offset_x = nil
+    @dragged_pawn_offset_y = nil
+  end
+
+  def pawn_rect(pawn, board_x, board_y)
+    cell_x = board_x + (pawn.col * (CELL_SIZE + CELL_GAP))
+    cell_y = board_y + (pawn.row * (CELL_SIZE + CELL_GAP))
+
+    {
+      x: cell_x + ((CELL_SIZE - Pawn::PAWN_SIZE) / 2),
+      y: cell_y + ((CELL_SIZE - Pawn::PAWN_SIZE) / 2),
+      w: Pawn::PAWN_SIZE,
+      h: Pawn::PAWN_SIZE
+    }
   end
 
   def mouse_x(args)
