@@ -12,6 +12,7 @@ class GameScreen
 
     draw_board(args, board_x, board_y)
     draw_wall_wells(args, board_x, board_y)
+    draw_available_wall_drop_target(args, board_x, board_y)
     draw_placed_walls(args, board_x, board_y)
     draw_wall_reserves(args, board_x, board_y)
     update_pawn_drag_state(args, board_x, board_y)
@@ -101,6 +102,33 @@ class GameScreen
     end
   end
 
+  def draw_available_wall_drop_target(args, board_x, board_y)
+    return if dragged_wall.nil?
+
+    placement = hovered_available_wall_placement(args, board_x, board_y)
+    return if placement.nil?
+
+    placement[:wall_span].each do |wall_well|
+      rect = wall_well.rect(
+        board_x,
+        board_y,
+        cell_width: CELL_SIZE,
+        cell_height: CELL_SIZE,
+        cell_gap: CELL_GAP
+      )
+
+      args.outputs.borders << {
+        x: rect[:x] - 2,
+        y: rect[:y] - 2,
+        w: rect[:w] + 4,
+        h: rect[:h] + 4,
+        r: 240,
+        g: 60,
+        b: 60
+      }
+    end
+  end
+
   def draw_hover_border_if_needed(args, wall, x, y)
     return unless wall.player == game.current_player
     return unless mouse_inside_rect?(args, x: x, y: y, w: wall.width, h: wall.height)
@@ -161,9 +189,10 @@ class GameScreen
       next false unless mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
 
       preferred_side = preferred_wall_side(args, wall_well, rect)
+      wall_span = game.board.wall_span_from(wall_well, preferred_side: preferred_side)
       next false unless game.can_place_wall_in_well?(dragged_wall, wall_well, preferred_side: preferred_side)
 
-      return { wall_well: wall_well, preferred_side: preferred_side }
+      return { wall_well: wall_well, preferred_side: preferred_side, wall_span: wall_span }
     end
 
     nil
