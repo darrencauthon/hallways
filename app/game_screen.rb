@@ -13,6 +13,7 @@ class GameScreen
 
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
+    apply_current_player_controller_action(args)
     update_wall_drag_state(args, board_x, board_y)
     update_pawn_drag_state(args, board_x, board_y)
     wall_drop_target = hovered_available_wall_placement(args, board_x, board_y) if dragged_wall
@@ -36,6 +37,13 @@ class GameScreen
   end
 
   private
+
+  def apply_current_player_controller_action(args)
+    action = game.current_player_controller.next_action(args: args, game: game)
+    return if action.nil?
+
+    # Controller-driven actions will be handled here as we move logic out of GameScreen.
+  end
 
   def update_wall_drag_state(args, board_x, board_y)
     if mouse_released?(args)

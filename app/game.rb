@@ -2,6 +2,8 @@ require "app/pawn.rb"
 require "app/board.rb"
 require "app/wall.rb"
 require "app/player.rb"
+require "app/null_player_controller.rb"
+require "app/human_player_controller.rb"
 require "app/board_renderer.rb"
 require "app/wall_renderer.rb"
 require "app/pawn_renderer.rb"
@@ -18,8 +20,8 @@ class Game
     @cell_gap = cell_gap
     @board = Board.new(cell_width: cell_width, cell_height: cell_height)
     @players = [
-      Player.new("Player 1", game: self, winning_row: board.size - 1),
-      Player.new("Player 2", game: self, winning_row: 0)
+      Player.new("Player 1", game: self, winning_row: board.size - 1, controller: HumanPlayerController.new),
+      Player.new("Player 2", game: self, winning_row: 0, controller: HumanPlayerController.new)
     ]
     @pawns = [
       Pawn.new(4, 0, [245, 245, 245], player: @players[0], cell_width: cell_width, cell_height: cell_height),
@@ -31,6 +33,10 @@ class Game
 
   def current_player
     players[@turn_index]
+  end
+
+  def current_player_controller
+    current_player.controller
   end
 
   def next_turn!

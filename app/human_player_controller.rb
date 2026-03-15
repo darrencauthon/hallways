@@ -1,0 +1,2 @@
+class HumanPlayerController < NullPlayerController
+end
