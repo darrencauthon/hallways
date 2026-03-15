@@ -63,12 +63,17 @@ class GameScreen
     wall_rects.each do |wall, rect|
       x = rect[:x]
       y = rect[:y]
+      width = rect[:w]
+      height = rect[:h]
       if wall == dragged_wall
-        x = mouse_x(args) - drag_offset_x
-        y = mouse_y(args) - drag_offset_y
+        dragged_rect = dragged_wall_rect(args, board_x, board_y, wall)
+        x = dragged_rect[:x]
+        y = dragged_rect[:y]
+        width = dragged_rect[:w]
+        height = dragged_rect[:h]
       end
 
-      wall.render(args, x, y)
+      wall.render(args, x, y, width, height)
       draw_hover_border_if_needed(args, wall, x, y)
     end
 
@@ -131,13 +136,14 @@ class GameScreen
 
   def draw_hover_border_if_needed(args, wall, x, y)
     return unless wall.player == game.current_player
-    return unless mouse_inside_rect?(args, x: x, y: y, w: wall.width, h: wall.height)
+    preview_rect = dragged_wall == wall ? dragged_wall_rect(args, nil, nil, wall) : { w: wall.width, h: wall.height }
+    return unless mouse_inside_rect?(args, x: x, y: y, w: preview_rect[:w], h: preview_rect[:h])
 
     args.outputs.borders << {
       x: x - 1,
       y: y - 1,
-      w: wall.width + 2,
-      h: wall.height + 2,
+      w: preview_rect[:w] + 2,
+      h: preview_rect[:h] + 2,
       r: 240,
       g: 60,
       b: 60
@@ -196,6 +202,20 @@ class GameScreen
     end
 
     nil
+  end
+
+  def hovered_wall_well(args, board_x, board_y)
+    game.board.wall_wells.find do |wall_well|
+      rect = wall_well.rect(
+        board_x,
+        board_y,
+        cell_width: CELL_SIZE,
+        cell_height: CELL_SIZE,
+        cell_gap: CELL_GAP
+      )
+
+      mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
+    end
   end
 
   def draw_pawns(args, board_x, board_y)
@@ -325,14 +345,6 @@ class GameScreen
     @dragged_pawn
   end
 
-  def drag_offset_x
-    @drag_offset_x || 0
-  end
-
-  def drag_offset_y
-    @drag_offset_y || 0
-  end
-
   def dragged_pawn_offset_x
     @dragged_pawn_offset_x || 0
   end
@@ -364,6 +376,28 @@ class GameScreen
       y: cell_y + ((CELL_SIZE - Pawn::PAWN_SIZE) / 2),
       w: Pawn::PAWN_SIZE,
       h: Pawn::PAWN_SIZE
+    }
+  end
+
+  def dragged_wall_rect(args, board_x, board_y, wall)
+    hovered_well = nil
+    if board_x && board_y
+      hovered_well = hovered_wall_well(args, board_x, board_y)
+    end
+
+    if hovered_well&.orientation == :vertical
+      width = wall.height
+      height = wall.width
+    else
+      width = wall.width
+      height = wall.height
+    end
+
+    {
+      x: mouse_x(args) - (width / 2),
+      y: mouse_y(args) - (height / 2),
+      w: width,
+      h: height
     }
   end
 
