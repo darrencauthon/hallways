@@ -17,6 +17,13 @@ def test_game_initial_player_names(args, assert)
   assert.equal! "Player 2", game.players[1].name, "Expected second player name to be Player 2."
 end
 
+def test_game_initial_players_have_winning_rows(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! 8, game.players[0].winning_row, "Expected Player 1 winning row to be the top row."
+  assert.equal! 0, game.players[1].winning_row, "Expected Player 2 winning row to be the bottom row."
+end
+
 def test_game_initial_current_player_is_first_player(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 

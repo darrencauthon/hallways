@@ -18,8 +18,8 @@ class Game
     @cell_gap = cell_gap
     @board = Board.new(cell_width: cell_width, cell_height: cell_height)
     @players = [
-      Player.new("Player 1", game: self),
-      Player.new("Player 2", game: self)
+      Player.new("Player 1", game: self, winning_row: board.size - 1),
+      Player.new("Player 2", game: self, winning_row: 0)
     ]
     @pawns = [
       Pawn.new(4, 0, [245, 245, 245], player: @players[0], cell_width: cell_width, cell_height: cell_height),
@@ -51,7 +51,7 @@ class Game
     return false unless can_move_pawn_to?(pawn, col, row)
 
     pawn.move_to(col, row)
-    @winner = pawn.player if winning_row_for?(pawn.player) == row
+    @winner = pawn.player if pawn.player.winning_row == row
     next_turn! if winner.nil?
     true
   end
@@ -70,7 +70,7 @@ class Game
       board.path_exists?(
         start_col: pawn.col,
         start_row: pawn.row,
-        goal_row: winning_row_for?(pawn.player),
+        goal_row: pawn.player.winning_row,
         extra_occupied_wall_wells: wall_span
       )
     end
@@ -353,12 +353,6 @@ class Game
       { col: col, row: row + 1 },
       { col: col, row: row - 1 }
     ].select { |move| board.square_at(move[:col], move[:row]) }
-  end
-
-  def winning_row_for?(player)
-    return board.size - 1 if player == players[0]
-
-    0
   end
 
   def crosses_existing_wall_span?(wall_span)
