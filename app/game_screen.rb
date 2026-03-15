@@ -66,6 +66,7 @@ class GameScreen
         end
       end
       @dragged_wall = nil
+      @last_hovered_wall_placement = nil
       return
     end
 
@@ -77,6 +78,7 @@ class GameScreen
       next unless mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
 
       @dragged_wall = wall
+      @last_hovered_wall_placement = nil
       @drag_offset_x = rect[:w] / 2
       @drag_offset_y = rect[:h] / 2
       break
@@ -100,9 +102,21 @@ class GameScreen
       wall_span = game.board.wall_span_from(wall_well, preferred_side: preferred_side)
       next false unless game.can_place_wall_in_well?(dragged_wall, wall_well, preferred_side: preferred_side)
 
-      return { wall_well: wall_well, preferred_side: preferred_side, wall_span: wall_span }
+      placement = { wall_well: wall_well, preferred_side: preferred_side, wall_span: wall_span }
+      @last_hovered_wall_placement = placement
+      return placement
     end
 
+    return nil if @last_hovered_wall_placement.nil?
+    if game.can_place_wall_in_well?(
+      dragged_wall,
+      @last_hovered_wall_placement[:wall_well],
+      preferred_side: @last_hovered_wall_placement[:preferred_side]
+    )
+      return @last_hovered_wall_placement
+    end
+
+    @last_hovered_wall_placement = nil
     nil
   end
 
