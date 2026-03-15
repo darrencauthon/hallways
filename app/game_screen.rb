@@ -1,14 +1,17 @@
 class GameScreen
-  BOARD_SIZE = 9
-  CELL_SIZE = 48
-  CELL_GAP = 6
-  BOARD_PIXEL_SIZE = (BOARD_SIZE * CELL_SIZE) + ((BOARD_SIZE - 1) * CELL_GAP)
+  attr_reader :board_size, :cell_size, :cell_gap, :board_y
+
+  def initialize(board_size: 9, cell_size: 48, cell_gap: 6, board_y: 120)
+    @board_size = board_size
+    @cell_size = cell_size
+    @cell_gap = cell_gap
+    @board_y = board_y
+  end
 
   def tick(args)
     args.outputs.background_color = [10, 10, 12]
 
-    board_x = ((args.grid.w - BOARD_PIXEL_SIZE) / 2).to_i
-    board_y = 120
+    board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
     draw_board(args, board_x, board_y)
     draw_wall_wells(args, board_x, board_y)
@@ -29,15 +32,15 @@ class GameScreen
     args.outputs.borders << {
       x: board_x - 10,
       y: board_y - 10,
-      w: BOARD_PIXEL_SIZE + 20,
-      h: BOARD_PIXEL_SIZE + 20,
+      w: board_pixel_size + 20,
+      h: board_pixel_size + 20,
       r: 190,
       g: 190,
       b: 190
     }
 
     game.board.squares.each do |square|
-      square.render(args, board_x, board_y, CELL_GAP)
+      square.render(args, board_x, board_y, cell_gap)
     end
   end
 
@@ -48,7 +51,7 @@ class GameScreen
     total_w = (wall_count * wall_w) + ((wall_count - 1) * spacing)
     start_x = ((args.grid.w - total_w) / 2).to_i
 
-    top_y = board_y + BOARD_PIXEL_SIZE + 36
+    top_y = board_y + board_pixel_size + 36
     bottom_y = board_y - 46
 
     wall_rects = {}
@@ -87,9 +90,9 @@ class GameScreen
         args,
         board_x,
         board_y,
-        cell_width: CELL_SIZE,
-        cell_height: CELL_SIZE,
-        cell_gap: CELL_GAP
+        cell_width: cell_size,
+        cell_height: cell_size,
+        cell_gap: cell_gap
       )
     end
   end
@@ -102,9 +105,9 @@ class GameScreen
         args,
         board_x,
         board_y,
-        cell_width: CELL_SIZE,
-        cell_height: CELL_SIZE,
-        cell_gap: CELL_GAP
+        cell_width: cell_size,
+        cell_height: cell_size,
+        cell_gap: cell_gap
       )
     end
   end
@@ -119,9 +122,9 @@ class GameScreen
       rect = wall_well.rect(
         board_x,
         board_y,
-        cell_width: CELL_SIZE,
-        cell_height: CELL_SIZE,
-        cell_gap: CELL_GAP
+        cell_width: cell_size,
+        cell_height: cell_size,
+        cell_gap: cell_gap
       )
 
       args.outputs.borders << {
@@ -190,9 +193,9 @@ class GameScreen
       rect = wall_well.rect(
         board_x,
         board_y,
-        cell_width: CELL_SIZE,
-        cell_height: CELL_SIZE,
-        cell_gap: CELL_GAP
+        cell_width: cell_size,
+        cell_height: cell_size,
+        cell_gap: cell_gap
       )
       next false unless mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
 
@@ -211,9 +214,9 @@ class GameScreen
       rect = wall_well.rect(
         board_x,
         board_y,
-        cell_width: CELL_SIZE,
-        cell_height: CELL_SIZE,
-        cell_gap: CELL_GAP
+        cell_width: cell_size,
+        cell_height: cell_size,
+        cell_gap: cell_gap
       )
 
       mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
@@ -225,7 +228,7 @@ class GameScreen
       if pawn == dragged_pawn
         pawn.render_at(args, dragged_pawn_x(args), dragged_pawn_y(args))
       else
-        pawn.render(args, board_x, board_y, CELL_GAP)
+        pawn.render(args, board_x, board_y, cell_gap)
       end
     end
   end
@@ -237,14 +240,14 @@ class GameScreen
     return if square.nil?
     return unless game.can_move_pawn_to?(dragged_pawn, square.col, square.row)
 
-    x = board_x + (square.col * (CELL_SIZE + CELL_GAP))
-    y = board_y + (square.row * (CELL_SIZE + CELL_GAP))
+    x = board_x + (square.col * (cell_size + cell_gap))
+    y = board_y + (square.row * (cell_size + cell_gap))
 
     args.outputs.borders << {
       x: x - 2,
       y: y - 2,
-      w: CELL_SIZE + 4,
-      h: CELL_SIZE + 4,
+      w: cell_size + 4,
+      h: cell_size + 4,
       r: 240,
       g: 60,
       b: 60
@@ -282,9 +285,9 @@ class GameScreen
 
   def hovered_square(args, board_x, board_y)
     game.board.squares.find do |square|
-      x = board_x + (square.col * (CELL_SIZE + CELL_GAP))
-      y = board_y + (square.row * (CELL_SIZE + CELL_GAP))
-      mouse_inside_rect?(args, x: x, y: y, w: CELL_SIZE, h: CELL_SIZE)
+      x = board_x + (square.col * (cell_size + cell_gap))
+      y = board_y + (square.row * (cell_size + cell_gap))
+      mouse_inside_rect?(args, x: x, y: y, w: cell_size, h: cell_size)
     end
   end
 
@@ -299,11 +302,11 @@ class GameScreen
   def draw_player_names(args, board_x, board_y)
     top_name = game.players[1].name
     bottom_name = game.players[0].name
-    center_x = board_x + (BOARD_PIXEL_SIZE / 2)
+    center_x = board_x + (board_pixel_size / 2)
 
     args.outputs.labels << {
       x: center_x,
-      y: board_y + BOARD_PIXEL_SIZE + 78,
+      y: board_y + board_pixel_size + 78,
       text: top_name,
       alignment_enum: 1,
       size_enum: 2,
@@ -325,7 +328,7 @@ class GameScreen
   end
 
   def game
-    @game ||= Game.new(cell_width: CELL_SIZE, cell_height: CELL_SIZE)
+    @game ||= Game.new(cell_width: cell_size, cell_height: cell_size)
   end
 
   def mouse_inside_rect?(args, x:, y:, w:, h:)
@@ -370,15 +373,19 @@ class GameScreen
   end
 
   def pawn_rect(pawn, board_x, board_y)
-    cell_x = board_x + (pawn.col * (CELL_SIZE + CELL_GAP))
-    cell_y = board_y + (pawn.row * (CELL_SIZE + CELL_GAP))
+    cell_x = board_x + (pawn.col * (cell_size + cell_gap))
+    cell_y = board_y + (pawn.row * (cell_size + cell_gap))
 
     {
-      x: cell_x + ((CELL_SIZE - Pawn::PAWN_SIZE) / 2),
-      y: cell_y + ((CELL_SIZE - Pawn::PAWN_SIZE) / 2),
+      x: cell_x + ((cell_size - Pawn::PAWN_SIZE) / 2),
+      y: cell_y + ((cell_size - Pawn::PAWN_SIZE) / 2),
       w: Pawn::PAWN_SIZE,
       h: Pawn::PAWN_SIZE
     }
+  end
+
+  def board_pixel_size
+    (board_size * cell_size) + ((board_size - 1) * cell_gap)
   end
 
   def dragged_wall_rect(args, board_x, board_y, wall)
