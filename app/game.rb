@@ -15,15 +15,16 @@ class Game
   WALL_WIDTH = 90
   WALL_HEIGHT = 10
 
-  attr_reader :pawns, :board, :walls, :players, :winner, :cell_gap, :mode
+  attr_reader :pawns, :board, :walls, :players, :winner, :cell_gap, :mode, :player_types
 
-  def initialize(cell_width:, cell_height:, cell_gap: 6, mode: :human_vs_human)
+  def initialize(cell_width:, cell_height:, cell_gap: 6, mode: :human_vs_human, player_types: nil)
     @mode = mode
+    @player_types = player_types || player_types_for_mode(mode)
     @cell_gap = cell_gap
     @board = Board.new(cell_width: cell_width, cell_height: cell_height)
     @players = [
-      Player.new("Player 1", game: self, winning_row: board.size - 1, controller: HumanPlayerController.new),
-      Player.new("Player 2", game: self, winning_row: 0, controller: player_two_controller_for(mode))
+      build_player(index: 0, winning_row: board.size - 1),
+      build_player(index: 1, winning_row: 0)
     ]
     @pawns = [
       Pawn.new(4, 0, [245, 245, 245], player: @players[0], cell_width: cell_width, cell_height: cell_height),
@@ -166,8 +167,29 @@ class Game
 
   private
 
-  def player_two_controller_for(mode)
-    return ComputerPlayerController.new if mode == :human_vs_computer
+  def player_types_for_mode(mode)
+    return [:human, :computer] if mode == :human_vs_computer
+
+    [:human, :human]
+  end
+
+  def build_player(index:, winning_row:)
+    player_type = player_types[index]
+    Player.new(
+      display_name_for(index, player_type),
+      game: self,
+      winning_row: winning_row,
+      controller: controller_for(player_type)
+    )
+  end
+
+  def display_name_for(index, player_type)
+    prefix = player_type == :computer ? "Bot" : "Player"
+    "#{prefix} #{index + 1}"
+  end
+
+  def controller_for(player_type)
+    return ComputerPlayerController.new if player_type == :computer
 
     HumanPlayerController.new
   end

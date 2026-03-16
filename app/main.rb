@@ -1,5 +1,6 @@
 require "app/test_runner.rb"
 require "app/title_screen.rb"
+require "app/setup_screen.rb"
 require "app/victory_screen.rb"
 require "app/pawn.rb"
 require "app/game.rb"
@@ -13,6 +14,8 @@ def tick(args)
 
   if current_screen(args) == :title
     handle_title_action(args, title_screen(args).tick(args))
+  elsif current_screen(args) == :setup
+    handle_setup_action(args, setup_screen(args).tick(args))
   elsif current_screen(args) == :game
     handle_game_action(args, game_screen(args).tick(args))
   elsif current_screen(args) == :victory
@@ -65,6 +68,10 @@ def game_screen(args)
   args.state.game_screen_instance ||= GameScreen.new
 end
 
+def setup_screen(args)
+  args.state.setup_screen_instance ||= SetupScreen.new
+end
+
 def victory_screen(args)
   args.state.victory_screen_instance ||= VictoryScreen.new
 end
@@ -74,13 +81,19 @@ def current_screen(args)
 end
 
 def handle_title_action(args, action)
-  if action == :start_human_vs_human
-    start_new_game(args, mode: :human_vs_human)
-  elsif action == :start_human_vs_computer
-    start_new_game(args, mode: :human_vs_computer)
+  if action == :open_setup
+    args.state.setup_screen_instance = SetupScreen.new
+    args.state.screen_name = :setup
   elsif action == :quit
     request_quit(args)
   end
+end
+
+def handle_setup_action(args, action)
+  return if action.nil?
+  return unless action[0] == :start_game
+
+  start_new_game(args, player_types: action[1][:player_types])
 end
 
 def handle_game_action(args, action)
@@ -94,15 +107,15 @@ end
 
 def handle_victory_action(args, action)
   if action == :play_again
-    start_new_game(args, mode: args.state.game_mode || :human_vs_human)
+    start_new_game(args, player_types: args.state.game_player_types || [:human, :human])
   elsif action == :main_menu
     args.state.screen_name = :title
   end
 end
 
-def start_new_game(args, mode: :human_vs_human)
-  args.state.game_mode = mode
-  args.state.game_screen_instance = GameScreen.new(mode: mode)
+def start_new_game(args, player_types: [:human, :human])
+  args.state.game_player_types = player_types
+  args.state.game_screen_instance = GameScreen.new(player_types: player_types)
   args.state.winner_name = nil
   args.state.screen_name = :game
 end

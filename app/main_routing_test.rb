@@ -17,7 +17,7 @@ module MainRoutingTestHelpers
     state.winner_name = winner_name
     state.victory_screen_instance = VictoryScreen.new
 
-    key_down = FakeKeyDown.new(false, false, false)
+    key_down = FakeKeyDown.new(false, false, false, false, false)
     keyboard = FakeKeyboard.new(key_down)
     inputs = FakeInputs.new(keyboard)
     outputs = FakeOutputs.new
@@ -28,7 +28,7 @@ module MainRoutingTestHelpers
 end
 
 class MainRoutingFakeState
-  attr_accessor :screen_name, :winner_name, :victory_screen_instance, :game_screen_instance, :title_screen_instance
+  attr_accessor :screen_name, :winner_name, :victory_screen_instance, :game_screen_instance, :title_screen_instance, :setup_screen_instance, :game_player_types
 end
 
 class MainRoutingFakeGtk

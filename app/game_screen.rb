@@ -1,12 +1,13 @@
 class GameScreen
   attr_reader :board_size, :cell_size, :cell_gap, :board_y
 
-  def initialize(board_size: 9, cell_size: 48, cell_gap: 6, board_y: 120, mode: :human_vs_human)
+  def initialize(board_size: 9, cell_size: 48, cell_gap: 6, board_y: 120, mode: :human_vs_human, player_types: nil)
     @board_size = board_size
     @cell_size = cell_size
     @cell_gap = cell_gap
     @board_y = board_y
     @mode = mode
+    @player_types = player_types
   end
 
   def tick(args)
@@ -176,7 +177,13 @@ class GameScreen
   end
 
   def game
-    @game ||= Game.new(cell_width: cell_size, cell_height: cell_size, cell_gap: cell_gap, mode: @mode)
+    @game ||= Game.new(
+      cell_width: cell_size,
+      cell_height: cell_size,
+      cell_gap: cell_gap,
+      mode: @mode,
+      player_types: @player_types
+    )
   end
 
   def human_turn?
