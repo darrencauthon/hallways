@@ -47,6 +47,7 @@ def run_tests_and_quit(args)
     end
 
     results = TestRunner.run
+    write_custom_test_output(results) if respond_to?(:write_custom_test_output)
     args.state.tests_failed = results[:failed] > 0
   rescue StandardError => e
     args.state.tests_failed = true

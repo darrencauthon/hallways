@@ -37,6 +37,46 @@ jobs:
           rm -rf dragonruby-linux
           unzip -q dragonruby-source/dragonruby-linux.zip -d dragonruby-linux
 
+      - name: Run DragonRuby tests
+        run: |
+          chmod +x dragonruby-linux/dragonruby
+          set +e
+          cd dragonruby-linux
+          ./dragonruby "${GITHUB_WORKSPACE}" --test app/test_runner.rb > "${GITHUB_WORKSPACE}/test-transcript.txt" 2>&1
+          DRAGONRUBY_EXIT=$?
+          set -e
+
+          cat "${GITHUB_WORKSPACE}/test-transcript.txt"
+
+          if [ "$DRAGONRUBY_EXIT" -ne 0 ]; then
+            echo "DragonRuby test command failed with exit code ${DRAGONRUBY_EXIT}."
+            exit 1
+          fi
+
+          if [ ! -f "${GITHUB_WORKSPACE}/test-output.txt" ]; then
+            echo "test-output.txt was not generated."
+            exit 1
+          fi
+
+          FAILED_COUNT="$(grep '^failed=' "${GITHUB_WORKSPACE}/test-output.txt" | cut -d '=' -f 2)"
+          if [ -z "$FAILED_COUNT" ]; then
+            echo "Could not parse failed count from test-output.txt."
+            cat "${GITHUB_WORKSPACE}/test-output.txt"
+            exit 1
+          fi
+
+          if [ "$FAILED_COUNT" != "0" ]; then
+            echo "Test failures detected (failed=${FAILED_COUNT})."
+            cat "${GITHUB_WORKSPACE}/test-output.txt"
+            exit 1
+          fi
+
+          if [ -f "${GITHUB_WORKSPACE}/errors/last.txt" ]; then
+            echo "errors/last.txt detected after test run:"
+            cat "${GITHUB_WORKSPACE}/errors/last.txt"
+            exit 1
+          fi
+
       - name: Copy game code into DragonRuby folder
         run: |
           mkdir -p "dragonruby-linux/${GAME_NAME}"
