@@ -55,6 +55,13 @@ def test_game_supports_last_line_bot_configuration(args, assert)
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
 end
 
+def test_game_supports_pressure_bot_configuration(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:pressure_bot, :human])
+
+  assert.equal! true, game.players[0].controller.is_a?(PressureBotController), "Expected Player 1 controller to be PressureBot when configured."
+  assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
+end
+
 def test_random_bot_controller_can_return_valid_wall_action(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:human, :random_bot])
   game.next_turn!
@@ -141,6 +148,53 @@ def test_last_line_bot_moves_when_opponent_not_near_victory(args, assert)
   assert.equal! true, saw_thinking, "Expected LastLineBot to show a thinking phase before acting."
   assert.equal! :move_pawn, action[:type], "Expected LastLineBot to move when opponent is not near victory."
   assert.equal! true, game.can_move_pawn_to?(action[:pawn], action[:col], action[:row]), "Expected LastLineBot move action to be valid."
+end
+
+def test_pressure_bot_prefers_wall_when_opponent_is_close_and_ahead(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:pressure_bot, :human])
+  controller = game.current_controller
+  game.pawns[1].move_to(4, 2)
+
+  saw_thinking = false
+  action = nil
+  120.times do
+    candidate = controller.next_action(args: nil, game: game)
+    saw_thinking = true if candidate && candidate[:type] == :thinking
+    if candidate && candidate[:type] != :thinking
+      action = candidate
+      break
+    end
+  end
+
+  assert.equal! true, saw_thinking, "Expected PressureBot to show a thinking phase before acting."
+  assert.equal! :place_wall, action[:type], "Expected PressureBot to place a wall when opponent is much closer to victory."
+  assert.equal! true, game.can_place_wall_in_well?(action[:wall], action[:wall_well], preferred_side: action[:preferred_side]), "Expected PressureBot wall action to be valid."
+end
+
+def test_pressure_bot_returns_valid_action_when_opponent_not_close(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:pressure_bot, :human])
+  controller = game.current_controller
+
+  saw_thinking = false
+  action = nil
+  120.times do
+    candidate = controller.next_action(args: nil, game: game)
+    saw_thinking = true if candidate && candidate[:type] == :thinking
+    if candidate && candidate[:type] != :thinking
+      action = candidate
+      break
+    end
+  end
+
+  assert.equal! true, saw_thinking, "Expected PressureBot to show a thinking phase before acting."
+  assert.equal! false, action.nil?, "Expected PressureBot to eventually return an action."
+
+  if action[:type] == :move_pawn
+    assert.equal! true, game.can_move_pawn_to?(action[:pawn], action[:col], action[:row]), "Expected PressureBot move action to be valid."
+  else
+    assert.equal! :place_wall, action[:type], "Expected non-move action to be a wall placement."
+    assert.equal! true, game.can_place_wall_in_well?(action[:wall], action[:wall_well], preferred_side: action[:preferred_side]), "Expected PressureBot wall action to be valid."
+  end
 end
 
 def test_game_initial_players_have_winning_rows(args, assert)

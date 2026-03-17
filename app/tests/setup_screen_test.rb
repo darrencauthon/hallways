@@ -41,6 +41,19 @@ def test_setup_screen_can_cycle_player_two_to_last_line_bot(args, assert)
   assert.equal! [:human, :last_line_bot], action[1][:player_types], "Expected third toggle to set Player 2 to LastLineBot."
 end
 
+def test_setup_screen_can_cycle_player_two_to_pressure_bot(args, assert)
+  screen = SetupScreen.new
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
+
+  assert.equal! [:human, :pressure_bot], action[1][:player_types], "Expected fourth toggle to set Player 2 to PressureBot."
+end
+
 def test_setup_screen_mouse_click_play_starts_game(args, assert)
   screen = SetupScreen.new
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(mouse_x: 640, mouse_y: 170, mouse_down: true))

@@ -8,6 +8,7 @@ require "app/controllers/human_controller.rb"
 require "app/controllers/random_bot_controller.rb"
 require "app/controllers/path_bot_controller.rb"
 require "app/controllers/last_line_bot_controller.rb"
+require "app/controllers/pressure_bot_controller.rb"
 require "app/renderers/board_renderer.rb"
 require "app/renderers/wall_renderer.rb"
 require "app/renderers/pawn_renderer.rb"
@@ -194,13 +195,14 @@ class Game
   def controller_for(player_type)
     return PathBotController.new if player_type == :path_bot
     return LastLineBotController.new if player_type == :last_line_bot
+    return PressureBotController.new if player_type == :pressure_bot
     return RandomBotController.new if bot_player_type?(player_type)
 
     HumanController.new
   end
 
   def bot_player_type?(player_type)
-    player_type == :random_bot || player_type == :computer || player_type == :path_bot || player_type == :last_line_bot
+    player_type == :random_bot || player_type == :computer || player_type == :path_bot || player_type == :last_line_bot || player_type == :pressure_bot
   end
 
   def configure_renderers

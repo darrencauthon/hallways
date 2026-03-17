@@ -1,5 +1,5 @@
 class SetupScreen
-  PLAYER_TYPES = [:human, :random_bot, :path_bot, :last_line_bot].freeze
+  PLAYER_TYPES = [:human, :random_bot, :path_bot, :last_line_bot, :pressure_bot].freeze
   MENU_ROWS = [:player_one, :player_two, :play].freeze
   MENU_X_CENTER = 640
   MENU_Y_START = 290
@@ -84,6 +84,7 @@ class SetupScreen
     return "RandomBot" if type == :random_bot
     return "PathBot" if type == :path_bot
     return "LastLineBot" if type == :last_line_bot
+    return "PressureBot" if type == :pressure_bot
 
     "Human"
   end
