@@ -56,6 +56,22 @@ jobs:
           mkdir -p dragonruby-linux/.dragonruby
           chmod -R u+rwX dragonruby-linux
 
+      - name: Ensure valid metadata icon exists
+        run: |
+          ICON_PATH="dragonruby-linux/${GAME_NAME}/metadata/icon.png"
+          mkdir -p "dragonruby-linux/${GAME_NAME}/metadata"
+
+          if [ -f "$ICON_PATH" ]; then
+            PNG_SIG="$(xxd -p -l 8 "$ICON_PATH" || true)"
+          else
+            PNG_SIG=""
+          fi
+
+          if [ "$PNG_SIG" != "89504e470d0a1a0a" ]; then
+            echo "Using fallback icon for publish: $ICON_PATH"
+            cp dragonruby-linux/dragonruby.png "$ICON_PATH"
+          fi
+
       - name: Make dragonruby-publish executable
         run: |
           chmod +x dragonruby-linux/dragonruby-publish
