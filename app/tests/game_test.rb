@@ -97,8 +97,18 @@ def test_last_line_bot_places_wall_when_opponent_is_two_rows_from_victory(args, 
   controller = game.current_controller
   game.pawns[1].move_to(4, 2)
 
-  action = controller.next_action(args: nil, game: game)
+  saw_thinking = false
+  action = nil
+  80.times do
+    candidate = controller.next_action(args: nil, game: game)
+    saw_thinking = true if candidate && candidate[:type] == :thinking
+    if candidate && candidate[:type] != :thinking
+      action = candidate
+      break
+    end
+  end
 
+  assert.equal! true, saw_thinking, "Expected LastLineBot to show a thinking phase before acting."
   assert.equal! :place_wall, action[:type], "Expected LastLineBot to place a wall when opponent is close to winning."
   assert.equal! true, game.can_place_wall_in_well?(action[:wall], action[:wall_well], preferred_side: action[:preferred_side]), "Expected LastLineBot wall action to be valid."
 end
@@ -107,8 +117,18 @@ def test_last_line_bot_moves_when_opponent_not_near_victory(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:last_line_bot, :human])
   controller = game.current_controller
 
-  action = controller.next_action(args: nil, game: game)
+  saw_thinking = false
+  action = nil
+  80.times do
+    candidate = controller.next_action(args: nil, game: game)
+    saw_thinking = true if candidate && candidate[:type] == :thinking
+    if candidate && candidate[:type] != :thinking
+      action = candidate
+      break
+    end
+  end
 
+  assert.equal! true, saw_thinking, "Expected LastLineBot to show a thinking phase before acting."
   assert.equal! :move_pawn, action[:type], "Expected LastLineBot to move when opponent is not near victory."
   assert.equal! true, game.can_move_pawn_to?(action[:pawn], action[:col], action[:row]), "Expected LastLineBot move action to be valid."
 end

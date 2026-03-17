@@ -1,80 +1,158 @@
 class LastLineBotController < BotController
+  WALL_CHECKS_PER_TICK = 12
+  MIN_THINK_TICKS = 8
+
   def next_action(args:, game:)
     return nil if game.winner
 
-    my_pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
-    return nil if my_pawn.nil?
+    begin_turn_if_needed(game)
+    step_blocking_scan(game) if @block_mode && !@scan_complete
 
-    opponent_pawn = game.pawns.find { |candidate| candidate.player != game.current_player }
-    return best_blocking_wall_action(game, opponent_pawn) || best_move_action(game, my_pawn) if should_block_opponent?(opponent_pawn)
+    @think_ticks_remaining -= 1 if @think_ticks_remaining > 0
+    return { type: :thinking } if @ready_action.nil? || @think_ticks_remaining > 0
 
-    best_move_action(game, my_pawn)
+    action = @ready_action
+    reset_turn_state
+    action
   end
 
   private
+
+  def begin_turn_if_needed(game)
+    return if @active_player == game.current_player
+
+    @active_player = game.current_player
+    @think_ticks_remaining = MIN_THINK_TICKS
+    @ready_action = nil
+    @scan_complete = false
+    @block_mode = false
+    @my_pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
+    @opponent_pawn = game.pawns.find { |candidate| candidate.player != game.current_player }
+
+    if @my_pawn.nil?
+      @scan_complete = true
+      return
+    end
+
+    prepare_blocking_scan(game)
+  end
+
+  def prepare_blocking_scan(game)
+    if !should_block_opponent?(@opponent_pawn)
+      @ready_action = best_move_action(game, @my_pawn)
+      @scan_complete = true
+      return
+    end
+
+    @wall_piece = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
+    if @wall_piece.nil? || @opponent_pawn.nil?
+      @ready_action = best_move_action(game, @my_pawn)
+      @scan_complete = true
+      return
+    end
+
+    @baseline_distance = distance_to_goal_row(
+      game.board,
+      @opponent_pawn.col,
+      @opponent_pawn.row,
+      @opponent_pawn.player.winning_row,
+      extra_occupied_wall_wells: nil
+    )
+    if @baseline_distance.nil?
+      @ready_action = best_move_action(game, @my_pawn)
+      @scan_complete = true
+      return
+    end
+
+    @block_mode = true
+    @wall_wells = game.board.wall_wells
+    @wall_well_index = 0
+    @wall_side_index = 0
+    @best_gain = 0
+    @best_actions = []
+  end
+
+  def step_blocking_scan(game)
+    checks = 0
+    while checks < WALL_CHECKS_PER_TICK && @wall_well_index < @wall_wells.length
+      wall_well = @wall_wells[@wall_well_index]
+      preferred_side = @wall_side_index.zero? ? :negative : :positive
+
+      evaluate_wall_candidate(game, wall_well, preferred_side)
+      advance_wall_cursor
+      checks += 1
+    end
+
+    return unless @wall_well_index >= @wall_wells.length
+
+    @ready_action = @best_actions.empty? ? best_move_action(game, @my_pawn) : @best_actions.sample
+    @scan_complete = true
+  end
+
+  def evaluate_wall_candidate(game, wall_well, preferred_side)
+    return unless game.can_place_wall_in_well?(@wall_piece, wall_well, preferred_side: preferred_side)
+
+    wall_span = game.board.wall_span_from(wall_well, preferred_side: preferred_side)
+    return if wall_span.nil?
+
+    candidate_distance = distance_to_goal_row(
+      game.board,
+      @opponent_pawn.col,
+      @opponent_pawn.row,
+      @opponent_pawn.player.winning_row,
+      extra_occupied_wall_wells: wall_span
+    )
+    return if candidate_distance.nil?
+
+    gain = candidate_distance - @baseline_distance
+    return if gain <= 0
+
+    action = {
+      type: :place_wall,
+      wall: @wall_piece,
+      wall_well: wall_well,
+      preferred_side: preferred_side
+    }
+
+    if gain > @best_gain
+      @best_gain = gain
+      @best_actions = [action]
+    elsif gain == @best_gain
+      @best_actions << action
+    end
+  end
+
+  def advance_wall_cursor
+    if @wall_side_index.zero?
+      @wall_side_index = 1
+    else
+      @wall_side_index = 0
+      @wall_well_index += 1
+    end
+  end
+
+  def reset_turn_state
+    @active_player = nil
+    @think_ticks_remaining = 0
+    @ready_action = nil
+    @scan_complete = false
+    @block_mode = false
+    @my_pawn = nil
+    @opponent_pawn = nil
+    @wall_piece = nil
+    @baseline_distance = nil
+    @wall_wells = nil
+    @wall_well_index = nil
+    @wall_side_index = nil
+    @best_gain = nil
+    @best_actions = nil
+  end
 
   def should_block_opponent?(opponent_pawn)
     return false if opponent_pawn.nil?
 
     rows_from_goal = (opponent_pawn.player.winning_row - opponent_pawn.row).abs
     rows_from_goal <= 2
-  end
-
-  def best_blocking_wall_action(game, opponent_pawn)
-    wall = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
-    return nil if wall.nil?
-    return nil if opponent_pawn.nil?
-
-    baseline = distance_to_goal_row(
-      game.board,
-      opponent_pawn.col,
-      opponent_pawn.row,
-      opponent_pawn.player.winning_row,
-      extra_occupied_wall_wells: nil
-    )
-    return nil if baseline.nil?
-
-    best_gain = 0
-    best_actions = []
-
-    game.board.wall_wells.each do |wall_well|
-      [:negative, :positive].each do |preferred_side|
-        next unless game.can_place_wall_in_well?(wall, wall_well, preferred_side: preferred_side)
-
-        wall_span = game.board.wall_span_from(wall_well, preferred_side: preferred_side)
-        next if wall_span.nil?
-
-        candidate_distance = distance_to_goal_row(
-          game.board,
-          opponent_pawn.col,
-          opponent_pawn.row,
-          opponent_pawn.player.winning_row,
-          extra_occupied_wall_wells: wall_span
-        )
-        next if candidate_distance.nil?
-
-        gain = candidate_distance - baseline
-        next if gain <= 0
-
-        action = {
-          type: :place_wall,
-          wall: wall,
-          wall_well: wall_well,
-          preferred_side: preferred_side
-        }
-
-        if gain > best_gain
-          best_gain = gain
-          best_actions = [action]
-        elsif gain == best_gain
-          best_actions << action
-        end
-      end
-    end
-
-    return nil if best_actions.empty?
-
-    best_actions.sample
   end
 
   def best_move_action(game, pawn)
