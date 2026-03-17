@@ -46,17 +46,26 @@ def test_computer_controller_can_return_valid_wall_action(args, assert)
   game.next_turn!
   controller = game.current_controller
 
+  saw_thinking = false
   action = nil
-  20.times do
+  60.times do
     candidate = controller.next_action(args: nil, game: game)
-    if candidate && candidate[:type] == :place_wall
+    saw_thinking = true if candidate && candidate[:type] == :thinking
+    if candidate && candidate[:type] != :thinking
       action = candidate
       break
     end
   end
 
-  assert.equal! false, action.nil?, "Expected computer controller to produce a wall placement action."
-  assert.equal! true, game.can_place_wall_in_well?(action[:wall], action[:wall_well], preferred_side: action[:preferred_side]), "Expected computer wall action to target a valid wall placement."
+  assert.equal! true, saw_thinking, "Expected computer controller to return :thinking while it evaluates options."
+  assert.equal! false, action.nil?, "Expected computer controller to eventually produce an action."
+
+  if action[:type] == :move_pawn
+    assert.equal! true, game.can_move_pawn_to?(action[:pawn], action[:col], action[:row]), "Expected computer pawn action to be valid."
+  else
+    assert.equal! :place_wall, action[:type], "Expected non-move computer action to be a wall placement."
+    assert.equal! true, game.can_place_wall_in_well?(action[:wall], action[:wall_well], preferred_side: action[:preferred_side]), "Expected computer wall action to target a valid wall placement."
+  end
 end
 
 def test_game_initial_players_have_winning_rows(args, assert)

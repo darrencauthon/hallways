@@ -15,6 +15,7 @@ class GameScreen
 
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
+    @computer_thinking = false
     apply_current_controller_action(args)
     if human_turn?
       update_wall_drag_state(args, board_x, board_y)
@@ -39,6 +40,7 @@ class GameScreen
       wall_drop_target: wall_drop_target,
       pawn_drop_target: pawn_drop_target
     )
+    render_thinking_indicator(args, board_x, board_y) if @computer_thinking
 
     return [:victory, game.winner.name] if game.winner
   end
@@ -49,14 +51,18 @@ class GameScreen
     action = game.current_controller.next_action(args: args, game: game)
     return if action.nil?
 
-    if action[:type] == :move_pawn
+    if action[:type] == :thinking
+      @computer_thinking = true
+    elsif action[:type] == :move_pawn
       game.move_pawn_to(action[:pawn], action[:col], action[:row])
+      @computer_thinking = false
     elsif action[:type] == :place_wall
       game.place_wall_in_well_with_side(
         action[:wall],
         action[:wall_well],
         preferred_side: action[:preferred_side]
       )
+      @computer_thinking = false
     end
   end
 
@@ -243,6 +249,23 @@ class GameScreen
 
   def board_pixel_size
     (board_size * cell_size) + ((board_size - 1) * cell_gap)
+  end
+
+  def render_thinking_indicator(args, board_x, board_y)
+    dot_count = ((args.state.tick_count || 0) / 20) % 4
+    dots = "." * dot_count
+    label = "#{game.current_player.name} thinking#{dots}"
+
+    args.outputs.labels << {
+      x: board_x + (board_pixel_size / 2),
+      y: board_y + board_pixel_size + 108,
+      text: label,
+      alignment_enum: 1,
+      size_enum: 2,
+      r: 255,
+      g: 215,
+      b: 120
+    }
   end
 
   def mouse_x(args)
