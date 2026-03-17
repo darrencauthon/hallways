@@ -197,16 +197,16 @@ jobs:
           done
 
       - name: Upload build artifacts
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-build
+          name: linux-build-debug
+          retention-days: 2
           path: |
             dragonruby-linux/builds/**
             dragonruby-linux/build/**
             dragonruby-linux/dist/**
             dragonruby-linux/releases/**
-            builds/**
-            build/**
-            dist/**
-            releases/**
+            test-transcript.txt
+            errors/last.txt
           if-no-files-found: warn
