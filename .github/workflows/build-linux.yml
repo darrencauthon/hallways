@@ -37,7 +37,24 @@ jobs:
       - name: Copy game code into DragonRuby folder
         run: |
           mkdir -p "dragonruby-linux/${GAME_NAME}"
-          rsync -av --exclude='dragonruby-linux' --exclude='dragonruby-source' ./ "dragonruby-linux/${GAME_NAME}"
+          rsync -av \
+            --exclude='dragonruby-linux' \
+            --exclude='dragonruby-source' \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.ruby-lsp' \
+            --exclude='errors' \
+            --exclude='docs' \
+            --exclude='*test*.rb' \
+            --exclude='AGENTS.md' \
+            --exclude='README.md' \
+            ./ "dragonruby-linux/${GAME_NAME}"
+
+      - name: Ensure DragonRuby temp directories are writable
+        run: |
+          rm -rf dragonruby-linux/.dragonruby
+          mkdir -p dragonruby-linux/.dragonruby
+          chmod -R u+rwX dragonruby-linux
 
       - name: Make dragonruby-publish executable
         run: |
