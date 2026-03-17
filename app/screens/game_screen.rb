@@ -15,7 +15,7 @@ class GameScreen
 
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
-    apply_current_player_controller_action(args)
+    apply_current_controller_action(args)
     if human_turn?
       update_wall_drag_state(args, board_x, board_y)
       update_pawn_drag_state(args, board_x, board_y)
@@ -45,8 +45,8 @@ class GameScreen
 
   private
 
-  def apply_current_player_controller_action(args)
-    action = game.current_player_controller.next_action(args: args, game: game)
+  def apply_current_controller_action(args)
+    action = game.current_controller.next_action(args: args, game: game)
     return if action.nil?
 
     if action[:type] == :move_pawn
@@ -187,7 +187,7 @@ class GameScreen
   end
 
   def human_turn?
-    game.current_player_controller.is_a?(HumanPlayerController)
+    game.current_controller.is_a?(HumanController)
   end
 
   def mouse_inside_rect?(args, x:, y:, w:, h:)

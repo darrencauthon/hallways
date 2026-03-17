@@ -20,15 +20,15 @@ end
 def test_game_default_mode_uses_two_human_controllers(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
-  assert.equal! true, game.players[0].controller.is_a?(HumanPlayerController), "Expected Player 1 to use HumanPlayerController."
-  assert.equal! true, game.players[1].controller.is_a?(HumanPlayerController), "Expected Player 2 to use HumanPlayerController in default mode."
+  assert.equal! true, game.players[0].controller.is_a?(HumanController), "Expected Player 1 to use HumanController."
+  assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 to use HumanController in default mode."
 end
 
 def test_game_human_vs_computer_mode_uses_computer_player_two(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, mode: :human_vs_computer)
 
-  assert.equal! true, game.players[0].controller.is_a?(HumanPlayerController), "Expected Player 1 to use HumanPlayerController."
-  assert.equal! true, game.players[1].controller.is_a?(ComputerPlayerController), "Expected Player 2 to use ComputerPlayerController in Human vs Computer mode."
+  assert.equal! true, game.players[0].controller.is_a?(HumanController), "Expected Player 1 to use HumanController."
+  assert.equal! true, game.players[1].controller.is_a?(ComputerController), "Expected Player 2 to use ComputerController in Human vs Computer mode."
   assert.equal! "Bot 2", game.players[1].name, "Expected computer-controlled player to be named Bot 2."
 end
 
@@ -37,8 +37,8 @@ def test_game_supports_explicit_player_type_configuration(args, assert)
 
   assert.equal! "Bot 1", game.players[0].name, "Expected Player 1 name to become Bot 1 when configured as computer."
   assert.equal! "Player 2", game.players[1].name, "Expected Player 2 name to stay human when configured as human."
-  assert.equal! true, game.players[0].controller.is_a?(ComputerPlayerController), "Expected Player 1 controller to be computer when configured."
-  assert.equal! true, game.players[1].controller.is_a?(HumanPlayerController), "Expected Player 2 controller to be human when configured."
+  assert.equal! true, game.players[0].controller.is_a?(ComputerController), "Expected Player 1 controller to be computer when configured."
+  assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
 end
 
 def test_game_initial_players_have_winning_rows(args, assert)

@@ -2,9 +2,9 @@ require "app/models/pawn.rb"
 require "app/models/board.rb"
 require "app/models/wall.rb"
 require "app/models/player.rb"
-require "app/null_player_controller.rb"
-require "app/human_player_controller.rb"
-require "app/computer_player_controller.rb"
+require "app/controllers/null_controller.rb"
+require "app/controllers/human_controller.rb"
+require "app/controllers/computer_controller.rb"
 require "app/board_renderer.rb"
 require "app/wall_renderer.rb"
 require "app/pawn_renderer.rb"
@@ -38,7 +38,7 @@ class Game
     players[@turn_index]
   end
 
-  def current_player_controller
+  def current_controller
     current_player.controller
   end
 
@@ -189,9 +189,9 @@ class Game
   end
 
   def controller_for(player_type)
-    return ComputerPlayerController.new if player_type == :computer
+    return ComputerController.new if player_type == :computer
 
-    HumanPlayerController.new
+    HumanController.new
   end
 
   def configure_renderers

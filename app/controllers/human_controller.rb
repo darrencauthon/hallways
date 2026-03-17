@@ -1,0 +1,2 @@
+class HumanController < NullController
+end

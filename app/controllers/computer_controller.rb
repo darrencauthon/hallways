@@ -1,4 +1,4 @@
-class ComputerPlayerController < NullPlayerController
+class ComputerController < NullController
   def next_action(args:, game:)
     pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
     return nil if pawn.nil?

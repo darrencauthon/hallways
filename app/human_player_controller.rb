@@ -1,2 +1,0 @@
-class HumanPlayerController < NullPlayerController
-end
