@@ -1,4 +1,3 @@
-require "app/test_runner.rb"
 require "app/title_screen.rb"
 require "app/setup_screen.rb"
 require "app/victory_screen.rb"
@@ -41,6 +40,12 @@ def run_tests_and_quit(args)
   return if args.state.tests_finished
 
   begin
+    unless ensure_test_runner_loaded
+      args.state.tests_failed = true
+      puts "[TEST] Runner unavailable: app/test_runner.rb could not be loaded."
+      return
+    end
+
     results = TestRunner.run
     args.state.tests_failed = results[:failed] > 0
   rescue StandardError => e
@@ -50,6 +55,16 @@ def run_tests_and_quit(args)
     args.state.tests_finished = true
     request_quit(args)
   end
+end
+
+def ensure_test_runner_loaded
+  return true if defined?(TestRunner)
+
+  require "app/test_runner.rb"
+  true
+rescue StandardError => e
+  puts "[TEST] Failed to load app/test_runner.rb: #{e.class}: #{e.message}"
+  false
 end
 
 def request_quit(args)
