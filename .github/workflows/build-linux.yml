@@ -143,6 +143,15 @@ jobs:
             ./butler/butler push "$ZIP_PATH" "${ITCH_IO_USER}/${ITCH_IO_GAME}:${CHANNEL}"
           done
 
+          HTML5_DIRS=(dragonruby-linux/builds/${GAME_NAME}-html5*)
+          for HTML5_PATH in "${HTML5_DIRS[@]}"; do
+            if [ -d "$HTML5_PATH" ]; then
+              echo "Pushing HTML5 directory $(basename "$HTML5_PATH") to ${ITCH_IO_USER}/${ITCH_IO_GAME}:html5"
+              ./butler/butler push "$HTML5_PATH" "${ITCH_IO_USER}/${ITCH_IO_GAME}:html5"
+              break
+            fi
+          done
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
