@@ -1,5 +1,5 @@
 class SetupScreen
-  PLAYER_TYPES = [:human, :random_bot].freeze
+  PLAYER_TYPES = [:human, :random_bot, :path_bot].freeze
   MENU_ROWS = [:player_one, :player_two, :play].freeze
   MENU_X_CENTER = 640
   MENU_Y_START = 290
@@ -45,9 +45,11 @@ class SetupScreen
     end
 
     if selected_row == :player_one
-      toggle_player_type(0) if left_pressed?(args) || right_pressed?(args) || mouse_clicked_row?(args, :player_one)
+      cycle_player_type(0, -1) if left_pressed?(args)
+      cycle_player_type(0, 1) if right_pressed?(args) || mouse_clicked_row?(args, :player_one)
     elsif selected_row == :player_two
-      toggle_player_type(1) if left_pressed?(args) || right_pressed?(args) || mouse_clicked_row?(args, :player_two)
+      cycle_player_type(1, -1) if left_pressed?(args)
+      cycle_player_type(1, 1) if right_pressed?(args) || mouse_clicked_row?(args, :player_two)
     end
   end
 
@@ -80,13 +82,15 @@ class SetupScreen
 
   def display_type(type)
     return "RandomBot" if type == :random_bot
+    return "PathBot" if type == :path_bot
 
     "Human"
   end
 
-  def toggle_player_type(player_index)
+  def cycle_player_type(player_index, delta)
     current_type = @player_types[player_index]
-    @player_types[player_index] = current_type == :human ? :random_bot : :human
+    current_index = PLAYER_TYPES.index(current_type) || 0
+    @player_types[player_index] = PLAYER_TYPES[(current_index + delta) % PLAYER_TYPES.length]
   end
 
   def play_confirmed?(args)

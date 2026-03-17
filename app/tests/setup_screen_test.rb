@@ -18,6 +18,17 @@ def test_setup_screen_toggle_player_two_to_random_bot(args, assert)
   assert.equal! [:human, :random_bot], action[1][:player_types], "Expected toggled setup to keep Player 1 human and set Player 2 RandomBot."
 end
 
+def test_setup_screen_can_cycle_player_two_to_path_bot(args, assert)
+  screen = SetupScreen.new
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
+
+  assert.equal! [:human, :path_bot], action[1][:player_types], "Expected second toggle to set Player 2 to PathBot."
+end
+
 def test_setup_screen_mouse_click_play_starts_game(args, assert)
   screen = SetupScreen.new
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(mouse_x: 640, mouse_y: 170, mouse_down: true))
