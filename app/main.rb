@@ -1,9 +1,9 @@
-require "app/title_screen.rb"
-require "app/setup_screen.rb"
-require "app/victory_screen.rb"
+require "app/screens/title_screen.rb"
+require "app/screens/setup_screen.rb"
+require "app/screens/victory_screen.rb"
 require "app/models/pawn.rb"
 require "app/models/game.rb"
-require "app/game_screen.rb"
+require "app/screens/game_screen.rb"
 
 def tick(args)
   if cli_test_mode?(args)
