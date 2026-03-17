@@ -51,6 +51,12 @@ class GameScreen
 
     if action[:type] == :move_pawn
       game.move_pawn_to(action[:pawn], action[:col], action[:row])
+    elsif action[:type] == :place_wall
+      game.place_wall_in_well_with_side(
+        action[:wall],
+        action[:wall_well],
+        preferred_side: action[:preferred_side]
+      )
     end
   end
 

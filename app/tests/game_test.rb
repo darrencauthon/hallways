@@ -41,6 +41,24 @@ def test_game_supports_explicit_player_type_configuration(args, assert)
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
 end
 
+def test_computer_controller_can_return_valid_wall_action(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:human, :computer])
+  game.next_turn!
+  controller = game.current_controller
+
+  action = nil
+  20.times do
+    candidate = controller.next_action(args: nil, game: game)
+    if candidate && candidate[:type] == :place_wall
+      action = candidate
+      break
+    end
+  end
+
+  assert.equal! false, action.nil?, "Expected computer controller to produce a wall placement action."
+  assert.equal! true, game.can_place_wall_in_well?(action[:wall], action[:wall_well], preferred_side: action[:preferred_side]), "Expected computer wall action to target a valid wall placement."
+end
+
 def test_game_initial_players_have_winning_rows(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
