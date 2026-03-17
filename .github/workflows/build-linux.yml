@@ -10,20 +10,27 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout game repository
         uses: actions/checkout@v4
+
+      - name: Checkout DragonRuby source repository
+        uses: actions/checkout@v4
+        with:
+          repository: darrencauthon/my_dragonruby
+          path: dragonruby-source
+          token: ${{ secrets.MY_DRAGONRUBY_REPO_TOKEN }}
 
       - name: Verify DragonRuby zip exists
         run: |
-          if [ ! -f "dragonruby-linux.zip" ]; then
-            echo "dragonruby-linux.zip not found at repo root."
+          if [ ! -f "dragonruby-source/dragonruby-linux.zip" ]; then
+            echo "dragonruby-linux.zip not found in darrencauthon/my_dragonruby repo root."
             exit 1
           fi
 
       - name: Unzip DragonRuby
         run: |
           rm -rf dragonruby-linux
-          unzip -q dragonruby-linux.zip -d dragonruby-linux
+          unzip -q dragonruby-source/dragonruby-linux.zip -d dragonruby-linux
 
       - name: Locate DragonRuby executable
         id: find_dragonruby
