@@ -5,9 +5,9 @@ require "app/models/player.rb"
 require "app/controllers/null_controller.rb"
 require "app/controllers/human_controller.rb"
 require "app/controllers/computer_controller.rb"
-require "app/board_renderer.rb"
-require "app/wall_renderer.rb"
-require "app/pawn_renderer.rb"
+require "app/renderers/board_renderer.rb"
+require "app/renderers/wall_renderer.rb"
+require "app/renderers/pawn_renderer.rb"
 
 class Game
   WALLS_PER_LANE = 10
