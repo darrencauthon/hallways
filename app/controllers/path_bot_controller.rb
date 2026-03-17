@@ -1,7 +1,25 @@
 class PathBotController < BotController
+  MIN_THINK_TICKS = 6
+
   def next_action(args:, game:)
     return nil if game.winner
 
+    begin_turn_if_needed(game)
+    thinking_tick!
+    return { type: :thinking } if still_thinking?
+
+    finalize_turn_action
+  end
+
+  private
+
+  def begin_turn_if_needed(game)
+    return unless begin_turn_thinking(game, min_ticks: MIN_THINK_TICKS)
+
+    set_ready_action(best_move_action(game))
+  end
+
+  def best_move_action(game)
     pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
     return nil if pawn.nil?
 
@@ -32,8 +50,6 @@ class PathBotController < BotController
       row: chosen_move[:row]
     }
   end
-
-  private
 
   def legal_pawn_moves(game, pawn)
     game.board.squares.filter_map do |square|

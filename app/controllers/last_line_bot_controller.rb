@@ -8,22 +8,19 @@ class LastLineBotController < BotController
     begin_turn_if_needed(game)
     step_blocking_scan(game) if @block_mode && !@scan_complete
 
-    @think_ticks_remaining -= 1 if @think_ticks_remaining > 0
-    return { type: :thinking } if @ready_action.nil? || @think_ticks_remaining > 0
+    thinking_tick!
+    return { type: :thinking } if still_thinking?
 
-    action = @ready_action
-    reset_turn_state
+    action = finalize_turn_action
+    reset_strategy_state
     action
   end
 
   private
 
   def begin_turn_if_needed(game)
-    return if @active_player == game.current_player
+    return unless begin_turn_thinking(game, min_ticks: MIN_THINK_TICKS)
 
-    @active_player = game.current_player
-    @think_ticks_remaining = MIN_THINK_TICKS
-    @ready_action = nil
     @scan_complete = false
     @block_mode = false
     @my_pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
@@ -39,14 +36,14 @@ class LastLineBotController < BotController
 
   def prepare_blocking_scan(game)
     if !should_block_opponent?(@opponent_pawn)
-      @ready_action = best_move_action(game, @my_pawn)
+      set_ready_action(best_move_action(game, @my_pawn))
       @scan_complete = true
       return
     end
 
     @wall_piece = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
     if @wall_piece.nil? || @opponent_pawn.nil?
-      @ready_action = best_move_action(game, @my_pawn)
+      set_ready_action(best_move_action(game, @my_pawn))
       @scan_complete = true
       return
     end
@@ -59,7 +56,7 @@ class LastLineBotController < BotController
       extra_occupied_wall_wells: nil
     )
     if @baseline_distance.nil?
-      @ready_action = best_move_action(game, @my_pawn)
+      set_ready_action(best_move_action(game, @my_pawn))
       @scan_complete = true
       return
     end
@@ -85,7 +82,7 @@ class LastLineBotController < BotController
 
     return unless @wall_well_index >= @wall_wells.length
 
-    @ready_action = @best_actions.empty? ? best_move_action(game, @my_pawn) : @best_actions.sample
+    set_ready_action(@best_actions.empty? ? best_move_action(game, @my_pawn) : @best_actions.sample)
     @scan_complete = true
   end
 
@@ -131,10 +128,7 @@ class LastLineBotController < BotController
     end
   end
 
-  def reset_turn_state
-    @active_player = nil
-    @think_ticks_remaining = 0
-    @ready_action = nil
+  def reset_strategy_state
     @scan_complete = false
     @block_mode = false
     @my_pawn = nil

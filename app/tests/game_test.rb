@@ -86,8 +86,18 @@ def test_path_bot_controller_returns_valid_move_action(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:path_bot, :human])
   controller = game.current_controller
 
-  action = controller.next_action(args: nil, game: game)
+  saw_thinking = false
+  action = nil
+  40.times do
+    candidate = controller.next_action(args: nil, game: game)
+    saw_thinking = true if candidate && candidate[:type] == :thinking
+    if candidate && candidate[:type] != :thinking
+      action = candidate
+      break
+    end
+  end
 
+  assert.equal! true, saw_thinking, "Expected PathBot to show a thinking phase before acting."
   assert.equal! :move_pawn, action[:type], "Expected PathBot to return a move action."
   assert.equal! true, game.can_move_pawn_to?(action[:pawn], action[:col], action[:row]), "Expected PathBot move action to be valid."
 end

@@ -1,20 +1,22 @@
 class RandomBotController < BotController
   WALL_CHECKS_PER_TICK = 12
+  MIN_THINK_TICKS = 6
 
   def next_action(args:, game:)
     return nil if game.winner
 
     begin_turn_if_needed(game)
-    step_wall_scan(game) if @ready_action.nil?
-    return { type: :thinking } unless @ready_action
+    step_wall_scan(game) if bot_waiting_for_action?
+    thinking_tick!
+    return { type: :thinking } if still_thinking?
 
-    action = @ready_action
-    reset_turn_state
+    action = finalize_turn_action
+    reset_strategy_state
     action
   end
 
   def thinking?
-    @thinking == true && @ready_action.nil?
+    still_thinking?
   end
 
   private
@@ -24,11 +26,8 @@ class RandomBotController < BotController
   end
 
   def begin_turn_if_needed(game)
-    return if @thinking && @active_player == game.current_player
+    return unless begin_turn_thinking(game, min_ticks: MIN_THINK_TICKS)
 
-    @active_player = game.current_player
-    @thinking = true
-    @ready_action = nil
     @pawn_options = pawn_actions(game)
     @wall_options = []
     @wall_wells = game.board.wall_wells
@@ -66,23 +65,23 @@ class RandomBotController < BotController
   end
 
   def finalize_action
-    return if !@ready_action.nil?
-    return if @pawn_options.empty? && @wall_options.empty?
+    return if action_ready?
+    if @pawn_options.empty? && @wall_options.empty?
+      set_ready_action(nil)
+      return
+    end
 
     if @pawn_options.empty?
-      @ready_action = @wall_options.sample
+      set_ready_action(@wall_options.sample)
     elsif @wall_options.empty?
-      @ready_action = @pawn_options.sample
+      set_ready_action(@pawn_options.sample)
     else
       chosen_pool = [@pawn_options, @wall_options].sample
-      @ready_action = chosen_pool.sample
+      set_ready_action(chosen_pool.sample)
     end
   end
 
-  def reset_turn_state
-    @thinking = false
-    @active_player = nil
-    @ready_action = nil
+  def reset_strategy_state
     @pawn_options = nil
     @wall_options = nil
     @wall_wells = nil
