@@ -1,9 +1,14 @@
 class ComputerController < NullController
   def next_action(args:, game:)
-    actions = pawn_actions(game) + wall_actions(game)
-    return nil if actions.empty?
+    pawn_options = pawn_actions(game)
+    wall_options = wall_actions(game)
+    return nil if pawn_options.empty? && wall_options.empty?
+    return pawn_options.sample if wall_options.empty?
+    return wall_options.sample if pawn_options.empty?
 
-    actions.sample
+    # Keep behavior simple and unpredictable: choose category first, then action.
+    chosen_pool = [pawn_options, wall_options].sample
+    chosen_pool.sample
   end
 
   private
