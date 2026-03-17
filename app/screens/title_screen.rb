@@ -75,7 +75,7 @@ class TitleScreen
     args.outputs.labels << {
       x: screen_width(args) - 10,
       y: 28,
-      text: "v#{Hallways::VERSION}",
+      text: "v#{game_version}",
       alignment_enum: 2,
       size_enum: 1,
       r: 140,
@@ -145,5 +145,23 @@ class TitleScreen
     return args.grid.w if args.respond_to?(:grid) && args.grid && args.grid.respond_to?(:w)
 
     1280
+  end
+
+  def game_version
+    version = version_from_metadata
+    return version unless version.nil? || version.empty?
+
+    "0.1.9"
+  end
+
+  def version_from_metadata
+    return nil unless File.exist?("metadata/game_metadata.txt")
+
+    line = File.readlines("metadata/game_metadata.txt").find { |entry| entry.start_with?("version=") }
+    return nil if line.nil?
+
+    line.split("=", 2)[1]&.strip
+  rescue StandardError
+    nil
   end
 end
