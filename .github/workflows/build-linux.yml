@@ -52,7 +52,7 @@ jobs:
 
       - name: Ensure DragonRuby temp directories are writable
         run: |
-          rm -rf dragonruby-linux/.dragonruby
+          chmod -R u+rwX dragonruby-linux/.dragonruby
           mkdir -p dragonruby-linux/.dragonruby
           chmod -R u+rwX dragonruby-linux
 
