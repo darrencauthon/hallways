@@ -13,6 +13,7 @@ jobs:
       GAME_NAME: hallways
       ITCH_IO_USER: darrendoom
       ITCH_IO_GAME: hallways
+      BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
     steps:
       - name: Checkout game repository
         uses: actions/checkout@v4
@@ -93,7 +94,7 @@ jobs:
           echo "GAME_VERSION=$GAME_VERSION" >> "$GITHUB_ENV"
 
       - name: Install butler
-        if: ${{ secrets.BUTLER_CREDENTIALS != '' }}
+        if: ${{ env.BUTLER_API_KEY != '' }}
         run: |
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip -q butler.zip -d butler
@@ -101,9 +102,7 @@ jobs:
           chmod +x /usr/local/bin/butler
 
       - name: Push builds to itch.io
-        if: ${{ secrets.BUTLER_CREDENTIALS != '' }}
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
+        if: ${{ env.BUTLER_API_KEY != '' }}
         run: |
           shopt -s nullglob
           BUILD_ZIPS=(dragonruby-linux/builds/${GAME_NAME}-*.zip)
