@@ -58,21 +58,20 @@ jobs:
             exit 1
           fi
 
-          if [ ! -f "${GITHUB_WORKSPACE}/test-output.txt" ]; then
-            echo "test-output.txt was not generated."
+          FAILED_LINE="$(grep -Eo '[0-9]+ test\(s\) failed\.' "${GITHUB_WORKSPACE}/test-transcript.txt" | tail -n 1 || true)"
+          if [ -z "$FAILED_LINE" ]; then
+            echo "Could not find failed-test summary in test-transcript.txt."
             exit 1
           fi
 
-          FAILED_COUNT="$(grep '^failed=' "${GITHUB_WORKSPACE}/test-output.txt" | cut -d '=' -f 2)"
+          FAILED_COUNT="$(echo "$FAILED_LINE" | cut -d ' ' -f 1)"
           if [ -z "$FAILED_COUNT" ]; then
-            echo "Could not parse failed count from test-output.txt."
-            cat "${GITHUB_WORKSPACE}/test-output.txt"
+            echo "Could not parse failed count from transcript summary: $FAILED_LINE"
             exit 1
           fi
 
           if [ "$FAILED_COUNT" != "0" ]; then
             echo "Test failures detected (failed=${FAILED_COUNT})."
-            cat "${GITHUB_WORKSPACE}/test-output.txt"
             exit 1
           fi
 
