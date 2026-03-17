@@ -1,5 +1,5 @@
-require "app/square.rb"
-require "app/wall_well.rb"
+require "app/models/square.rb"
+require "app/models/wall_well.rb"
 
 class Board
   attr_reader :squares, :wall_wells, :size, :cell_width, :cell_height

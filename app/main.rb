@@ -1,8 +1,8 @@
 require "app/title_screen.rb"
 require "app/setup_screen.rb"
 require "app/victory_screen.rb"
-require "app/pawn.rb"
-require "app/game.rb"
+require "app/models/pawn.rb"
+require "app/models/game.rb"
 require "app/game_screen.rb"
 
 def tick(args)
