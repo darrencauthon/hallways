@@ -1,3 +1,4 @@
+require "app/version.rb"
 require "app/screens/title_screen.rb"
 require "app/screens/setup_screen.rb"
 require "app/screens/victory_screen.rb"

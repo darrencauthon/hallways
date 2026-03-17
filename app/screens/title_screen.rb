@@ -33,6 +33,7 @@ class TitleScreen
     }
 
     render_menu(args)
+    render_version(args)
 
     confirmed = confirm_pressed?(args) || mouse_click_confirm?(args)
     return :open_setup if confirmed && selected_option == "Play 2 Player Game"
@@ -68,6 +69,19 @@ class TitleScreen
         b: selected ? 90 : 170
       }
     end
+  end
+
+  def render_version(args)
+    args.outputs.labels << {
+      x: screen_width(args) - 10,
+      y: 28,
+      text: "v#{Hallways::VERSION}",
+      alignment_enum: 2,
+      size_enum: 1,
+      r: 140,
+      g: 140,
+      b: 150
+    }
   end
 
   def select_next
@@ -125,5 +139,11 @@ class TitleScreen
     return false unless mouse
 
     !!mouse.down && !hovered_menu_index(args).nil?
+  end
+
+  def screen_width(args)
+    return args.grid.w if args.respond_to?(:grid) && args.grid && args.grid.respond_to?(:w)
+
+    1280
   end
 end
