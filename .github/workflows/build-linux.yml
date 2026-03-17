@@ -1,0 +1,52 @@
+name: Build Linux
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify DragonRuby zip exists
+        run: |
+          if [ ! -f "dragonruby-linux.zip" ]; then
+            echo "dragonruby-linux.zip not found at repo root."
+            exit 1
+          fi
+
+      - name: Unzip DragonRuby
+        run: |
+          rm -rf dragonruby-linux
+          unzip -q dragonruby-linux.zip -d dragonruby-linux
+
+      - name: Locate DragonRuby executable
+        id: find_dragonruby
+        run: |
+          DRAGONRUBY_BIN="$(find dragonruby-linux -type f -name dragonruby | head -n 1)"
+          if [ -z "$DRAGONRUBY_BIN" ]; then
+            echo "Could not find dragonruby executable after unzip."
+            exit 1
+          fi
+          chmod +x "$DRAGONRUBY_BIN"
+          echo "bin=$DRAGONRUBY_BIN" >> "$GITHUB_OUTPUT"
+
+      - name: Build Linux package
+        run: |
+          "${{ steps.find_dragonruby.outputs.bin }}" "$GITHUB_WORKSPACE" --package
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            builds/**
+            build/**
+            dist/**
+            releases/**
+          if-no-files-found: warn
