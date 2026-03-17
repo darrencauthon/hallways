@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout game repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Checkout DragonRuby source repository
         uses: actions/checkout@v4
@@ -24,6 +26,53 @@ jobs:
           repository: darrencauthon/my_dragonruby
           path: dragonruby-source
           token: ${{ secrets.MY_DRAGONRUBY_REPO_TOKEN || github.token }}
+
+      - name: Detect version bump for main deploys
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          SHOULD_DEPLOY_ITCH=true
+          PREV_SHA="${{ github.event.before }}"
+          CURR_SHA="${{ github.sha }}"
+          ZERO_SHA="0000000000000000000000000000000000000000"
+
+          if [ "$PREV_SHA" = "$ZERO_SHA" ]; then
+            PREV_SHA="$(git rev-parse "${CURR_SHA}^" 2>/dev/null || true)"
+          fi
+
+          if [ -z "$PREV_SHA" ]; then
+            echo "Unable to determine previous commit for version comparison."
+            SHOULD_DEPLOY_ITCH=false
+            echo "SHOULD_DEPLOY_ITCH=$SHOULD_DEPLOY_ITCH" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          CURRENT_VERSION="$(grep '^version=' metadata/game_metadata.txt | head -n 1 | cut -d '=' -f 2)"
+          PREVIOUS_VERSION="$(git show "${PREV_SHA}:metadata/game_metadata.txt" 2>/dev/null | grep '^version=' | head -n 1 | cut -d '=' -f 2)"
+
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "Current version is missing from metadata/game_metadata.txt"
+            SHOULD_DEPLOY_ITCH=false
+            echo "SHOULD_DEPLOY_ITCH=$SHOULD_DEPLOY_ITCH" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          if [ -z "$PREVIOUS_VERSION" ]; then
+            echo "Previous version could not be read. Allowing deploy."
+            echo "SHOULD_DEPLOY_ITCH=$SHOULD_DEPLOY_ITCH" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          if [ "$CURRENT_VERSION" = "$PREVIOUS_VERSION" ]; then
+            SHOULD_DEPLOY_ITCH=false
+            echo "Deploy to itch.io skipped: version was not bumped."
+            echo "Previous version: $PREVIOUS_VERSION"
+            echo "Current version:  $CURRENT_VERSION"
+            echo "SHOULD_DEPLOY_ITCH=$SHOULD_DEPLOY_ITCH" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          echo "Version bump detected: $PREVIOUS_VERSION -> $CURRENT_VERSION"
+          echo "SHOULD_DEPLOY_ITCH=$SHOULD_DEPLOY_ITCH" >> "$GITHUB_ENV"
 
       - name: Verify DragonRuby zip exists
         run: |
@@ -138,7 +187,7 @@ jobs:
           echo "GAME_VERSION=$GAME_VERSION" >> "$GITHUB_ENV"
 
       - name: Install butler
-        if: ${{ env.BUTLER_API_KEY != '' }}
+        if: ${{ env.BUTLER_API_KEY != '' && env.SHOULD_DEPLOY_ITCH != 'false' }}
         run: |
           set -e
           BUTLER_URLS=(
@@ -170,7 +219,7 @@ jobs:
           ./butler/butler -V
 
       - name: Push builds to itch.io
-        if: ${{ env.BUTLER_API_KEY != '' }}
+        if: ${{ env.BUTLER_API_KEY != '' && env.SHOULD_DEPLOY_ITCH != 'false' }}
         run: |
           shopt -s nullglob
           BUILD_ZIPS=(dragonruby-linux/builds/${GAME_NAME}-*.zip)
