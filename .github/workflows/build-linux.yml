@@ -117,9 +117,14 @@ jobs:
           fi
 
           unzip -q butler.zip -d butler
-          chmod +x butler/butler
-          echo "${GITHUB_WORKSPACE}/butler" >> "$GITHUB_PATH"
-          butler -V
+          BUTLER_BIN="$(find butler -type f -name butler | head -n 1)"
+          if [ -z "$BUTLER_BIN" ]; then
+            echo "Could not locate butler binary after unzip."
+            exit 1
+          fi
+          chmod +x "$BUTLER_BIN"
+          echo "BUTLER_BIN=$BUTLER_BIN" >> "$GITHUB_ENV"
+          "$BUTLER_BIN" -V
 
       - name: Push builds to itch.io
         if: ${{ env.BUTLER_API_KEY != '' }}
@@ -136,7 +141,7 @@ jobs:
             CHANNEL="${ZIP_NAME#${GAME_NAME}-}"
             CHANNEL="${CHANNEL%-${GAME_VERSION}.zip}"
             echo "Pushing $ZIP_NAME to ${ITCH_IO_USER}/${ITCH_IO_GAME}:${CHANNEL}"
-            butler push "$ZIP_PATH" "${ITCH_IO_USER}/${ITCH_IO_GAME}:${CHANNEL}"
+            "$BUTLER_BIN" push "$ZIP_PATH" "${ITCH_IO_USER}/${ITCH_IO_GAME}:${CHANNEL}"
           done
 
       - name: Upload build artifacts
