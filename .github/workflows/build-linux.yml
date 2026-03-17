@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GAME_NAME: hallways
+      ITCH_IO_USER: darrendoom
+      ITCH_IO_GAME: hallways
     steps:
       - name: Checkout game repository
         uses: actions/checkout@v4
@@ -80,6 +82,43 @@ jobs:
         run: |
           cd dragonruby-linux
           ./dragonruby-publish --only-package "${GAME_NAME}"
+
+      - name: Read game version
+        run: |
+          GAME_VERSION="$(grep '^version=' "dragonruby-linux/${GAME_NAME}/metadata/game_metadata.txt" | head -n 1 | cut -d '=' -f 2)"
+          if [ -z "$GAME_VERSION" ]; then
+            echo "Could not determine game version from metadata/game_metadata.txt"
+            exit 1
+          fi
+          echo "GAME_VERSION=$GAME_VERSION" >> "$GITHUB_ENV"
+
+      - name: Install butler
+        if: ${{ secrets.BUTLER_CREDENTIALS != '' }}
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler
+          sudo mv butler/butler /usr/local/bin
+          chmod +x /usr/local/bin/butler
+
+      - name: Push builds to itch.io
+        if: ${{ secrets.BUTLER_CREDENTIALS != '' }}
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
+        run: |
+          shopt -s nullglob
+          BUILD_ZIPS=(dragonruby-linux/builds/${GAME_NAME}-*.zip)
+          if [ ${#BUILD_ZIPS[@]} -eq 0 ]; then
+            echo "No build zip files found in dragonruby-linux/builds"
+            exit 1
+          fi
+
+          for ZIP_PATH in "${BUILD_ZIPS[@]}"; do
+            ZIP_NAME="$(basename "$ZIP_PATH")"
+            CHANNEL="${ZIP_NAME#${GAME_NAME}-}"
+            CHANNEL="${CHANNEL%-${GAME_VERSION}.zip}"
+            echo "Pushing $ZIP_NAME to ${ITCH_IO_USER}/${ITCH_IO_GAME}:${CHANNEL}"
+            butler push "$ZIP_PATH" "${ITCH_IO_USER}/${ITCH_IO_GAME}:${CHANNEL}"
+          done
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
