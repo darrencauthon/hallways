@@ -504,7 +504,3 @@ def test_game_initial_pawn_positions(args, assert)
   assert.equal! 4, second.col, "Expected second pawn to start in middle column."
   assert.equal! 8, second.row, "Expected second pawn to start on top row."
 end
-
-def test_ci_intentional_failure(args, assert)
-  assert.equal! true, false, "Intentional CI failure: remove this test after validating build break behavior."
-end
