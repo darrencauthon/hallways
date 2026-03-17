@@ -48,6 +48,13 @@ def test_game_supports_path_bot_configuration(args, assert)
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
 end
 
+def test_game_supports_last_line_bot_configuration(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:last_line_bot, :human])
+
+  assert.equal! true, game.players[0].controller.is_a?(LastLineBotController), "Expected Player 1 controller to be LastLineBot when configured."
+  assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
+end
+
 def test_random_bot_controller_can_return_valid_wall_action(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:human, :random_bot])
   game.next_turn!
@@ -83,6 +90,27 @@ def test_path_bot_controller_returns_valid_move_action(args, assert)
 
   assert.equal! :move_pawn, action[:type], "Expected PathBot to return a move action."
   assert.equal! true, game.can_move_pawn_to?(action[:pawn], action[:col], action[:row]), "Expected PathBot move action to be valid."
+end
+
+def test_last_line_bot_places_wall_when_opponent_is_two_rows_from_victory(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:last_line_bot, :human])
+  controller = game.current_controller
+  game.pawns[1].move_to(4, 2)
+
+  action = controller.next_action(args: nil, game: game)
+
+  assert.equal! :place_wall, action[:type], "Expected LastLineBot to place a wall when opponent is close to winning."
+  assert.equal! true, game.can_place_wall_in_well?(action[:wall], action[:wall_well], preferred_side: action[:preferred_side]), "Expected LastLineBot wall action to be valid."
+end
+
+def test_last_line_bot_moves_when_opponent_not_near_victory(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:last_line_bot, :human])
+  controller = game.current_controller
+
+  action = controller.next_action(args: nil, game: game)
+
+  assert.equal! :move_pawn, action[:type], "Expected LastLineBot to move when opponent is not near victory."
+  assert.equal! true, game.can_move_pawn_to?(action[:pawn], action[:col], action[:row]), "Expected LastLineBot move action to be valid."
 end
 
 def test_game_initial_players_have_winning_rows(args, assert)
