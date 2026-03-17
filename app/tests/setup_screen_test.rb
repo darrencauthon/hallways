@@ -8,14 +8,14 @@ def test_setup_screen_default_enter_on_play_starts_human_human(args, assert)
   assert.equal! [:human, :human], action[1][:player_types], "Expected default setup to be Human/Human."
 end
 
-def test_setup_screen_toggle_player_two_to_computer(args, assert)
+def test_setup_screen_toggle_player_two_to_random_bot(args, assert)
   screen = SetupScreen.new
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
 
-  assert.equal! [:human, :computer], action[1][:player_types], "Expected toggled setup to keep Player 1 human and set Player 2 computer."
+  assert.equal! [:human, :random_bot], action[1][:player_types], "Expected toggled setup to keep Player 1 human and set Player 2 RandomBot."
 end
 
 def test_setup_screen_mouse_click_play_starts_game(args, assert)

@@ -1,5 +1,5 @@
 class SetupScreen
-  PLAYER_TYPES = [:human, :computer].freeze
+  PLAYER_TYPES = [:human, :random_bot].freeze
   MENU_ROWS = [:player_one, :player_two, :play].freeze
   MENU_X_CENTER = 640
   MENU_Y_START = 290
@@ -79,12 +79,14 @@ class SetupScreen
   end
 
   def display_type(type)
-    type == :computer ? "Computer" : "Human"
+    return "RandomBot" if type == :random_bot
+
+    "Human"
   end
 
   def toggle_player_type(player_index)
     current_type = @player_types[player_index]
-    @player_types[player_index] = current_type == :human ? :computer : :human
+    @player_types[player_index] = current_type == :human ? :random_bot : :human
   end
 
   def play_confirmed?(args)

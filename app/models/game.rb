@@ -3,8 +3,9 @@ require "app/models/board.rb"
 require "app/models/wall.rb"
 require "app/models/player.rb"
 require "app/controllers/null_controller.rb"
+require "app/controllers/bot_controller.rb"
 require "app/controllers/human_controller.rb"
-require "app/controllers/computer_controller.rb"
+require "app/controllers/random_bot_controller.rb"
 require "app/renderers/board_renderer.rb"
 require "app/renderers/wall_renderer.rb"
 require "app/renderers/pawn_renderer.rb"
@@ -168,7 +169,7 @@ class Game
   private
 
   def player_types_for_mode(mode)
-    return [:human, :computer] if mode == :human_vs_computer
+    return [:human, :random_bot] if mode == :human_vs_computer
 
     [:human, :human]
   end
@@ -184,14 +185,18 @@ class Game
   end
 
   def display_name_for(index, player_type)
-    prefix = player_type == :computer ? "Bot" : "Player"
+    prefix = bot_player_type?(player_type) ? "Bot" : "Player"
     "#{prefix} #{index + 1}"
   end
 
   def controller_for(player_type)
-    return ComputerController.new if player_type == :computer
+    return RandomBotController.new if bot_player_type?(player_type)
 
     HumanController.new
+  end
+
+  def bot_player_type?(player_type)
+    player_type == :random_bot || player_type == :computer
   end
 
   def configure_renderers

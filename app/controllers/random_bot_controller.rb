@@ -1,4 +1,4 @@
-class ComputerController < NullController
+class RandomBotController < BotController
   WALL_CHECKS_PER_TICK = 12
 
   def next_action(args:, game:)
@@ -18,6 +18,10 @@ class ComputerController < NullController
   end
 
   private
+
+  def bot_name
+    "RandomBot"
+  end
 
   def begin_turn_if_needed(game)
     return if @thinking && @active_player == game.current_player
