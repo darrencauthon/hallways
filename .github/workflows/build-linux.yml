@@ -9,6 +9,8 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    env:
+      GAME_NAME: hallways
     steps:
       - name: Checkout game repository
         uses: actions/checkout@v4
@@ -18,7 +20,7 @@ jobs:
         with:
           repository: darrencauthon/my_dragonruby
           path: dragonruby-source
-          token: ${{ secrets.MY_DRAGONRUBY_REPO_TOKEN }}
+          token: ${{ secrets.MY_DRAGONRUBY_REPO_TOKEN || github.token }}
 
       - name: Verify DragonRuby zip exists
         run: |
@@ -27,31 +29,34 @@ jobs:
             exit 1
           fi
 
-      - name: Unzip DragonRuby
+      - name: Unzip DragonRuby Linux
         run: |
           rm -rf dragonruby-linux
           unzip -q dragonruby-source/dragonruby-linux.zip -d dragonruby-linux
 
-      - name: Locate DragonRuby executable
-        id: find_dragonruby
+      - name: Copy game code into DragonRuby folder
         run: |
-          DRAGONRUBY_BIN="$(find dragonruby-linux -type f -name dragonruby | head -n 1)"
-          if [ -z "$DRAGONRUBY_BIN" ]; then
-            echo "Could not find dragonruby executable after unzip."
-            exit 1
-          fi
-          chmod +x "$DRAGONRUBY_BIN"
-          echo "bin=$DRAGONRUBY_BIN" >> "$GITHUB_OUTPUT"
+          mkdir -p "dragonruby-linux/${GAME_NAME}"
+          rsync -av --exclude='dragonruby-linux' --exclude='dragonruby-source' ./ "dragonruby-linux/${GAME_NAME}"
 
-      - name: Build Linux package
+      - name: Make dragonruby-publish executable
         run: |
-          "${{ steps.find_dragonruby.outputs.bin }}" "$GITHUB_WORKSPACE" --package
+          chmod +x dragonruby-linux/dragonruby-publish
+
+      - name: Run dragonruby-publish
+        run: |
+          cd dragonruby-linux
+          ./dragonruby-publish --only-package "${GAME_NAME}"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
           path: |
+            dragonruby-linux/builds/**
+            dragonruby-linux/build/**
+            dragonruby-linux/dist/**
+            dragonruby-linux/releases/**
             builds/**
             build/**
             dist/**
