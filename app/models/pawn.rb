@@ -1,5 +1,7 @@
 class Pawn
   PAWN_SIZE = 28
+  WHITE_PAWN_SPRITE = "sprites/pawn_white.png".freeze
+  BLACK_PAWN_SPRITE = "sprites/pawn_black.png".freeze
 
   attr_reader :col, :row, :color, :cell_width, :cell_height, :player
 
@@ -22,29 +24,26 @@ class Pawn
   end
 
   def render_at(args, pawn_x, pawn_y)
-    args.outputs.solids << {
+    args.outputs.sprites << {
       x: pawn_x,
       y: pawn_y,
       w: PAWN_SIZE,
       h: PAWN_SIZE,
-      r: color[0],
-      g: color[1],
-      b: color[2]
-    }
-
-    args.outputs.borders << {
-      x: pawn_x,
-      y: pawn_y,
-      w: PAWN_SIZE,
-      h: PAWN_SIZE,
-      r: 220,
-      g: 70,
-      b: 70
+      path: sprite_path
     }
   end
 
   def move_to(col, row)
     @col = col
     @row = row
+  end
+
+  private
+
+  def sprite_path
+    brightness = color[0] + color[1] + color[2]
+    return WHITE_PAWN_SPRITE if brightness >= 400
+
+    BLACK_PAWN_SPRITE
   end
 end
