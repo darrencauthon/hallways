@@ -1,3 +1,5 @@
+require "app/renderers/game_screen_renderer.rb"
+
 class GameScreen
   attr_reader :board_size, :cell_size, :cell_gap, :board_y
 
@@ -11,7 +13,7 @@ class GameScreen
   end
 
   def tick(args)
-    args.outputs.background_color = [10, 10, 12]
+    game_screen_renderer.render_background(args)
 
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
@@ -40,7 +42,15 @@ class GameScreen
       wall_drop_target: wall_drop_target,
       pawn_drop_target: pawn_drop_target
     )
-    render_thinking_indicator(args, board_x, board_y) if @computer_thinking
+    if @computer_thinking
+      game_screen_renderer.render_thinking_indicator(
+        args,
+        board_x: board_x,
+        board_y: board_y,
+        board_pixel_size: board_pixel_size,
+        current_player_name: game.current_player.name
+      )
+    end
 
     return [:victory, game.winner.name] if game.winner
   end
@@ -251,22 +261,10 @@ class GameScreen
     (board_size * cell_size) + ((board_size - 1) * cell_gap)
   end
 
-  def render_thinking_indicator(args, board_x, board_y)
-    dot_count = ((args.state.tick_count || 0) / 20) % 4
-    dots = "." * dot_count
-    label = "#{game.current_player.name} thinking#{dots}"
-
-    args.outputs.labels << {
-      x: board_x + (board_pixel_size / 2),
-      y: board_y + board_pixel_size + 108,
-      text: label,
-      alignment_enum: 1,
-      size_enum: 2,
-      r: 255,
-      g: 215,
-      b: 120
-    }
+  def game_screen_renderer
+    @game_screen_renderer ||= GameScreenRenderer.new
   end
+
 
   def mouse_x(args)
     args.inputs.mouse.x || 0
