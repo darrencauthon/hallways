@@ -9,6 +9,7 @@ require "app/controllers/random_bot_controller.rb"
 require "app/controllers/path_bot_controller.rb"
 require "app/controllers/last_line_bot_controller.rb"
 require "app/controllers/pressure_bot_controller.rb"
+require "app/renderers/game_renderer.rb"
 require "app/renderers/board_renderer.rb"
 require "app/renderers/wall_renderer.rb"
 require "app/renderers/pawn_renderer.rb"
@@ -142,27 +143,17 @@ class Game
     wall_drop_target:,
     pawn_drop_target:
   )
-    configure_renderers
-
-    board_renderer.render(args, self, board_x, board_y)
-    wall_renderer.render_wall_drop_target(args, board_x, board_y, wall_drop_target)
-    wall_renderer.render_placed_walls(args, self, board_x, board_y)
-    wall_renderer.render_reserve_walls(
+    renderer = game_renderer
+    renderer.render(
       args,
-      self,
-      board_x,
-      board_y,
+      game: self,
+      board_x: board_x,
+      board_y: board_y,
+      wall_drop_target: wall_drop_target,
+      pawn_drop_target: pawn_drop_target,
       dragged_wall: @dragged_wall,
       dragged_rect: dragged_wall_rect(args, board_x, board_y),
-      hover_wall: hovered_reserve_wall(args, board_x, board_y)
-    )
-    pawn_renderer.render_drop_target(args, board_x, board_y, pawn_drop_target)
-    render_player_names(args, board_x, board_y)
-    pawn_renderer.render(
-      args,
-      self,
-      board_x,
-      board_y,
+      hover_wall: hovered_reserve_wall(args, board_x, board_y),
       dragged_pawn: @dragged_pawn,
       dragged_pawn_x: dragged_pawn_x(args),
       dragged_pawn_y: dragged_pawn_y(args)
@@ -205,64 +196,12 @@ class Game
     player_type == :random_bot || player_type == :computer || player_type == :path_bot || player_type == :last_line_bot || player_type == :pressure_bot
   end
 
-  def configure_renderers
-    return if @renderer_config == { cell_gap: cell_gap, board_pixel_size: board_pixel_size }
+  def game_renderer
+    if @game_renderer.nil? || @game_renderer.cell_gap != cell_gap
+      @game_renderer = GameRenderer.new(cell_gap: cell_gap)
+    end
 
-    @renderer_config = { cell_gap: cell_gap, board_pixel_size: board_pixel_size }
-    @board_renderer = BoardRenderer.new(
-      cell_size: board.cell_width,
-      cell_gap: cell_gap,
-      board_pixel_size: board_pixel_size
-    )
-    @wall_renderer = WallRenderer.new(
-      cell_size: board.cell_width,
-      cell_gap: cell_gap,
-      board_pixel_size: board_pixel_size
-    )
-    @pawn_renderer = PawnRenderer.new(
-      cell_size: board.cell_width,
-      cell_gap: cell_gap
-    )
-  end
-
-  def board_renderer
-    @board_renderer
-  end
-
-  def wall_renderer
-    @wall_renderer
-  end
-
-  def pawn_renderer
-    @pawn_renderer
-  end
-
-  def render_player_names(args, board_x, board_y)
-    top_name = players[1].name
-    bottom_name = players[0].name
-    center_x = board_x + (board_pixel_size / 2)
-
-    args.outputs.labels << {
-      x: center_x,
-      y: board_y + board_pixel_size + 78,
-      text: top_name,
-      alignment_enum: 1,
-      size_enum: 2,
-      r: 235,
-      g: 235,
-      b: 235
-    }
-
-    args.outputs.labels << {
-      x: center_x,
-      y: board_y - 80,
-      text: bottom_name,
-      alignment_enum: 1,
-      size_enum: 2,
-      r: 235,
-      g: 235,
-      b: 235
-    }
+    @game_renderer
   end
 
   def board_pixel_size
