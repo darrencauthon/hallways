@@ -1,3 +1,7 @@
+require "app/renderers/board_renderer.rb"
+require "app/renderers/wall_renderer.rb"
+require "app/renderers/pawn_renderer.rb"
+
 class GameRenderer
   attr_reader :cell_gap
 
@@ -44,6 +48,62 @@ class GameRenderer
       dragged_pawn_x: dragged_pawn_x,
       dragged_pawn_y: dragged_pawn_y
     )
+  end
+
+  def reserve_wall_rects(args, game:, board_x:, board_y:)
+    wall_count = Game::WALLS_PER_LANE
+    spacing = 10
+    wall_w = game.walls[0].width
+    total_w = (wall_count * wall_w) + ((wall_count - 1) * spacing)
+    start_x = ((args.grid.w - total_w) / 2).to_i
+    top_y = board_y + board_pixel_size(game) + 36
+    bottom_y = board_y - 46
+
+    rects = {}
+    game.walls.each do |wall|
+      next if wall.placed?
+
+      rects[wall] = {
+        x: start_x + (wall.slot * (wall_w + spacing)),
+        y: wall.lane == :top ? top_y : bottom_y,
+        w: wall.width,
+        h: wall.height
+      }
+    end
+
+    rects
+  end
+
+  def hovered_reserve_wall(args, game:, board_x:, board_y:)
+    reserve_wall_rects(args, game: game, board_x: board_x, board_y: board_y).find do |_wall, rect|
+      mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
+    end&.first
+  end
+
+  def dragged_wall_rect(args, game:, board_x:, board_y:, dragged_wall:, dragged_wall_orientation:)
+    return { rect: nil, orientation: nil } if dragged_wall.nil?
+
+    hovered_well = hovered_wall_well(args, game: game, board_x: board_x, board_y: board_y)
+    orientation = dragged_wall_orientation
+    orientation = hovered_well.orientation if hovered_well
+
+    if orientation == :vertical
+      width = dragged_wall.height
+      height = dragged_wall.width
+    else
+      width = dragged_wall.width
+      height = dragged_wall.height
+    end
+
+    {
+      rect: {
+        x: mouse_x(args) - (width / 2),
+        y: mouse_y(args) - (height / 2),
+        w: width,
+        h: height
+      },
+      orientation: orientation
+    }
   end
 
   private
@@ -116,5 +176,38 @@ class GameRenderer
   def board_pixel_size(game)
     board = game.board
     (board.size * board.cell_width) + ((board.size - 1) * cell_gap)
+  end
+
+  def hovered_wall_well(args, game:, board_x:, board_y:)
+    game.board.wall_wells.find do |wall_well|
+      rect = wall_well.rect(
+        board_x,
+        board_y,
+        cell_width: game.board.cell_width,
+        cell_height: game.board.cell_height,
+        cell_gap: cell_gap
+      )
+
+      mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
+    end
+  end
+
+  def mouse_inside_rect?(args, x:, y:, w:, h:)
+    mouse = args.inputs.mouse
+    return false unless mouse
+    return false if mouse.x.nil? || mouse.y.nil?
+
+    mouse.x >= x &&
+      mouse.x <= x + w &&
+      mouse.y >= y &&
+      mouse.y <= y + h
+  end
+
+  def mouse_x(args)
+    args.inputs.mouse.x || 0
+  end
+
+  def mouse_y(args)
+    args.inputs.mouse.y || 0
   end
 end
