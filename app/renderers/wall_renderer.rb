@@ -44,7 +44,7 @@ class WallRenderer
     end
   end
 
-  def render_reserve_walls(args, game, board_x, board_y, dragged_wall:, dragged_rect:, hover_wall:)
+  def render_reserve_walls(args, game, board_x, board_y, dragged_wall:, dragged_rect:, dragged_angle:, hover_wall:)
     wall_count = Game::WALLS_PER_LANE
     spacing = 10
     wall_w = game.walls[0].width
@@ -69,12 +69,32 @@ class WallRenderer
         height = dragged_rect[:h]
       end
 
-      wall.render(args, x, y, width, height)
+      if wall == dragged_wall && !dragged_angle.nil?
+        render_rotated_dragged_wall(args, wall, x: x, y: y, width: width, height: height, angle: dragged_angle)
+      else
+        wall.render(args, x, y, width, height)
+      end
       draw_hover_border_if_needed(args, game, wall, x, y, width: width, height: height, hover_wall: hover_wall)
     end
   end
 
   private
+
+  def render_rotated_dragged_wall(args, wall, x:, y:, width:, height:, angle:)
+    args.outputs.sprites << {
+      x: x,
+      y: y,
+      w: width,
+      h: height,
+      path: :pixel,
+      r: wall.color[0],
+      g: wall.color[1],
+      b: wall.color[2],
+      angle: angle,
+      angle_anchor_x: 0.5,
+      angle_anchor_y: 0.5
+    }
+  end
 
   def draw_hover_border_if_needed(args, game, wall, x, y, width:, height:, hover_wall:)
     return unless wall.player == game.current_player

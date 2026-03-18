@@ -3,6 +3,9 @@ require "app/renderers/wall_renderer.rb"
 require "app/renderers/pawn_renderer.rb"
 
 class GameRenderer
+  DRAGGED_WALL_ROTATE_LERP = 0.28
+  DRAGGED_WALL_ROTATE_EPSILON = 0.1
+
   attr_reader :cell_gap
 
   def initialize(cell_gap:)
@@ -18,6 +21,7 @@ class GameRenderer
     pawn_drop_target:,
     dragged_wall:,
     dragged_rect:,
+    dragged_angle:,
     hover_wall:,
     dragged_pawn:,
     dragged_pawn_x:,
@@ -35,6 +39,7 @@ class GameRenderer
       board_y,
       dragged_wall: dragged_wall,
       dragged_rect: dragged_rect,
+      dragged_angle: dragged_angle,
       hover_wall: hover_wall
     )
     pawn_renderer.render_drop_target(args, board_x, board_y, pawn_drop_target)
@@ -81,28 +86,29 @@ class GameRenderer
   end
 
   def dragged_wall_rect(args, game:, board_x:, board_y:, dragged_wall:, dragged_wall_orientation:)
-    return { rect: nil, orientation: nil } if dragged_wall.nil?
+    if dragged_wall.nil?
+      reset_dragged_wall_preview_state
+      return { rect: nil, orientation: nil, angle: nil }
+    end
 
     hovered_well = hovered_wall_well(args, game: game, board_x: board_x, board_y: board_y)
     orientation = dragged_wall_orientation
     orientation = hovered_well.orientation if hovered_well
 
-    if orientation == :vertical
-      width = dragged_wall.height
-      height = dragged_wall.width
-    else
-      width = dragged_wall.width
-      height = dragged_wall.height
-    end
+    target_angle = orientation == :vertical ? 90.0 : 0.0
+
+    initialize_dragged_wall_preview_state_if_needed(dragged_wall)
+    @dragged_wall_preview_angle = animate_angle(@dragged_wall_preview_angle, target_angle)
 
     {
       rect: {
-        x: mouse_x(args) - (width / 2),
-        y: mouse_y(args) - (height / 2),
-        w: width,
-        h: height
+        x: mouse_x(args) - (dragged_wall.width / 2),
+        y: mouse_y(args) - (dragged_wall.height / 2),
+        w: dragged_wall.width,
+        h: dragged_wall.height
       },
-      orientation: orientation
+      orientation: orientation,
+      angle: @dragged_wall_preview_angle
     }
   end
 
@@ -209,5 +215,26 @@ class GameRenderer
 
   def mouse_y(args)
     args.inputs.mouse.y || 0
+  end
+
+  def initialize_dragged_wall_preview_state_if_needed(dragged_wall)
+    return if @dragged_wall_preview_wall == dragged_wall && !@dragged_wall_preview_angle.nil?
+
+    @dragged_wall_preview_wall = dragged_wall
+    @dragged_wall_preview_angle = 0.0
+  end
+
+  def animate_angle(current, target)
+    return target if current.nil?
+
+    delta = target - current
+    return target if delta.abs <= DRAGGED_WALL_ROTATE_EPSILON
+
+    current + (delta * DRAGGED_WALL_ROTATE_LERP)
+  end
+
+  def reset_dragged_wall_preview_state
+    @dragged_wall_preview_wall = nil
+    @dragged_wall_preview_angle = nil
   end
 end

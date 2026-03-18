@@ -140,6 +140,7 @@ class Game
       pawn_drop_target: pawn_drop_target,
       dragged_wall: @dragged_wall,
       dragged_rect: dragged_wall_preview[:rect],
+      dragged_angle: dragged_wall_preview[:angle],
       hover_wall: renderer.hovered_reserve_wall(args, game: self, board_x: board_x, board_y: board_y),
       dragged_pawn: @dragged_pawn,
       dragged_pawn_x: dragged_pawn_x(args),
