@@ -79,7 +79,7 @@ class GameScreen
   def update_wall_drag_state(args, board_x, board_y)
     if mouse_released?(args)
       if dragged_wall
-        placement = hovered_available_wall_placement(args, board_x, board_y)
+        placement = hovered_available_wall_placement(args, board_x, board_y, use_last_hovered: false)
         if placement
           game.place_wall_in_well_with_side(
             dragged_wall,
@@ -108,7 +108,7 @@ class GameScreen
     end
   end
 
-  def hovered_available_wall_placement(args, board_x, board_y)
+  def hovered_available_wall_placement(args, board_x, board_y, use_last_hovered: true)
     game.board.wall_wells.each do |wall_well|
       next false if wall_well.occupied?
 
@@ -130,6 +130,7 @@ class GameScreen
       return placement
     end
 
+    return nil unless use_last_hovered
     return nil if @last_hovered_wall_placement.nil?
     if game.can_place_wall_in_well?(
       dragged_wall,
