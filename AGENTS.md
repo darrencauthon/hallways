@@ -24,10 +24,15 @@
 
 ## DragonRuby Conventions
 - Entry point: `app/main.rb`.
-- As code grows, separate rendering and game logic.
+- Runtime split:
+  - `app/runtime/testing_runtime.rb` handles `--test` mode.
+  - `app/runtime/playing_runtime.rb` handles normal game/screen flow.
+  - `app/runtime/shared_runtime.rb` contains shared runtime helpers.
+- Keep rendering logic in renderer classes whenever practical (`app/renderers/**`), and keep gameplay/rules in models/controllers.
 - Keep board-rule logic deterministic and testable.
 - Do not prefix non-test methods with `test_`; DragonRuby test discovery will treat them as tests.
 - Naming rule: `Board` is the 9x9 grid; `Wall` is a reserve/placeable wall piece.
+- Be conservative with keyword-argument-heavy interfaces across renderer boundaries; DragonRuby Ruby subset can behave differently than MRI in some call paths.
 
 ## Verification
 - After each code change, state exactly how to run and what to check.
@@ -39,7 +44,8 @@
 - Treat warnings in DragonRuby test output as actionable problems and fix them before considering test runs clean.
 - Agent must run tests directly before moving on; do not rely on user-run tests as the only signal.
 - A test run is not considered clean unless there are zero warnings and zero failures.
-- After each test run, inspect `test-output.txt` (custom runner summary) and `errors/last.txt` (runtime warning/exception signal).
+- After each test run, inspect `errors/last.txt` (runtime warning/exception signal).
+- If available, also inspect `test-output.txt` (custom runner summary). If `test-output.txt` is not generated, rely on DragonRuby output summary plus `errors/last.txt`.
 - When capturing DragonRuby console output via PowerShell transcript, write to `test-transcript.txt` (not `test-output.txt`) to avoid collisions with custom runner output.
 - When reading captured transcript output, use a high limit (`Get-Content ... -TotalCount 10000`) so failures/warnings are not truncated.
 
@@ -49,10 +55,17 @@
 - Keep `README.md` and `AGENTS.md` aligned when run/test instructions change.
 
 ## Architecture Snapshot
-- `Game` owns top-level state objects.
-- `Game` currently contains `board`, `pawns`, and reserve `walls`.
-- `Board` contains `squares`.
-- Rendering primitives live on their owning objects where practical (`Pawn`, `Square`, `Wall`).
+- Folder layout:
+  - `app/models`: gameplay/state objects (`Game`, `Board`, `Pawn`, `Player`, `Wall`, `WallWell`, `Square`)
+  - `app/controllers`: human/bot move logic
+  - `app/renderers`: all rendering orchestration and draw details
+  - `app/screens`: screen-level input + flow (`title`, `setup`, `game`, `victory`)
+  - `app/tests`: test files
+  - `app/runtime`: test/play runtime entry orchestration
+- `Game` owns core match state and rules.
+- `GameRenderer` owns board/pawn/wall composition rendering.
+- `GameScreenRenderer` owns screen-level visual helpers (for example: thinking indicator and background).
+- Pawn art currently uses sprite sheets (`source_x/source_y/source_w/source_h`) and frame dimensions must match the actual asset frame size.
 
 ## Communication
 - Be direct and concise.
