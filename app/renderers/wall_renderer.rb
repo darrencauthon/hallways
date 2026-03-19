@@ -44,7 +44,11 @@ class WallRenderer
     end
   end
 
-  def render_reserve_walls(args, game, board_x, board_y, dragged_wall:, dragged_rect:, dragged_angle:, hover_wall:)
+  def render_reserve_walls(args, game, board_x, board_y, options = {})
+    dragged_wall = options[:dragged_wall]
+    dragged_rect = options[:dragged_rect]
+    dragged_angle = options[:dragged_angle]
+    hover_wall = options[:hover_wall]
     wall_count = Game::WALLS_PER_LANE
     spacing = 10
     wall_w = game.walls[0].width

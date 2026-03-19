@@ -37,10 +37,12 @@ class GameRenderer
       game,
       board_x,
       board_y,
-      dragged_wall: dragged_wall,
-      dragged_rect: dragged_rect,
-      dragged_angle: dragged_angle,
-      hover_wall: hover_wall
+      {
+        dragged_wall: dragged_wall,
+        dragged_rect: dragged_rect,
+        dragged_angle: dragged_angle,
+        hover_wall: hover_wall
+      }
     )
     pawn_renderer.render_drop_target(args, board_x, board_y, pawn_drop_target)
     render_player_names(args, game, board_x, board_y)
