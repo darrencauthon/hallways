@@ -18,11 +18,11 @@ def test_title_screen_up_wraps_to_quit(args, assert)
   assert.equal! :quit, action, "Expected Up from first option to wrap to Quit."
 end
 
-def test_title_screen_mouse_click_play_two_player_game(args, assert)
+def test_title_screen_mouse_click_play(args, assert)
   screen = TitleScreen.new
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(mouse_x: 640, mouse_y: 250, mouse_down: true))
 
-  assert.equal! :open_setup, action, "Expected mouse click over Play 2 Player Game to open setup."
+  assert.equal! :open_setup, action, "Expected mouse click over Play to open setup."
 end
 
 def test_title_screen_renders_version_label(args, assert)
@@ -30,8 +30,8 @@ def test_title_screen_renders_version_label(args, assert)
   fake_args = TitleScreenTestHelpers.build_fake_args
   screen.tick(fake_args)
 
-  version_label = fake_args.outputs.labels.find { |label| label[:text] == "v0.1.9" }
-  assert.equal! false, version_label.nil?, "Expected title screen to render version label v0.1.9."
+  version_label = fake_args.outputs.labels.find { |label| label[:text] == "v0.2.1" }
+  assert.equal! false, version_label.nil?, "Expected title screen to render version label v0.2.1."
 end
 
 module TitleScreenTestHelpers

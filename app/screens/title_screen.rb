@@ -1,5 +1,5 @@
 class TitleScreen
-  MENU_OPTIONS = ["Play 2 Player Game", "Quit"].freeze
+  MENU_OPTIONS = ["Play", "Quit"].freeze
   MENU_X_CENTER = 640
   MENU_Y_START = 250
   MENU_Y_STEP = 45
@@ -36,7 +36,7 @@ class TitleScreen
     render_version(args)
 
     confirmed = confirm_pressed?(args) || mouse_click_confirm?(args)
-    return :open_setup if confirmed && selected_option == "Play 2 Player Game"
+    return :open_setup if confirmed && selected_option == "Play"
     return :quit if confirmed && selected_option == "Quit"
 
     nil
