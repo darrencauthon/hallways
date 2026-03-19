@@ -26,7 +26,7 @@ class GameScreen
       @dragged_wall = nil
       clear_dragged_pawn
     end
-    wall_drop_target = hovered_available_wall_placement(args, board_x, board_y) if dragged_wall
+    wall_drop_target = hovered_available_wall_placement(args, board_x, board_y, use_last_hovered: false) if dragged_wall
     pawn_drop_target = available_pawn_drop_target(args, board_x, board_y)
     game.sync_render_state(
       dragged_wall: dragged_wall,
@@ -131,6 +131,7 @@ class GameScreen
     end
 
     return nil unless use_last_hovered
+    return nil unless mouse_near_board?(args, board_x, board_y)
     return nil if @last_hovered_wall_placement.nil?
     if game.can_place_wall_in_well?(
       dragged_wall,
@@ -142,6 +143,17 @@ class GameScreen
 
     @last_hovered_wall_placement = nil
     nil
+  end
+
+  def mouse_near_board?(args, board_x, board_y)
+    padding = 36
+    mouse_inside_rect?(
+      args,
+      x: board_x - padding,
+      y: board_y - padding,
+      w: board_pixel_size + (padding * 2),
+      h: board_pixel_size + (padding * 2)
+    )
   end
 
   def update_pawn_drag_state(args, board_x, board_y)
