@@ -51,7 +51,11 @@ module PlayingRuntime
     return if action.nil?
     return unless action[0] == :start_game
 
-    start_new_game(args, player_types: action[1][:player_types])
+    start_new_game(
+      args,
+      player_count: action[1][:player_count] || action[1][:player_types].length,
+      player_types: action[1][:player_types]
+    )
   end
 
   def self.handle_game_action(args, action)
@@ -65,15 +69,20 @@ module PlayingRuntime
 
   def self.handle_victory_action(args, action)
     if action == :play_again
-      start_new_game(args, player_types: args.state.game_player_types || [:human, :human])
+      start_new_game(
+        args,
+        player_count: args.state.game_player_count || 2,
+        player_types: args.state.game_player_types || [:human, :human]
+      )
     elsif action == :main_menu
       args.state.screen_name = :title
     end
   end
 
-  def self.start_new_game(args, player_types: [:human, :human])
+  def self.start_new_game(args, player_count: 2, player_types: [:human, :human])
+    args.state.game_player_count = player_count
     args.state.game_player_types = player_types
-    args.state.game_screen_instance = GameScreen.new(player_types: player_types)
+    args.state.game_screen_instance = GameScreen.new(player_count: player_count, player_types: player_types)
     args.state.winner_name = nil
     args.state.screen_name = :game
   end

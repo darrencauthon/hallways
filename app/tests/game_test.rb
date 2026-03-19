@@ -10,11 +10,27 @@ def test_game_initial_has_two_players(args, assert)
   assert.equal! 2, game.players.length, "Expected game to start with two players."
 end
 
+def test_game_can_initialize_with_four_players(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_count: 4, player_types: [:human, :human, :human, :human])
+
+  assert.equal! 4, game.players.length, "Expected 4-player game to have four players."
+  assert.equal! 4, game.pawns.length, "Expected 4-player game to have four pawns."
+end
+
 def test_game_initial_player_names(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
   assert.equal! "Player 1", game.players[0].name, "Expected first player name to be Player 1."
   assert.equal! "Player 2", game.players[1].name, "Expected second player name to be Player 2."
+end
+
+def test_game_four_player_initial_player_names(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_count: 4, player_types: [:human, :human, :human, :human])
+
+  assert.equal! "Player 1", game.players[0].name, "Expected first player name to be Player 1."
+  assert.equal! "Player 2", game.players[1].name, "Expected second player name to be Player 2."
+  assert.equal! "Player 3", game.players[2].name, "Expected third player name to be Player 3."
+  assert.equal! "Player 4", game.players[3].name, "Expected fourth player name to be Player 4."
 end
 
 def test_game_default_mode_uses_two_human_controllers(args, assert)
@@ -60,6 +76,15 @@ def test_game_supports_pressure_bot_configuration(args, assert)
 
   assert.equal! true, game.players[0].controller.is_a?(PressureBotController), "Expected Player 1 controller to be PressureBot when configured."
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
+end
+
+def test_game_supports_four_player_mixed_controller_configuration(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_count: 4, player_types: [:human, :random_bot, :path_bot, :pressure_bot])
+
+  assert.equal! true, game.players[0].controller.is_a?(HumanController), "Expected Player 1 controller to be human."
+  assert.equal! true, game.players[1].controller.is_a?(RandomBotController), "Expected Player 2 controller to be RandomBot."
+  assert.equal! true, game.players[2].controller.is_a?(PathBotController), "Expected Player 3 controller to be PathBot."
+  assert.equal! true, game.players[3].controller.is_a?(PressureBotController), "Expected Player 4 controller to be PressureBot."
 end
 
 def test_random_bot_controller_can_return_valid_wall_action(args, assert)
@@ -204,6 +229,13 @@ def test_game_initial_players_have_winning_rows(args, assert)
   assert.equal! 0, game.players[1].winning_row, "Expected Player 2 winning row to be the bottom row."
 end
 
+def test_game_four_player_horizontal_players_have_winning_cols(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_count: 4, player_types: [:human, :human, :human, :human])
+
+  assert.equal! 8, game.players[2].winning_col, "Expected Player 3 winning col to be right edge."
+  assert.equal! 0, game.players[3].winning_col, "Expected Player 4 winning col to be left edge."
+end
+
 def test_game_initial_current_player_is_first_player(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
@@ -250,6 +282,12 @@ def test_game_initial_has_twenty_walls(args, assert)
   assert.equal! 20, game.walls.length, "Expected game to start with 20 reserve walls."
 end
 
+def test_game_four_player_initial_has_twenty_walls(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_count: 4, player_types: [:human, :human, :human, :human])
+
+  assert.equal! 20, game.walls.length, "Expected 4-player game to start with 20 reserve walls total."
+end
+
 def test_game_initial_walls_split_evenly_between_players(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 
@@ -260,6 +298,13 @@ def test_game_initial_walls_split_evenly_between_players(args, assert)
 
   assert.equal! 10, player_one_walls, "Expected Player 1 to start with 10 walls."
   assert.equal! 10, player_two_walls, "Expected Player 2 to start with 10 walls."
+end
+
+def test_game_four_player_initial_walls_split_five_each(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_count: 4, player_types: [:human, :human, :human, :human])
+
+  counts = game.players.map { |player| game.walls.count { |wall| wall.player == player } }
+  assert.equal! [5, 5, 5, 5], counts, "Expected each player to start with 5 walls in 4-player mode."
 end
 
 def test_game_wall_lane_matches_player_side(args, assert)
@@ -673,4 +718,13 @@ def test_game_initial_pawn_positions(args, assert)
   assert.equal! 0, first.row, "Expected first pawn to start on bottom row."
   assert.equal! 4, second.col, "Expected second pawn to start in middle column."
   assert.equal! 8, second.row, "Expected second pawn to start on top row."
+end
+
+def test_game_four_player_initial_pawn_positions(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_count: 4, player_types: [:human, :human, :human, :human])
+
+  assert.equal! [4, 0], [game.pawns[0].col, game.pawns[0].row], "Expected Player 1 pawn at bottom center."
+  assert.equal! [4, 8], [game.pawns[1].col, game.pawns[1].row], "Expected Player 2 pawn at top center."
+  assert.equal! [0, 4], [game.pawns[2].col, game.pawns[2].row], "Expected Player 3 pawn at left center."
+  assert.equal! [8, 4], [game.pawns[3].col, game.pawns[3].row], "Expected Player 4 pawn at right center."
 end

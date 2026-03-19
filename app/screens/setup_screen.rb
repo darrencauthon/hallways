@@ -1,13 +1,14 @@
 class SetupScreen
   PLAYER_TYPES = [:human, :random_bot, :path_bot, :last_line_bot, :pressure_bot].freeze
-  MENU_ROWS = [:player_one, :player_two, :play].freeze
+  PLAYER_COUNT_OPTIONS = [2, 4].freeze
   MENU_X_CENTER = 640
-  MENU_Y_START = 290
-  MENU_Y_STEP = 60
-  MENU_HOVER_HALF_HEIGHT = 26
-  MENU_HOVER_X_PADDING = 260
+  MENU_Y_START = 320
+  MENU_Y_STEP = 50
+  MENU_HOVER_HALF_HEIGHT = 24
+  MENU_HOVER_X_PADDING = 280
 
   def initialize
+    @player_count = 2
     @player_types = [:human, :human]
   end
 
@@ -17,8 +18,8 @@ class SetupScreen
     args.outputs.background_color = [18, 20, 28]
     args.outputs.labels << {
       x: 640,
-      y: 410,
-      text: "2 Player Setup",
+      y: 420,
+      text: "Game Setup",
       alignment_enum: 1,
       size_enum: 5,
       r: 240,
@@ -27,7 +28,7 @@ class SetupScreen
     }
 
     render_rows(args)
-    return [:start_game, { player_types: @player_types.dup }] if play_confirmed?(args)
+    return [:start_game, { player_count: @player_count, player_types: @player_types.dup }] if play_confirmed?(args)
 
     nil
   end
@@ -44,17 +45,19 @@ class SetupScreen
       select_next_row
     end
 
-    if selected_row == :player_one
-      cycle_player_type(0, -1) if left_pressed?(args)
-      cycle_player_type(0, 1) if right_pressed?(args) || mouse_clicked_row?(args, :player_one)
-    elsif selected_row == :player_two
-      cycle_player_type(1, -1) if left_pressed?(args)
-      cycle_player_type(1, 1) if right_pressed?(args) || mouse_clicked_row?(args, :player_two)
+    row = selected_row
+    if row == :game_size
+      cycle_player_count(1) if right_pressed?(args) || mouse_clicked_row?(args, :game_size)
+      cycle_player_count(-1) if left_pressed?(args)
+    elsif player_row?(row)
+      player_index = player_index_for_row(row)
+      cycle_player_type(player_index, -1) if left_pressed?(args)
+      cycle_player_type(player_index, 1) if right_pressed?(args) || mouse_clicked_row?(args, row)
     end
   end
 
   def render_rows(args)
-    MENU_ROWS.each_with_index do |row, index|
+    visible_rows.each_with_index do |row, index|
       selected = index == selected_row_index
       text = row_text(row)
       args.outputs.labels << {
@@ -70,13 +73,50 @@ class SetupScreen
     end
   end
 
+  def visible_rows
+    rows = [:game_size, :player_one, :player_two]
+    if @player_count == 4
+      rows << :player_three
+      rows << :player_four
+    end
+    rows << :play
+    rows
+  end
+
   def row_text(row)
-    if row == :player_one
-      "Player 1: #{display_type(@player_types[0])}"
-    elsif row == :player_two
-      "Player 2: #{display_type(@player_types[1])}"
+    return "Players: #{@player_count}" if row == :game_size
+    return "Play" if row == :play
+
+    player_index = player_index_for_row(row)
+    "Player #{player_index + 1}: #{display_type(@player_types[player_index])}"
+  end
+
+  def player_row?(row)
+    [:player_one, :player_two, :player_three, :player_four].include?(row)
+  end
+
+  def player_index_for_row(row)
+    return 0 if row == :player_one
+    return 1 if row == :player_two
+    return 2 if row == :player_three
+
+    3
+  end
+
+  def cycle_player_count(delta)
+    current_index = PLAYER_COUNT_OPTIONS.index(@player_count) || 0
+    @player_count = PLAYER_COUNT_OPTIONS[(current_index + delta) % PLAYER_COUNT_OPTIONS.length]
+    normalize_player_types!
+  end
+
+  def normalize_player_types!
+    if @player_count == 2
+      @player_types = @player_types.take(2)
     else
-      "Play"
+      @player_types = @player_types.take(4)
+      while @player_types.length < 4
+        @player_types << :human
+      end
     end
   end
 
@@ -90,6 +130,8 @@ class SetupScreen
   end
 
   def cycle_player_type(player_index, delta)
+    return if player_index >= @player_types.length
+
     current_type = @player_types[player_index]
     current_index = PLAYER_TYPES.index(current_type) || 0
     @player_types[player_index] = PLAYER_TYPES[(current_index + delta) % PLAYER_TYPES.length]
@@ -100,7 +142,8 @@ class SetupScreen
   end
 
   def selected_row
-    MENU_ROWS[selected_row_index]
+    rows = visible_rows
+    rows[selected_row_index % rows.length]
   end
 
   def selected_row_index
@@ -108,11 +151,11 @@ class SetupScreen
   end
 
   def select_next_row
-    @selected_row_index = (selected_row_index + 1) % MENU_ROWS.length
+    @selected_row_index = (selected_row_index + 1) % visible_rows.length
   end
 
   def select_previous_row
-    @selected_row_index = (selected_row_index - 1) % MENU_ROWS.length
+    @selected_row_index = (selected_row_index - 1) % visible_rows.length
   end
 
   def hovered_row_index(args)
@@ -120,7 +163,7 @@ class SetupScreen
     return nil unless mouse
     return nil if mouse.x.nil? || mouse.y.nil?
 
-    MENU_ROWS.each_with_index do |_row, index|
+    visible_rows.each_with_index do |_row, index|
       y = row_y(index)
       if mouse.x >= (MENU_X_CENTER - MENU_HOVER_X_PADDING) &&
          mouse.x <= (MENU_X_CENTER + MENU_HOVER_X_PADDING) &&
@@ -141,7 +184,7 @@ class SetupScreen
     index = hovered_row_index(args)
     return false if index.nil?
 
-    MENU_ROWS[index] == row
+    visible_rows[index] == row
   end
 
   def row_y(index)

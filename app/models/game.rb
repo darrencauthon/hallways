@@ -13,25 +13,23 @@ require "app/renderers/game_renderer.rb"
 
 class Game
   WALLS_PER_LANE = 10
+  WALLS_PER_PLAYER_TWO = 10
+  WALLS_PER_PLAYER_FOUR = 5
   WALL_COLOR = [210, 165, 95]
   WALL_WIDTH = 90
   WALL_HEIGHT = 10
 
-  attr_reader :pawns, :board, :walls, :players, :winner, :cell_gap, :mode, :player_types
+  attr_reader :pawns, :board, :walls, :players, :winner, :cell_gap, :mode, :player_types, :player_count
 
-  def initialize(cell_width:, cell_height:, cell_gap: 6, mode: :human_vs_human, player_types: nil)
+  def initialize(cell_width:, cell_height:, cell_gap: 6, mode: :human_vs_human, player_types: nil, player_count: nil)
     @mode = mode
-    @player_types = player_types || player_types_for_mode(mode)
+    @player_count = player_count || (player_types&.length || 2)
+    @player_types = player_types || default_player_types_for_count(@player_count)
+    @player_count = @player_types.length
     @cell_gap = cell_gap
     @board = Board.new(cell_width: cell_width, cell_height: cell_height)
-    @players = [
-      build_player(index: 0, winning_row: board.size - 1),
-      build_player(index: 1, winning_row: 0)
-    ]
-    @pawns = [
-      Pawn.new(4, 0, [245, 245, 245], player: @players[0], cell_width: cell_width, cell_height: cell_height),
-      Pawn.new(4, 8, [50, 50, 50], player: @players[1], cell_width: cell_width, cell_height: cell_height)
-    ]
+    @players = build_players
+    @pawns = build_pawns(cell_width: cell_width, cell_height: cell_height)
     @walls = build_walls
     @turn_index = 0
   end
@@ -62,7 +60,7 @@ class Game
     return false unless can_move_pawn_to?(pawn, col, row)
 
     pawn.move_to(col, row)
-    @winner = pawn.player if pawn.player.winning_row == row
+    @winner = pawn.player if pawn.player.goal_reached?(col, row)
     next_turn! if winner.nil?
     true
   end
@@ -82,6 +80,7 @@ class Game
         start_col: pawn.col,
         start_row: pawn.row,
         goal_row: pawn.player.winning_row,
+        goal_col: pawn.player.winning_col,
         extra_occupied_wall_wells: wall_span
       )
     end
@@ -150,18 +149,25 @@ class Game
 
   private
 
+  def default_player_types_for_count(player_count)
+    return [:human, :human, :human, :human] if player_count == 4
+
+    player_types_for_mode(mode)
+  end
+
   def player_types_for_mode(mode)
     return [:human, :random_bot] if mode == :human_vs_computer
 
     [:human, :human]
   end
 
-  def build_player(index:, winning_row:)
+  def build_player(index:, winning_row:, winning_col: nil)
     player_type = player_types[index]
     Player.new(
       display_name_for(index, player_type),
       game: self,
       winning_row: winning_row,
+      winning_col: winning_col,
       controller: controller_for(player_type)
     )
   end
@@ -304,14 +310,82 @@ class Game
 
   def build_walls
     walls = []
-    player_bottom = players[0]
-    player_top = players[1]
+    walls_per_player = player_count == 4 ? WALLS_PER_PLAYER_FOUR : WALLS_PER_PLAYER_TWO
 
-    WALLS_PER_LANE.times do |slot|
-      walls << Wall.new(lane: :top, slot: slot, width: WALL_WIDTH, height: WALL_HEIGHT, color: WALL_COLOR, player: player_top)
-      walls << Wall.new(lane: :bottom, slot: slot, width: WALL_WIDTH, height: WALL_HEIGHT, color: WALL_COLOR, player: player_bottom)
+    players.each_with_index do |player, index|
+      lane = wall_lane_for_player(index)
+      slot_offset = wall_slot_offset_for_player(index)
+      walls_per_player.times do |slot|
+        walls << Wall.new(
+          lane: lane,
+          slot: slot_offset + slot,
+          width: WALL_WIDTH,
+          height: WALL_HEIGHT,
+          color: WALL_COLOR,
+          player: player
+        )
+      end
     end
 
     walls
+  end
+
+  def wall_lane_for_player(index)
+    return :bottom if index == 0 || index == 2
+
+    :top
+  end
+
+  def wall_slot_offset_for_player(index)
+    return 0 unless player_count == 4
+    return 5 if index == 2 || index == 3
+
+    0
+  end
+
+  def build_players
+    configs = player_start_configs
+    configs.each_with_index.map do |config, index|
+      build_player(index: index, winning_row: config[:winning_row], winning_col: config[:winning_col])
+    end
+  end
+
+  def build_pawns(cell_width:, cell_height:)
+    configs = player_start_configs
+    configs.each_with_index.map do |config, index|
+      color = pawn_color_for(index)
+      Pawn.new(
+        config[:start_col],
+        config[:start_row],
+        color,
+        player: @players[index],
+        cell_width: cell_width,
+        cell_height: cell_height
+      )
+    end
+  end
+
+  def pawn_color_for(index)
+    return [245, 245, 245] if index == 0
+    return [50, 50, 50] if index == 1
+    return [200, 200, 200] if index == 2
+
+    [85, 85, 85]
+  end
+
+  def player_start_configs
+    if player_count == 4
+      [
+        { start_col: 4, start_row: 0, winning_row: 8, winning_col: nil },
+        { start_col: 4, start_row: 8, winning_row: 0, winning_col: nil },
+        { start_col: 0, start_row: 4, winning_row: nil, winning_col: 8 },
+        { start_col: 8, start_row: 4, winning_row: nil, winning_col: 0 }
+      ]
+    else
+      [
+        { start_col: 4, start_row: 0, winning_row: 8, winning_col: nil },
+        { start_col: 4, start_row: 8, winning_row: 0, winning_col: nil }
+      ]
+    end
   end
 end

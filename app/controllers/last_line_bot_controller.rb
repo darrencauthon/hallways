@@ -24,7 +24,7 @@ class LastLineBotController < BotController
     @scan_complete = false
     @block_mode = false
     @my_pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
-    @opponent_pawn = game.pawns.find { |candidate| candidate.player != game.current_player }
+    @opponent_pawn = most_advanced_opponent_pawn(game)
 
     if @my_pawn.nil?
       @scan_complete = true
@@ -48,11 +48,11 @@ class LastLineBotController < BotController
       return
     end
 
-    @baseline_distance = distance_to_goal_row(
+    @baseline_distance = distance_to_goal(
       game.board,
       @opponent_pawn.col,
       @opponent_pawn.row,
-      @opponent_pawn.player.winning_row,
+      @opponent_pawn.player,
       extra_occupied_wall_wells: nil
     )
     if @baseline_distance.nil?
@@ -92,11 +92,11 @@ class LastLineBotController < BotController
     wall_span = game.board.wall_span_from(wall_well, preferred_side: preferred_side)
     return if wall_span.nil?
 
-    candidate_distance = distance_to_goal_row(
+    candidate_distance = distance_to_goal(
       game.board,
       @opponent_pawn.col,
       @opponent_pawn.row,
-      @opponent_pawn.player.winning_row,
+      @opponent_pawn.player,
       extra_occupied_wall_wells: wall_span
     )
     return if candidate_distance.nil?
@@ -145,24 +145,28 @@ class LastLineBotController < BotController
   def should_block_opponent?(opponent_pawn)
     return false if opponent_pawn.nil?
 
-    rows_from_goal = (opponent_pawn.player.winning_row - opponent_pawn.row).abs
-    rows_from_goal <= 2
+    if opponent_pawn.player.goal_axis == :row
+      distance_from_goal = (opponent_pawn.player.winning_row - opponent_pawn.row).abs
+    else
+      distance_from_goal = (opponent_pawn.player.winning_col - opponent_pawn.col).abs
+    end
+    distance_from_goal <= 2
   end
 
   def best_move_action(game, pawn)
     legal_moves = legal_pawn_moves(game, pawn)
     return nil if legal_moves.empty?
 
-    goal_row = game.current_player.winning_row
+    current_player = game.current_player
     best_distance = nil
     best_moves = []
 
     legal_moves.each do |move|
-      distance = distance_to_goal_row(
+      distance = distance_to_goal(
         game.board,
         move[:col],
         move[:row],
-        goal_row,
+        current_player,
         extra_occupied_wall_wells: nil
       )
       next if distance.nil?
@@ -192,8 +196,8 @@ class LastLineBotController < BotController
     end
   end
 
-  def distance_to_goal_row(board, start_col, start_row, goal_row, extra_occupied_wall_wells:)
-    return 0 if start_row == goal_row
+  def distance_to_goal(board, start_col, start_row, player, extra_occupied_wall_wells:)
+    return 0 if player.goal_reached?(start_col, start_row)
 
     visited = {}
     frontier = [{ col: start_col, row: start_row, steps: 0 }]
@@ -210,7 +214,7 @@ class LastLineBotController < BotController
         key = key_for(neighbor[:col], neighbor[:row])
         next if visited[key]
 
-        return current[:steps] + 1 if neighbor[:row] == goal_row
+        return current[:steps] + 1 if player.goal_reached?(neighbor[:col], neighbor[:row])
 
         visited[key] = true
         frontier << {
@@ -244,5 +248,14 @@ class LastLineBotController < BotController
 
   def key_for(col, row)
     "#{col},#{row}"
+  end
+
+  def most_advanced_opponent_pawn(game)
+    candidates = game.pawns.select { |candidate| candidate.player != game.current_player }
+    return nil if candidates.empty?
+
+    candidates.min_by do |pawn|
+      distance_to_goal(game.board, pawn.col, pawn.row, pawn.player, extra_occupied_wall_wells: nil) || 9_999
+    end
   end
 end

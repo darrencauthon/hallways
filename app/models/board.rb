@@ -23,13 +23,13 @@ class Board
     wall_well_occupied?(wall_well, extra_occupied_wall_wells: extra_occupied_wall_wells)
   end
 
-  def path_exists?(start_col:, start_row:, goal_row:, extra_occupied_wall_wells: nil)
+  def path_exists?(start_col:, start_row:, goal_row: nil, goal_col: nil, extra_occupied_wall_wells: nil)
     frontier = [{ col: start_col, row: start_row }]
     visited = { "#{start_col},#{start_row}" => true }
 
     until frontier.empty?
       current = frontier.shift
-      return true if current[:row] == goal_row
+      return true if reached_goal?(current[:col], current[:row], goal_row: goal_row, goal_col: goal_col)
 
       neighbor_positions(
         current[:col],
@@ -165,5 +165,12 @@ class Board
 
   def span_offset(preferred_side)
     preferred_side == :negative ? -1 : 1
+  end
+
+  def reached_goal?(col, row, goal_row:, goal_col:)
+    return true if !goal_row.nil? && row == goal_row
+    return true if !goal_col.nil? && col == goal_col
+
+    false
   end
 end

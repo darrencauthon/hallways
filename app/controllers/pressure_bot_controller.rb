@@ -26,7 +26,7 @@ class PressureBotController < BotController
 
     @game = game
     @my_pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
-    @opponent_pawn = game.pawns.find { |candidate| candidate.player != game.current_player }
+    @opponent_pawn = most_advanced_opponent_pawn(game)
     @wall_piece = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
     @best_wall_candidate = nil
     @wall_candidates = []
@@ -37,18 +37,18 @@ class PressureBotController < BotController
       return
     end
 
-    @my_baseline_distance = distance_to_goal_row(
+    @my_baseline_distance = distance_to_goal(
       game.board,
       @my_pawn.col,
       @my_pawn.row,
-      @my_pawn.player.winning_row,
+      @my_pawn.player,
       extra_occupied_wall_wells: nil
     )
-    @opponent_baseline_distance = distance_to_goal_row(
+    @opponent_baseline_distance = distance_to_goal(
       game.board,
       @opponent_pawn.col,
       @opponent_pawn.row,
-      @opponent_pawn.player.winning_row,
+      @opponent_pawn.player,
       extra_occupied_wall_wells: nil
     )
     @best_move_candidate = best_move_candidate(game, @my_pawn)
@@ -102,18 +102,18 @@ class PressureBotController < BotController
     wall_span = game.board.wall_span_from(wall_well, preferred_side: preferred_side)
     return if wall_span.nil?
 
-    opponent_after = distance_to_goal_row(
+    opponent_after = distance_to_goal(
       game.board,
       @opponent_pawn.col,
       @opponent_pawn.row,
-      @opponent_pawn.player.winning_row,
+      @opponent_pawn.player,
       extra_occupied_wall_wells: wall_span
     )
-    my_after = distance_to_goal_row(
+    my_after = distance_to_goal(
       game.board,
       @my_pawn.col,
       @my_pawn.row,
-      @my_pawn.player.winning_row,
+      @my_pawn.player,
       extra_occupied_wall_wells: wall_span
     )
     return if opponent_after.nil? || my_after.nil?
@@ -144,16 +144,16 @@ class PressureBotController < BotController
     legal_moves = legal_pawn_moves(game, pawn)
     return nil if legal_moves.empty?
 
-    baseline = @my_baseline_distance || distance_to_goal_row(game.board, pawn.col, pawn.row, pawn.player.winning_row, extra_occupied_wall_wells: nil)
+    baseline = @my_baseline_distance || distance_to_goal(game.board, pawn.col, pawn.row, pawn.player, extra_occupied_wall_wells: nil)
     best_score = nil
     best_actions = []
 
     legal_moves.each do |move|
-      move_distance = distance_to_goal_row(
+      move_distance = distance_to_goal(
         game.board,
         move[:col],
         move[:row],
-        pawn.player.winning_row,
+        pawn.player,
         extra_occupied_wall_wells: nil
       )
       next if move_distance.nil?
@@ -204,8 +204,8 @@ class PressureBotController < BotController
     end
   end
 
-  def distance_to_goal_row(board, start_col, start_row, goal_row, extra_occupied_wall_wells:)
-    return 0 if start_row == goal_row
+  def distance_to_goal(board, start_col, start_row, player, extra_occupied_wall_wells:)
+    return 0 if player.goal_reached?(start_col, start_row)
 
     visited = {}
     frontier = [{ col: start_col, row: start_row, steps: 0 }]
@@ -222,7 +222,7 @@ class PressureBotController < BotController
         key = key_for(neighbor[:col], neighbor[:row])
         next if visited[key]
 
-        return current[:steps] + 1 if neighbor[:row] == goal_row
+        return current[:steps] + 1 if player.goal_reached?(neighbor[:col], neighbor[:row])
 
         visited[key] = true
         frontier << {
@@ -256,6 +256,15 @@ class PressureBotController < BotController
 
   def key_for(col, row)
     "#{col},#{row}"
+  end
+
+  def most_advanced_opponent_pawn(game)
+    candidates = game.pawns.select { |candidate| candidate.player != game.current_player }
+    return nil if candidates.empty?
+
+    candidates.min_by do |pawn|
+      distance_to_goal(game.board, pawn.col, pawn.row, pawn.player, extra_occupied_wall_wells: nil) || 9_999
+    end
   end
 
   def reset_strategy_state

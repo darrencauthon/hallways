@@ -156,6 +156,8 @@ class GameRenderer
   def render_player_names(args, game, board_x, board_y)
     top_player = game.players[1]
     bottom_player = game.players[0]
+    left_player = game.players[2]
+    right_player = game.players[3]
     top_name = with_turn_indicator(top_player)
     bottom_name = with_turn_indicator(bottom_player)
     center_x = board_x + (board_pixel_size(game) / 2)
@@ -181,6 +183,32 @@ class GameRenderer
       g: 235,
       b: 235
     }
+
+    if !left_player.nil?
+      args.outputs.labels << {
+        x: board_x - 18,
+        y: board_y + (board_pixel_size(game) / 2) + 8,
+        text: with_turn_indicator(left_player),
+        alignment_enum: 2,
+        size_enum: 2,
+        r: 235,
+        g: 235,
+        b: 235
+      }
+    end
+
+    if !right_player.nil?
+      args.outputs.labels << {
+        x: board_x + board_pixel_size(game) + 18,
+        y: board_y + (board_pixel_size(game) / 2) + 8,
+        text: with_turn_indicator(right_player),
+        alignment_enum: 0,
+        size_enum: 2,
+        r: 235,
+        g: 235,
+        b: 235
+      }
+    end
   end
 
   def with_turn_indicator(player)

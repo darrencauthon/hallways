@@ -26,12 +26,12 @@ class PathBotController < BotController
     legal_moves = legal_pawn_moves(game, pawn)
     return nil if legal_moves.empty?
 
-    goal_row = game.current_player.winning_row
+    current_player = game.current_player
     best_distance = nil
     best_moves = []
 
     legal_moves.each do |move|
-      distance = distance_to_goal_row(game.board, move[:col], move[:row], goal_row)
+      distance = distance_to_goal(game.board, move[:col], move[:row], current_player)
       next if distance.nil?
 
       if best_distance.nil? || distance < best_distance
@@ -59,8 +59,8 @@ class PathBotController < BotController
     end
   end
 
-  def distance_to_goal_row(board, start_col, start_row, goal_row)
-    return 0 if start_row == goal_row
+  def distance_to_goal(board, start_col, start_row, player)
+    return 0 if player.goal_reached?(start_col, start_row)
 
     visited = {}
     frontier = [{ col: start_col, row: start_row, steps: 0 }]
@@ -72,7 +72,7 @@ class PathBotController < BotController
         key = key_for(neighbor[:col], neighbor[:row])
         next if visited[key]
 
-        return current[:steps] + 1 if neighbor[:row] == goal_row
+        return current[:steps] + 1 if player.goal_reached?(neighbor[:col], neighbor[:row])
 
         visited[key] = true
         frontier << {

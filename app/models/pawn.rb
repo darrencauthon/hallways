@@ -52,6 +52,10 @@ class Pawn
       return 0
     elsif players && players[1] == player
       return 1
+    elsif players && players[2] == player
+      return 2
+    elsif players && players[3] == player
+      return 3
     end
 
     brightness = color[0] + color[1] + color[2]
