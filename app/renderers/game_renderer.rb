@@ -58,6 +58,8 @@ class GameRenderer
   end
 
   def reserve_wall_rects(args, game:, board_x:, board_y:)
+    return reserve_wall_rects_for_four_players(args, game: game, board_x: board_x, board_y: board_y) if game.player_count == 4
+
     wall_count = Game::WALLS_PER_LANE
     spacing = 10
     wall_w = game.walls[0].width
@@ -221,6 +223,67 @@ class GameRenderer
   def board_pixel_size(game)
     board = game.board
     (board.size * board.cell_width) + ((board.size - 1) * cell_gap)
+  end
+
+  def reserve_wall_rects_for_four_players(args, game:, board_x:, board_y:)
+    rects = {}
+    spacing = 10
+    walls_per_player = game.walls.count { |wall| wall.player == game.players[0] }
+    wall = game.walls[0]
+    horizontal_w = wall.width
+    horizontal_h = wall.height
+    vertical_w = wall.height
+    vertical_h = wall.width
+    board_size = board_pixel_size(game)
+
+    top_y = board_y + board_size + 36
+    bottom_y = board_y - 46
+    horizontal_total_w = (walls_per_player * horizontal_w) + ((walls_per_player - 1) * spacing)
+    horizontal_start_x = ((args.grid.w - horizontal_total_w) / 2).to_i
+
+    vertical_total_h = (walls_per_player * vertical_h) + ((walls_per_player - 1) * spacing)
+    vertical_start_y = board_y + ((board_size - vertical_total_h) / 2).to_i
+    left_x = board_x - 44
+    right_x = board_x + board_size + 34
+
+    game.walls.each do |candidate|
+      next if candidate.placed?
+
+      player_index = game.players.index(candidate.player) || 0
+      slot_index = candidate.slot % walls_per_player
+
+      if player_index == 0
+        rects[candidate] = {
+          x: horizontal_start_x + (slot_index * (horizontal_w + spacing)),
+          y: bottom_y,
+          w: horizontal_w,
+          h: horizontal_h
+        }
+      elsif player_index == 1
+        rects[candidate] = {
+          x: horizontal_start_x + (slot_index * (horizontal_w + spacing)),
+          y: top_y,
+          w: horizontal_w,
+          h: horizontal_h
+        }
+      elsif player_index == 2
+        rects[candidate] = {
+          x: left_x,
+          y: vertical_start_y + (slot_index * (vertical_h + spacing)),
+          w: vertical_w,
+          h: vertical_h
+        }
+      else
+        rects[candidate] = {
+          x: right_x,
+          y: vertical_start_y + (slot_index * (vertical_h + spacing)),
+          w: vertical_w,
+          h: vertical_h
+        }
+      end
+    end
+
+    rects
   end
 
   def hovered_wall_well(args, game:, board_x:, board_y:)

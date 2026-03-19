@@ -49,22 +49,17 @@ class WallRenderer
     dragged_rect = options[:dragged_rect]
     dragged_angle = options[:dragged_angle]
     hover_wall = options[:hover_wall]
-    wall_count = Game::WALLS_PER_LANE
-    spacing = 10
-    wall_w = game.walls[0].width
-    total_w = (wall_count * wall_w) + ((wall_count - 1) * spacing)
-    start_x = ((args.grid.w - total_w) / 2).to_i
-
-    top_y = board_y + @board_pixel_size + 36
-    bottom_y = board_y - 46
+    reserve_rects = game.reserve_wall_rects(args, board_x, board_y)
 
     game.walls.each do |wall|
       next if wall.placed?
+      next if reserve_rects[wall].nil?
 
-      x = start_x + (wall.slot * (wall_w + spacing))
-      y = wall.lane == :top ? top_y : bottom_y
-      width = wall.width
-      height = wall.height
+      rect = reserve_rects[wall]
+      x = rect[:x]
+      y = rect[:y]
+      width = rect[:w]
+      height = rect[:h]
 
       if wall == dragged_wall
         x = dragged_rect[:x]
