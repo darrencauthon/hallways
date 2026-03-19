@@ -11,4 +11,10 @@ class Player
   def my_turn?
     game.current_player == self
   end
+
+  def turn_indicator_text
+    return nil unless my_turn?
+
+    controller.turn_indicator_text
+  end
 end

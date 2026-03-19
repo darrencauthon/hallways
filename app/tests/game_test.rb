@@ -223,6 +223,20 @@ def test_player_my_turn_initial_state(args, assert)
   assert.equal! false, game.players[1].my_turn?, "Expected Player 2 to report false for my_turn? at game start."
 end
 
+def test_player_turn_indicator_text_is_your_turn_for_human(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+
+  assert.equal! "Your Turn", game.players[0].turn_indicator_text, "Expected active human player indicator text to be Your Turn."
+  assert.equal! nil, game.players[1].turn_indicator_text, "Expected inactive player indicator text to be nil."
+end
+
+def test_player_turn_indicator_text_is_nil_for_bot_turn(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:human, :random_bot])
+  game.next_turn!
+
+  assert.equal! nil, game.players[1].turn_indicator_text, "Expected active bot player indicator text to be nil."
+end
+
 def test_game_players_associated_with_pawns(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48)
 

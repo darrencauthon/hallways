@@ -152,8 +152,10 @@ class GameRenderer
   end
 
   def render_player_names(args, game, board_x, board_y)
-    top_name = game.players[1].name
-    bottom_name = game.players[0].name
+    top_player = game.players[1]
+    bottom_player = game.players[0]
+    top_name = with_turn_indicator(top_player)
+    bottom_name = with_turn_indicator(bottom_player)
     center_x = board_x + (board_pixel_size(game) / 2)
 
     args.outputs.labels << {
@@ -177,6 +179,13 @@ class GameRenderer
       g: 235,
       b: 235
     }
+  end
+
+  def with_turn_indicator(player)
+    indicator = player.turn_indicator_text
+    return player.name if indicator.nil? || indicator.empty?
+
+    "#{player.name} (#{indicator})"
   end
 
   def board_pixel_size(game)
