@@ -18,18 +18,7 @@ class WallWell
   end
 
   def render(args, board_x, board_y, cell_width:, cell_height:, cell_gap:)
-    rect = rect(board_x, board_y, cell_width: cell_width, cell_height: cell_height, cell_gap: cell_gap)
-    color = occupied? ? [255, 40, 40] : [90, 30, 30]
-
-    args.outputs.solids << {
-      x: rect[:x],
-      y: rect[:y],
-      w: rect[:w],
-      h: rect[:h],
-      r: color[0],
-      g: color[1],
-      b: color[2]
-    }
+    # Wall wells are invisible; highlights are rendered by wall-drop target UI.
   end
 
   def rect(board_x, board_y, cell_width:, cell_height:, cell_gap:)
