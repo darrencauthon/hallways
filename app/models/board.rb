@@ -75,7 +75,7 @@ class Board
 
   def build_squares
     squares = []
-    color = [225, 214, 189]
+    color = [0, 0, 0]
 
     size.times do |row|
       size.times do |col|

@@ -6,6 +6,16 @@ class BoardRenderer
   end
 
   def render(args, game, board_x, board_y)
+    args.outputs.solids << {
+      x: board_x - 10,
+      y: board_y - 10,
+      w: @board_pixel_size + 20,
+      h: @board_pixel_size + 20,
+      r: 89,
+      g: 36,
+      b: 42
+    }
+
     args.outputs.borders << {
       x: board_x - 10,
       y: board_y - 10,
