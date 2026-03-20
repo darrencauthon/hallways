@@ -10,6 +10,18 @@ def test_main_tick_renders_victory_screen_without_winner_name_exception(args, as
   assert.equal! false, winner_label.nil?, "Expected victory screen to render the winner label."
 end
 
+def test_main_tick_does_not_require_testing_runtime_for_normal_boot(args, assert)
+  fake_args = MainRoutingTestHelpers.build_title_args
+
+  assert.equal! nil, defined?(TestingRuntime), "Expected normal boot test to run without eagerly loading TestingRuntime."
+
+  tick(fake_args)
+
+  assert.equal! :title, fake_args.state.screen_name, "Expected normal boot to stay on the title screen."
+  title_label = fake_args.outputs.labels.find { |label| label[:text] == "Hallways" }
+  assert.equal! false, title_label.nil?, "Expected normal boot to render the title screen without TestingRuntime."
+end
+
 def test_handle_game_action_main_menu_exposes_continue_game(args, assert)
   fake_args = MainRoutingTestHelpers.build_title_args
   game_screen = Object.new
