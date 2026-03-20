@@ -36,6 +36,48 @@ def test_game_screen_skips_controller_actions_while_wall_animation_in_progress(a
   assert.equal! 0, controller.calls, "Expected controller actions to be blocked while wall animation is playing."
 end
 
+def test_game_screen_keeps_last_wall_placement_active_across_wall_span_gap(args, assert)
+  screen = GameScreen.new
+  game = Game.new(cell_width: 48, cell_height: 48)
+  wall = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
+  board_x = 100
+  board_y = 120
+  wall_well = game.board.wall_wells.find { |candidate| candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 0 }
+  wall_span = game.board.wall_span_from(wall_well, preferred_side: :positive)
+  left_rect = wall_span[0].rect(board_x, board_y, cell_width: 48, cell_height: 48, cell_gap: 6)
+  right_rect = wall_span[1].rect(board_x, board_y, cell_width: 48, cell_height: 48, cell_gap: 6)
+  gap_x = left_rect[:x] + left_rect[:w] + ((right_rect[:x] - (left_rect[:x] + left_rect[:w])) / 2)
+  gap_y = left_rect[:y] + (left_rect[:h] / 2)
+  fake_args = GameScreenTestHelpers.build_fake_args_for_drag(mouse_x: gap_x, mouse_y: gap_y)
+
+  screen.define_singleton_method(:game) { game }
+  screen.instance_variable_set(:@dragged_wall, wall)
+  screen.instance_variable_set(:@last_hovered_wall_placement, { wall_well: wall_well, preferred_side: :positive, wall_span: wall_span })
+
+  placement = screen.send(:hovered_available_wall_placement, fake_args, board_x, board_y)
+
+  assert.equal! wall_well, placement[:wall_well], "Expected wall placement to stay active while dragging across the gap between wall wells."
+end
+
+def test_game_screen_clears_last_wall_placement_when_mouse_moves_into_square(args, assert)
+  screen = GameScreen.new
+  game = Game.new(cell_width: 48, cell_height: 48)
+  wall = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
+  board_x = 100
+  board_y = 120
+  wall_well = game.board.wall_wells.find { |candidate| candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 0 }
+  wall_span = game.board.wall_span_from(wall_well, preferred_side: :positive)
+  fake_args = GameScreenTestHelpers.build_fake_args_for_drag(mouse_x: 100 + (4 * 54) + 24, mouse_y: 120 + 24)
+
+  screen.define_singleton_method(:game) { game }
+  screen.instance_variable_set(:@dragged_wall, wall)
+  screen.instance_variable_set(:@last_hovered_wall_placement, { wall_well: wall_well, preferred_side: :positive, wall_span: wall_span })
+
+  placement = screen.send(:hovered_available_wall_placement, fake_args, board_x, board_y)
+
+  assert.equal! nil, placement, "Expected wall placement to clear when dragging off the wall track and into a square."
+end
+
 module GameScreenTestHelpers
   def self.build_fake_args_with_grid(tick_count:)
     key_down = FakeKeyDown.new(false, false, false, false, false, false)
@@ -44,6 +86,18 @@ module GameScreenTestHelpers
     inputs = FakeInputs.new(keyboard, mouse)
     outputs = FakeOutputs.new
     state = GameScreenTestFakeState.new(tick_count)
+    grid = GameScreenTestFakeGrid.new
+
+    GameScreenTestFakeArgs.new(inputs, outputs, state, grid)
+  end
+
+  def self.build_fake_args_for_drag(mouse_x:, mouse_y:)
+    key_down = FakeKeyDown.new(false, false, false, false, false, false)
+    keyboard = FakeKeyboard.new(key_down)
+    mouse = FakeMouse.new(mouse_x, mouse_y, false, false)
+    inputs = FakeInputs.new(keyboard, mouse)
+    outputs = GameScreenTestFakeOutputs.new
+    state = GameScreenTestFakeState.new(0)
     grid = GameScreenTestFakeGrid.new
 
     GameScreenTestFakeArgs.new(inputs, outputs, state, grid)
@@ -104,6 +158,17 @@ class GameScreenTestFakeState
 
   def initialize(tick_count)
     @tick_count = tick_count
+  end
+end
+
+class GameScreenTestFakeOutputs
+  attr_accessor :background_color, :labels, :sprites, :solids, :borders
+
+  def initialize
+    @labels = []
+    @sprites = []
+    @solids = []
+    @borders = []
   end
 end
 

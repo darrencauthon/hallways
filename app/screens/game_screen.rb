@@ -34,7 +34,7 @@ class GameScreen
         clear_dragged_pawn
       end
     end
-    wall_drop_target = hovered_available_wall_placement(args, board_x, board_y, use_last_hovered: false) if dragged_wall
+    wall_drop_target = hovered_available_wall_placement(args, board_x, board_y) if dragged_wall
     pawn_drop_target = available_pawn_drop_target(args, board_x, board_y)
     game.sync_render_state(
       dragged_wall: dragged_wall,
@@ -89,7 +89,7 @@ class GameScreen
   def update_wall_drag_state(args, board_x, board_y)
     if mouse_released?(args)
       if dragged_wall
-        placement = hovered_available_wall_placement(args, board_x, board_y, use_last_hovered: false)
+        placement = hovered_available_wall_placement(args, board_x, board_y)
         if placement
           placed = game.place_wall_in_well_with_side(
             dragged_wall,
@@ -142,8 +142,12 @@ class GameScreen
     end
 
     return nil unless use_last_hovered
-    return nil unless mouse_near_board?(args, board_x, board_y)
     return nil if @last_hovered_wall_placement.nil?
+    unless mouse_inside_last_wall_placement?(args, board_x, board_y, @last_hovered_wall_placement)
+      @last_hovered_wall_placement = nil
+      return nil
+    end
+
     if game.can_place_wall_in_well?(
       dragged_wall,
       @last_hovered_wall_placement[:wall_well],
@@ -156,15 +160,35 @@ class GameScreen
     nil
   end
 
-  def mouse_near_board?(args, board_x, board_y)
-    padding = 36
-    mouse_inside_rect?(
-      args,
-      x: board_x - padding,
-      y: board_y - padding,
-      w: board_pixel_size + (padding * 2),
-      h: board_pixel_size + (padding * 2)
-    )
+  def mouse_inside_last_wall_placement?(args, board_x, board_y, placement)
+    rect = last_wall_placement_retention_rect(board_x, board_y, placement)
+    mouse_inside_rect?(args, x: rect[:x], y: rect[:y], w: rect[:w], h: rect[:h])
+  end
+
+  def last_wall_placement_retention_rect(board_x, board_y, placement)
+    wells = Array(placement[:wall_span])
+    wells = [placement[:wall_well]] if wells.empty?
+    rects = wells.map do |wall_well|
+      wall_well.rect(
+        board_x,
+        board_y,
+        cell_width: cell_size,
+        cell_height: cell_size,
+        cell_gap: cell_gap
+      )
+    end
+
+    min_x = rects.map { |rect| rect[:x] }.min
+    min_y = rects.map { |rect| rect[:y] }.min
+    max_x = rects.map { |rect| rect[:x] + rect[:w] }.max
+    max_y = rects.map { |rect| rect[:y] + rect[:h] }.max
+
+    {
+      x: min_x,
+      y: min_y,
+      w: max_x - min_x,
+      h: max_y - min_y
+    }
   end
 
   def update_pawn_drag_state(args, board_x, board_y)
