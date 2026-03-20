@@ -14,3 +14,12 @@ test-results/
 .idea/
 .DS_Store
 Thumbs.db
+
+# DragonRuby docs: keep curated reading material, ignore bulky/generated mirrors
+docs/parse_log.txt
+docs/static/
+docs/oss/
+
+# Optional: local docs tooling/cache
+docs/.cache/
+docs/node_modules/
