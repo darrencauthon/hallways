@@ -45,6 +45,7 @@ class GameRenderer
     board_y:,
     wall_drop_target:,
     pawn_drop_target:,
+    pawn_origin_highlight:,
     dragged_wall:,
     dragged_rect:,
     dragged_angle:,
@@ -71,6 +72,7 @@ class GameRenderer
       }
     )
     pawn_renderer.render_drop_target(args, board_x, board_y, pawn_drop_target)
+    pawn_renderer.render_origin_highlight(args, board_x, board_y, pawn_origin_highlight, game.current_player && current_player_pawn_color(game))
     render_player_boxes(args, game, board_x, board_y)
     pawn_renderer.render(
       args,
@@ -332,6 +334,11 @@ class GameRenderer
   def board_pixel_size(game)
     board = game.board
     (board.size * board.cell_width) + ((board.size - 1) * cell_gap)
+  end
+
+  def current_player_pawn_color(game)
+    pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
+    pawn && pawn.color
   end
 
   def reserve_wall_rects_for_four_players(args, game:, board_x:, board_y:)

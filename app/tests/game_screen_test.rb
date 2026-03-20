@@ -78,13 +78,27 @@ def test_game_screen_clears_last_wall_placement_when_mouse_moves_into_square(arg
   assert.equal! nil, placement, "Expected wall placement to clear when dragging off the wall track and into a square."
 end
 
+def test_game_screen_clicking_legal_square_moves_current_pawn_with_animation(args, assert)
+  screen = GameScreen.new
+  game = Game.new(cell_width: 48, cell_height: 48)
+  fake_args = GameScreenTestHelpers.build_fake_args_with_grid(tick_count: 10, mouse_x: 640, mouse_y: 198, mouse_down: true)
+
+  screen.define_singleton_method(:game) { game }
+  screen.tick(fake_args)
+
+  pawn = game.pawns[0]
+  assert.equal! 4, pawn.col, "Expected click-to-move to keep the current pawn in the same column for a straight move."
+  assert.equal! 1, pawn.row, "Expected click-to-move to move the pawn to the hovered legal square."
+  assert.equal! true, screen.send(:pawn_move_animation_in_progress?, fake_args), "Expected click-to-move to trigger the standard pawn move animation."
+end
+
 module GameScreenTestHelpers
-  def self.build_fake_args_with_grid(tick_count:)
+  def self.build_fake_args_with_grid(tick_count:, mouse_x: nil, mouse_y: nil, mouse_down: false, mouse_up: false)
     key_down = FakeKeyDown.new(false, false, false, false, false, false)
     keyboard = FakeKeyboard.new(key_down)
-    mouse = FakeMouse.new(nil, nil, false, false)
+    mouse = FakeMouse.new(mouse_x, mouse_y, mouse_down, mouse_up)
     inputs = FakeInputs.new(keyboard, mouse)
-    outputs = FakeOutputs.new
+    outputs = GameScreenTestFakeOutputs.new
     state = GameScreenTestFakeState.new(tick_count)
     grid = GameScreenTestFakeGrid.new
 

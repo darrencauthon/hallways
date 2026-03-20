@@ -43,6 +43,24 @@ class PawnRenderer
     }
   end
 
+  def render_origin_highlight(args, board_x, board_y, square, color)
+    return if square.nil?
+    return if color.nil?
+
+    x = board_x + (square.col * (@cell_size + @cell_gap))
+    y = board_y + (square.row * (@cell_size + @cell_gap))
+
+    args.outputs.borders << {
+      x: x - 2,
+      y: y - 2,
+      w: @cell_size + 4,
+      h: @cell_size + 4,
+      r: color[0],
+      g: color[1],
+      b: color[2]
+    }
+  end
+
   private
 
   def animated_position_for(args, pawn, target_x:, target_y:)

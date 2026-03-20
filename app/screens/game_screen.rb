@@ -35,7 +35,9 @@ class GameScreen
       end
     end
     wall_drop_target = hovered_available_wall_placement(args, board_x, board_y) if dragged_wall
-    pawn_drop_target = available_pawn_drop_target(args, board_x, board_y)
+    clickable_pawn_target = available_click_move_target(args, board_x, board_y)
+    pawn_drop_target = available_pawn_drop_target(args, board_x, board_y) || clickable_pawn_target
+    pawn_origin_highlight = clickable_pawn_origin_square(args, board_x, board_y, clickable_pawn_target)
     game.sync_render_state(
       dragged_wall: dragged_wall,
       dragged_pawn: dragged_pawn,
@@ -48,7 +50,8 @@ class GameScreen
       board_x: board_x,
       board_y: board_y,
       wall_drop_target: wall_drop_target,
-      pawn_drop_target: pawn_drop_target
+      pawn_drop_target: pawn_drop_target,
+      pawn_origin_highlight: pawn_origin_highlight
     )
     if @computer_thinking
       game_screen_renderer.render_thinking_indicator(
@@ -206,6 +209,14 @@ class GameScreen
     return if dragged_wall
     return if dragged_pawn
 
+    clickable_target = available_click_move_target(args, board_x, board_y)
+    if clickable_target
+      pawn = current_player_pawn
+      moved = game.move_pawn_to(pawn, clickable_target.col, clickable_target.row) if pawn
+      start_pawn_move_animation(args) if moved
+      return
+    end
+
     pawn = game.pawns.find do |candidate|
       next false unless candidate.player == game.current_player
 
@@ -239,6 +250,30 @@ class GameScreen
     square
   end
 
+  def available_click_move_target(args, board_x, board_y)
+    return nil unless human_turn?
+    return nil if dragged_wall
+    return nil if dragged_pawn
+
+    square = hovered_square(args, board_x, board_y)
+    return nil if square.nil?
+
+    pawn = current_player_pawn
+    return nil if pawn.nil?
+    return nil unless game.can_move_pawn_to?(pawn, square.col, square.row)
+
+    square
+  end
+
+  def clickable_pawn_origin_square(args, board_x, board_y, clickable_target)
+    return nil if clickable_target.nil?
+
+    pawn = current_player_pawn
+    return nil if pawn.nil?
+
+    game.board.square_at(pawn.col, pawn.row)
+  end
+
   def preferred_wall_side(args, wall_well, rect)
     if wall_well.orientation == :horizontal
       mouse_x(args) < rect[:x] + (rect[:w] / 2) ? :negative : :positive
@@ -260,6 +295,10 @@ class GameScreen
 
   def human_turn?
     game.current_controller.is_a?(HumanController)
+  end
+
+  def current_player_pawn
+    game.pawns.find { |candidate| candidate.player == game.current_player }
   end
 
   def mouse_inside_rect?(args, x:, y:, w:, h:)
