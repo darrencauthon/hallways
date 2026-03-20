@@ -5,6 +5,8 @@ require "app/renderers/pawn_renderer.rb"
 class GameRenderer
   DRAGGED_WALL_ROTATE_LERP = 0.28
   DRAGGED_WALL_ROTATE_EPSILON = 0.1
+  PLAYER_NAME_SIZE_ENUM = 2
+  PLAYER_NAME_COLOR = { r: 235, g: 235, b: 235 }.freeze
 
   attr_reader :cell_gap
 
@@ -169,10 +171,8 @@ class GameRenderer
       y: board_y + board_pixel_size(game) + 78,
       text: top_name,
       alignment_enum: 1,
-      size_enum: 2,
-      r: 235,
-      g: 235,
-      b: 235
+      size_enum: PLAYER_NAME_SIZE_ENUM,
+      **PLAYER_NAME_COLOR
     }
 
     args.outputs.labels << {
@@ -180,36 +180,30 @@ class GameRenderer
       y: board_y - 80,
       text: bottom_name,
       alignment_enum: 1,
-      size_enum: 2,
-      r: 235,
-      g: 235,
-      b: 235
+      size_enum: PLAYER_NAME_SIZE_ENUM,
+      **PLAYER_NAME_COLOR
     }
 
     if !left_player.nil?
-      args.outputs.labels << {
-        x: board_x - 18,
+      render_rotated_player_label(
+        args,
+        key: :player3_name_label,
+        x: board_x - 24,
         y: board_y + (board_pixel_size(game) / 2) + 8,
         text: with_turn_indicator(left_player),
-        alignment_enum: 2,
-        size_enum: 2,
-        r: 235,
-        g: 235,
-        b: 235
-      }
+        angle: 90
+      )
     end
 
     if !right_player.nil?
-      args.outputs.labels << {
-        x: board_x + board_pixel_size(game) + 18,
+      render_rotated_player_label(
+        args,
+        key: :player4_name_label,
+        x: board_x + board_pixel_size(game) + 24,
         y: board_y + (board_pixel_size(game) / 2) + 8,
         text: with_turn_indicator(right_player),
-        alignment_enum: 0,
-        size_enum: 2,
-        r: 235,
-        g: 235,
-        b: 235
-      }
+        angle: 270
+      )
     end
   end
 
@@ -218,6 +212,37 @@ class GameRenderer
     return player.name if indicator.nil? || indicator.empty?
 
     "#{player.name} (#{indicator})"
+  end
+
+  def render_rotated_player_label(args, key:, x:, y:, text:, angle:)
+    text_width, text_height = GTK.calcstringbox(text, size_enum: PLAYER_NAME_SIZE_ENUM)
+    target_w = text_width.to_i + 16
+    target_h = text_height.to_i + 16
+
+    target = args.outputs[key]
+    target.w = target_w
+    target.h = target_h
+    target.background_color = [0, 0, 0, 0]
+    target.labels << {
+      x: target_w / 2,
+      y: target_h / 2,
+      text: text,
+      anchor_x: 0.5,
+      anchor_y: 0.5,
+      size_enum: PLAYER_NAME_SIZE_ENUM,
+      **PLAYER_NAME_COLOR
+    }
+
+    args.outputs.sprites << {
+      x: x - (target_w / 2),
+      y: y - (target_h / 2),
+      w: target_w,
+      h: target_h,
+      path: key,
+      angle: angle,
+      angle_anchor_x: 0.5,
+      angle_anchor_y: 0.5
+    }
   end
 
   def board_pixel_size(game)
