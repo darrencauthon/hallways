@@ -166,13 +166,25 @@ class TitleScreen
   end
 
   def version_from_metadata
-    metadata_path = File.expand_path("../../metadata/game_metadata.txt", __dir__)
-    return nil unless File.exist?(metadata_path)
+    metadata_path = metadata_file_path
+    return nil if metadata_path.nil?
 
     line = File.readlines(metadata_path).find { |entry| entry.start_with?("version=") }
     return nil if line.nil?
 
     line.split("=", 2)[1]&.strip
+  rescue StandardError
+    nil
+  end
+
+  def metadata_file_path
+    candidates = [
+      "metadata/game_metadata.txt",
+      "hallways/metadata/game_metadata.txt",
+      File.expand_path("../../metadata/game_metadata.txt", __dir__)
+    ]
+
+    candidates.find { |path| File.exist?(path) }
   rescue StandardError
     nil
   end

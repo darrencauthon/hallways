@@ -37,8 +37,8 @@ def test_title_screen_renders_version_label(args, assert)
   fake_args = TitleScreenTestHelpers.build_fake_args
   screen.tick(fake_args)
 
-  version_label = fake_args.outputs.labels.find { |label| label[:text] == "v0.3.1" }
-  assert.equal! false, version_label.nil?, "Expected title screen to render version label v0.3.1."
+  version_label = fake_args.outputs.labels.find { |label| label[:text] == "v0.3.2" }
+  assert.equal! false, version_label.nil?, "Expected title screen to render version label v0.3.2."
 end
 
 def test_title_screen_renders_continue_game_option_when_available(args, assert)
