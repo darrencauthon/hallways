@@ -36,7 +36,7 @@ def test_title_screen_renders_version_label(args, assert)
   screen = TitleScreen.new
   fake_args = TitleScreenTestHelpers.build_fake_args
   screen.tick(fake_args)
-  expected_version = TitleScreenTestHelpers.expected_game_version
+  expected_version = screen.send(:game_version)
 
   version_label = fake_args.outputs.labels.find { |label| label[:text] == "v#{expected_version}" }
   assert.equal! false, version_label.nil?, "Expected title screen to render version label v#{expected_version}."
@@ -70,12 +70,6 @@ module TitleScreenTestHelpers
     inputs = FakeInputs.new(keyboard, mouse)
     outputs = FakeOutputs.new
     FakeArgs.new(inputs, outputs)
-  end
-
-  def self.expected_game_version
-    metadata_path = File.expand_path("../../metadata/game_metadata.txt", File.dirname(__FILE__))
-    line = File.read(metadata_path).split("\n").find { |entry| entry.start_with?("version=") }
-    line.split("=", 2)[1].strip
   end
 end
 
