@@ -309,7 +309,7 @@ class GameRenderer
     bottom_y = board_y
 
     layouts = [
-      { player: game.players[0], x: right_x, y: top_y },
+      { player: game.players[0], x: left_x, y: top_y },
       { player: game.players[1], x: right_x, y: bottom_y }
     ]
     return layouts if game.player_count < 4
