@@ -113,6 +113,39 @@ def test_game_screen_clicking_legal_wall_well_places_wall_with_animation(args, a
   assert.equal! true, screen.send(:wall_place_animation_in_progress?, fake_args), "Expected click-to-place to trigger the standard wall placement animation."
 end
 
+def test_game_screen_clicking_between_wall_wells_uses_last_hovered_wall_placement(args, assert)
+  screen = GameScreen.new
+  game = Game.new(cell_width: 48, cell_height: 48)
+  board_x = (1280 - ((9 * 48) + (8 * 6))) / 2
+  board_y = 120
+  wall_well = game.board.wall_wells.find { |candidate| candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 0 }
+  wall_span = game.board.wall_span_from(wall_well, preferred_side: :positive)
+  left_rect = wall_span[0].rect(board_x, board_y, cell_width: 48, cell_height: 48, cell_gap: 6)
+  right_rect = wall_span[1].rect(board_x, board_y, cell_width: 48, cell_height: 48, cell_gap: 6)
+  gap_x = left_rect[:x] + left_rect[:w] + ((right_rect[:x] - (left_rect[:x] + left_rect[:w])) / 2)
+  gap_y = left_rect[:y] + (left_rect[:h] / 2)
+
+  screen.define_singleton_method(:game) { game }
+
+  hover_args = GameScreenTestHelpers.build_fake_args_with_grid(
+    tick_count: 10,
+    mouse_x: left_rect[:x] + (left_rect[:w] / 2),
+    mouse_y: left_rect[:y] + (left_rect[:h] / 2)
+  )
+  click_args = GameScreenTestHelpers.build_fake_args_with_grid(
+    tick_count: 11,
+    mouse_x: gap_x,
+    mouse_y: gap_y,
+    mouse_down: true
+  )
+
+  screen.tick(hover_args)
+  screen.tick(click_args)
+
+  assert.equal! false, wall_well.wall.nil?, "Expected click-to-place to keep the last wall placement active across the gap between wall wells."
+  assert.equal! true, screen.send(:wall_place_animation_in_progress?, click_args), "Expected gap click-to-place to trigger the standard wall placement animation."
+end
+
 module GameScreenTestHelpers
   def self.build_fake_args_with_grid(tick_count:, mouse_x: nil, mouse_y: nil, mouse_down: false, mouse_up: false)
     key_down = FakeKeyDown.new(false, false, false, false, false, false)

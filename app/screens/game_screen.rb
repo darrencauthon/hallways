@@ -152,7 +152,7 @@ class GameScreen
     wall = current_player_wall_piece
     return nil if wall.nil?
 
-    hovered_wall_placement_for(args, board_x, board_y, wall: wall, use_last_hovered: false)
+    hovered_wall_placement_for(args, board_x, board_y, wall: wall, use_last_hovered: true)
   end
 
   def hovered_wall_placement_for(args, board_x, board_y, wall:, use_last_hovered:)
