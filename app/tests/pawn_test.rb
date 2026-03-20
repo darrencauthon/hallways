@@ -43,6 +43,24 @@ def test_pawn_render_uses_second_frame_for_dark_pawn(args, assert)
   assert.equal! 256, sprite[:source_x], "Expected dark pawn to use second frame."
 end
 
+def test_pawn_renderer_animates_undragged_move_between_cells(args, assert)
+  pawn = Pawn.new(4, 0, [245, 245, 245], player: PawnTestFakePlayer.new("Tester"), cell_width: 48, cell_height: 48)
+  renderer = PawnRenderer.new(cell_size: 48, cell_gap: 6)
+  game = PawnRendererTestFakeGame.new([pawn])
+  fake_args = PawnTestFakeArgs.new
+
+  renderer.render(fake_args, game, 100, 200, dragged_pawn: nil, dragged_pawn_x: 0, dragged_pawn_y: 0)
+  pawn.move_to(4, 1)
+  fake_args.state.tick_count = 1
+  fake_args.outputs.sprites = []
+
+  renderer.render(fake_args, game, 100, 200, dragged_pawn: nil, dragged_pawn_x: 0, dragged_pawn_y: 0)
+
+  sprite = fake_args.outputs.sprites[0]
+  assert.equal! true, sprite[:y] > 210, "Expected animated pawn move to advance past the original square."
+  assert.equal! true, sprite[:y] < 264, "Expected animated pawn move to remain short of the destination square on the next frame."
+end
+
 class PawnTestFakeOutputs
   attr_accessor :sprites, :solids, :borders
 
@@ -54,10 +72,27 @@ class PawnTestFakeOutputs
 end
 
 class PawnTestFakeArgs
-  attr_reader :outputs
+  attr_reader :outputs, :state
 
   def initialize
     @outputs = PawnTestFakeOutputs.new
+    @state = PawnTestFakeState.new
+  end
+end
+
+class PawnTestFakeState
+  attr_accessor :tick_count
+
+  def initialize
+    @tick_count = 0
+  end
+end
+
+class PawnRendererTestFakeGame
+  attr_reader :pawns
+
+  def initialize(pawns)
+    @pawns = pawns
   end
 end
 
