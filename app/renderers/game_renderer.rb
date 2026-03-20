@@ -17,7 +17,12 @@ class GameRenderer
   PLAYER_BOX_TEXT_GAP = 8
   PLAYER_BOX_NAME_GAP = 14
   PLAYER_BOX_BOTTOM_PADDING = 14
-  PLAYER_BOX_FILL = { r: 24, g: 26, b: 32, a: 220 }.freeze
+  PLAYER_BOX_PLAYER_FILLS = [
+    { r: 143, g: 45, b: 45, a: 220 },
+    { r: 47, g: 75, b: 143, a: 220 },
+    { r: 47, g: 107, b: 69, a: 220 },
+    { r: 154, g: 106, b: 31, a: 220 }
+  ].freeze
   PLAYER_BOX_BORDER = { r: 88, g: 94, b: 110 }.freeze
   PLAYER_BOX_ACTIVE_BORDER = { r: 255, g: 215, b: 120 }.freeze
   PLAYER_BOX_META_COLOR = { r: 170, g: 176, b: 190 }.freeze
@@ -208,7 +213,7 @@ class GameRenderer
       y: y,
       w: PLAYER_BOX_W,
       h: box_h,
-      **PLAYER_BOX_FILL
+      **player_box_fill_for(game, player)
     }
 
     args.outputs.solids << {
@@ -259,6 +264,11 @@ class GameRenderer
   def player_box_height
     avatar_size = ((PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)) * PLAYER_BOX_AVATAR_SCALE).to_i
     PLAYER_BOX_AVATAR_MARGIN_TOP + avatar_size + PLAYER_BOX_NAME_GAP + 14 + PLAYER_BOX_TEXT_GAP + 14 + PLAYER_BOX_BOTTOM_PADDING
+  end
+
+  def player_box_fill_for(game, player)
+    index = game.players.index(player) || 0
+    PLAYER_BOX_PLAYER_FILLS[index] || PLAYER_BOX_PLAYER_FILLS[0]
   end
 
   def render_placeholder_player_sprite(args, x:, y:, w:, h:, color:)
