@@ -7,7 +7,15 @@ class GameRenderer
   DRAGGED_WALL_ROTATE_EPSILON = 0.1
   PLAYER_NAME_SIZE_ENUM = 2
   PLAYER_NAME_COLOR = { r: 235, g: 235, b: 235 }.freeze
-  SIDE_PLAYER_NAME_MARGIN = 32
+  PLAYER_BOX_W = 220
+  PLAYER_BOX_H = 78
+  PLAYER_BOX_GAP = 18
+  PLAYER_BOX_RIGHT_MARGIN = 58
+  PLAYER_BOX_LEFT_MARGIN = 58
+  PLAYER_BOX_FILL = { r: 24, g: 26, b: 32, a: 220 }.freeze
+  PLAYER_BOX_BORDER = { r: 88, g: 94, b: 110 }.freeze
+  PLAYER_BOX_ACTIVE_BORDER = { r: 255, g: 215, b: 120 }.freeze
+  PLAYER_BOX_META_COLOR = { r: 170, g: 176, b: 190 }.freeze
 
   attr_reader :cell_gap
 
@@ -48,7 +56,7 @@ class GameRenderer
       }
     )
     pawn_renderer.render_drop_target(args, board_x, board_y, pawn_drop_target)
-    render_player_names(args, game, board_x, board_y)
+    render_player_boxes(args, game, board_x, board_y)
     pawn_renderer.render(
       args,
       game,
@@ -158,56 +166,15 @@ class GameRenderer
     @pawn_renderer
   end
 
-  def render_player_names(args, game, board_x, board_y)
-    top_player = game.players[1]
-    bottom_player = game.players[0]
-    left_player = game.players[2]
-    right_player = game.players[3]
-    top_name = with_turn_indicator(top_player)
-    bottom_name = with_turn_indicator(bottom_player)
-    center_x = board_x + (board_pixel_size(game) / 2)
-
-    args.outputs.labels << {
-      x: center_x,
-      y: board_y + board_pixel_size(game) + 78,
-      text: top_name,
-      alignment_enum: 1,
-      size_enum: PLAYER_NAME_SIZE_ENUM,
-      **PLAYER_NAME_COLOR
-    }
-
-    args.outputs.labels << {
-      x: center_x,
-      y: board_y - 80,
-      text: bottom_name,
-      alignment_enum: 1,
-      size_enum: PLAYER_NAME_SIZE_ENUM,
-      **PLAYER_NAME_COLOR
-    }
-
-    if !left_player.nil?
-      left_label_x, right_label_x = side_player_name_positions(game, board_x)
-
-      render_rotated_player_label(
+  def render_player_boxes(args, game, board_x, board_y)
+    player_box_layouts(args, game, board_x, board_y).each do |entry|
+      render_player_box(
         args,
-        key: :player3_name_label,
-        x: left_label_x,
-        y: board_y + (board_pixel_size(game) / 2) + 8,
-        text: with_turn_indicator(left_player),
-        angle: 90
-      )
-    end
-
-    if !right_player.nil?
-      left_label_x, right_label_x = side_player_name_positions(game, board_x) if left_label_x.nil? || right_label_x.nil?
-
-      render_rotated_player_label(
-        args,
-        key: :player4_name_label,
-        x: right_label_x,
-        y: board_y + (board_pixel_size(game) / 2) + 8,
-        text: with_turn_indicator(right_player),
-        angle: 270
+        game,
+        player: entry[:player],
+        x: entry[:x],
+        y: entry[:y],
+        current: game.current_player == entry[:player]
       )
     end
   end
@@ -219,34 +186,50 @@ class GameRenderer
     "#{player.name} (#{indicator})"
   end
 
-  def render_rotated_player_label(args, key:, x:, y:, text:, angle:)
-    text_width, text_height = GTK.calcstringbox(text, size_enum: PLAYER_NAME_SIZE_ENUM)
-    target_w = text_width.to_i + 16
-    target_h = text_height.to_i + 16
+  def render_player_box(args, game, player:, x:, y:, current:)
+    border_color = current ? PLAYER_BOX_ACTIVE_BORDER : PLAYER_BOX_BORDER
 
-    target = args.outputs[key]
-    target.w = target_w
-    target.h = target_h
-    target.background_color = [0, 0, 0, 0]
-    target.labels << {
-      x: target_w / 2,
-      y: target_h / 2,
-      text: text,
-      anchor_x: 0.5,
-      anchor_y: 0.5,
+    args.outputs.solids << {
+      x: x,
+      y: y,
+      w: PLAYER_BOX_W,
+      h: PLAYER_BOX_H,
+      **PLAYER_BOX_FILL
+    }
+
+    args.outputs.borders << {
+      x: x,
+      y: y,
+      w: PLAYER_BOX_W,
+      h: PLAYER_BOX_H,
+      **border_color
+    }
+
+    args.outputs.labels << {
+      x: x + 14,
+      y: y + PLAYER_BOX_H - 18,
+      text: player.name,
       size_enum: PLAYER_NAME_SIZE_ENUM,
       **PLAYER_NAME_COLOR
     }
 
-    args.outputs.sprites << {
-      x: x - (target_w / 2),
-      y: y - (target_h / 2),
-      w: target_w,
-      h: target_h,
-      path: key,
-      angle: angle,
-      angle_anchor_x: 0.5,
-      angle_anchor_y: 0.5
+    args.outputs.labels << {
+      x: x + 14,
+      y: y + PLAYER_BOX_H - 42,
+      text: "Walls #{remaining_walls_for(game, player)}",
+      size_enum: 1,
+      **PLAYER_BOX_META_COLOR
+    }
+
+    indicator = player.turn_indicator_text
+    return if indicator.nil? || indicator.empty?
+
+    args.outputs.labels << {
+      x: x + 14,
+      y: y + 22,
+      text: indicator,
+      size_enum: 1,
+      **PLAYER_BOX_ACTIVE_BORDER
     }
   end
 
@@ -316,16 +299,28 @@ class GameRenderer
     rects
   end
 
-  def side_player_name_positions(game, board_x)
+  def player_box_layouts(args, game, board_x, board_y)
     board_size = board_pixel_size(game)
-    side_wall_width = game.walls[0].height
-    left_wall_x = board_x - 44
-    right_wall_x = board_x + board_size + 34
+    right_x = board_x + board_size + PLAYER_BOX_RIGHT_MARGIN
+    left_x = board_x - PLAYER_BOX_LEFT_MARGIN - PLAYER_BOX_W
+    top_y = board_y + board_size - PLAYER_BOX_H
+    mid_upper_y = board_y + ((board_size * 0.58).to_i)
+    mid_lower_y = board_y + ((board_size * 0.28).to_i)
+    bottom_y = board_y
 
-    [
-      left_wall_x - SIDE_PLAYER_NAME_MARGIN,
-      right_wall_x + side_wall_width + SIDE_PLAYER_NAME_MARGIN
+    layouts = [
+      { player: game.players[0], x: right_x, y: top_y },
+      { player: game.players[1], x: right_x, y: bottom_y }
     ]
+    return layouts if game.player_count < 4
+
+    layouts << { player: game.players[2], x: left_x, y: mid_upper_y }
+    layouts << { player: game.players[3], x: right_x, y: mid_lower_y }
+    layouts
+  end
+
+  def remaining_walls_for(game, player)
+    game.walls.count { |wall| wall.player == player && !wall.placed? }
   end
 
   def hovered_wall_well(args, game:, board_x:, board_y:)
