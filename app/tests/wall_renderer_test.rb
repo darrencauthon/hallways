@@ -17,6 +17,32 @@ def test_wall_renderer_animates_undragged_wall_placement_from_reserve(args, asse
   assert.equal! true, sprite[:angle] > 0, "Expected animated wall placement to rotate toward the board orientation."
 end
 
+def test_wall_renderer_dragged_preview_uses_render_target_sprite_rotation(args, assert)
+  wall = WallRendererTestFakeWall.new
+  renderer = WallRenderer.new(cell_size: 48, cell_gap: 6, board_pixel_size: 480)
+  game = WallRendererTestFakeGame.new(wall)
+  fake_args = WallRendererTestFakeArgs.new
+
+  renderer.render_reserve_walls(
+    fake_args,
+    game,
+    100,
+    200,
+    {
+      dragged_wall: wall,
+      dragged_rect: { x: 40, y: 80, w: 90, h: 10 },
+      dragged_angle: 45,
+      hover_wall: nil
+    }
+  )
+
+  assert.equal! 0, fake_args.outputs.solids.length, "Expected dragged rotated wall preview to avoid solid rendering."
+  assert.equal! 1, fake_args.outputs.sprites.length, "Expected dragged rotated wall preview to render as a sprite."
+  sprite = fake_args.outputs.sprites[0]
+  assert.equal! 45, sprite[:angle], "Expected dragged rotated wall preview sprite to carry the requested angle."
+  assert.equal! "wall_sprite_#{wall.object_id}", sprite[:path], "Expected dragged rotated wall preview to use the wall render target."
+end
+
 class WallRendererTestFakeWall
   attr_accessor :placed
   attr_reader :player, :color
