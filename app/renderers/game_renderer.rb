@@ -8,13 +8,15 @@ class GameRenderer
   PLAYER_NAME_SIZE_ENUM = 2
   PLAYER_NAME_COLOR = { r: 235, g: 235, b: 235 }.freeze
   PLAYER_BOX_W = 220
-  PLAYER_BOX_H = 108
   PLAYER_BOX_GAP = 18
   PLAYER_BOX_RIGHT_MARGIN = 58
   PLAYER_BOX_LEFT_MARGIN = 58
   PLAYER_BOX_AVATAR_MARGIN_X = 12
   PLAYER_BOX_AVATAR_MARGIN_TOP = 10
-  PLAYER_BOX_AVATAR_SCALE = 0.3
+  PLAYER_BOX_AVATAR_SCALE = 0.72
+  PLAYER_BOX_TEXT_GAP = 8
+  PLAYER_BOX_NAME_GAP = 14
+  PLAYER_BOX_BOTTOM_PADDING = 14
   PLAYER_BOX_FILL = { r: 24, g: 26, b: 32, a: 220 }.freeze
   PLAYER_BOX_BORDER = { r: 88, g: 94, b: 110 }.freeze
   PLAYER_BOX_ACTIVE_BORDER = { r: 255, g: 215, b: 120 }.freeze
@@ -196,13 +198,16 @@ class GameRenderer
     avatar_size = ((PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)) * PLAYER_BOX_AVATAR_SCALE).to_i
     avatar_w = avatar_size
     avatar_h = avatar_size
-    avatar_y = y + PLAYER_BOX_H - PLAYER_BOX_AVATAR_MARGIN_TOP - avatar_h
+    box_h = player_box_height
+    avatar_y = y + box_h - PLAYER_BOX_AVATAR_MARGIN_TOP - avatar_h
+    name_y = avatar_y - PLAYER_BOX_NAME_GAP
+    indicator_y = name_y - PLAYER_BOX_TEXT_GAP - 14
 
     args.outputs.solids << {
       x: x,
       y: y,
       w: PLAYER_BOX_W,
-      h: PLAYER_BOX_H,
+      h: box_h,
       **PLAYER_BOX_FILL
     }
 
@@ -218,7 +223,7 @@ class GameRenderer
       x: x,
       y: y,
       w: PLAYER_BOX_W,
-      h: PLAYER_BOX_H,
+      h: box_h,
       **border_color
     }
 
@@ -234,24 +239,26 @@ class GameRenderer
 
     args.outputs.labels << {
       x: x + 14,
-      y: avatar_y - 10,
+      y: name_y,
       text: player.name,
       alignment_enum: 0,
       size_enum: PLAYER_NAME_SIZE_ENUM,
       **PLAYER_NAME_COLOR
     }
 
-    indicator = player.turn_indicator_text
-    return if indicator.nil? || indicator.empty?
-
     args.outputs.labels << {
       x: x + 14,
-      y: y + 18,
-      text: indicator,
+      y: indicator_y,
+      text: player.turn_indicator_text || "",
       alignment_enum: 0,
       size_enum: 1,
       **PLAYER_BOX_ACTIVE_BORDER
     }
+  end
+
+  def player_box_height
+    avatar_size = ((PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)) * PLAYER_BOX_AVATAR_SCALE).to_i
+    PLAYER_BOX_AVATAR_MARGIN_TOP + avatar_size + PLAYER_BOX_NAME_GAP + 14 + PLAYER_BOX_TEXT_GAP + 14 + PLAYER_BOX_BOTTOM_PADDING
   end
 
   def render_placeholder_player_sprite(args, x:, y:, w:, h:, color:)
