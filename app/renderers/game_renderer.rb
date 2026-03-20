@@ -8,12 +8,12 @@ class GameRenderer
   PLAYER_NAME_SIZE_ENUM = 2
   PLAYER_NAME_COLOR = { r: 235, g: 235, b: 235 }.freeze
   PLAYER_BOX_W = 220
-  PLAYER_BOX_H = 78
+  PLAYER_BOX_H = 232
   PLAYER_BOX_GAP = 18
   PLAYER_BOX_RIGHT_MARGIN = 58
   PLAYER_BOX_LEFT_MARGIN = 58
-  PLAYER_BOX_AVATAR_SIZE = 36
-  PLAYER_BOX_AVATAR_PADDING = 12
+  PLAYER_BOX_AVATAR_MARGIN_X = 12
+  PLAYER_BOX_AVATAR_MARGIN_TOP = 10
   PLAYER_BOX_FILL = { r: 24, g: 26, b: 32, a: 220 }.freeze
   PLAYER_BOX_BORDER = { r: 88, g: 94, b: 110 }.freeze
   PLAYER_BOX_ACTIVE_BORDER = { r: 255, g: 215, b: 120 }.freeze
@@ -191,8 +191,10 @@ class GameRenderer
 
   def render_player_box(args, game, player:, x:, y:, current:)
     border_color = current ? PLAYER_BOX_ACTIVE_BORDER : PLAYER_BOX_BORDER
-    avatar_x = x + PLAYER_BOX_AVATAR_PADDING
-    avatar_y = y + PLAYER_BOX_H - PLAYER_BOX_AVATAR_PADDING - PLAYER_BOX_AVATAR_SIZE
+    avatar_x = x + PLAYER_BOX_AVATAR_MARGIN_X
+    avatar_w = PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)
+    avatar_h = avatar_w
+    avatar_y = y + PLAYER_BOX_H - PLAYER_BOX_AVATAR_MARGIN_TOP - avatar_h
 
     args.outputs.solids << {
       x: x,
@@ -205,8 +207,8 @@ class GameRenderer
     args.outputs.solids << {
       x: avatar_x,
       y: avatar_y,
-      w: PLAYER_BOX_AVATAR_SIZE,
-      h: PLAYER_BOX_AVATAR_SIZE,
+      w: avatar_w,
+      h: avatar_h,
       **PLAYER_BOX_AVATAR_FILL
     }
 
@@ -221,17 +223,18 @@ class GameRenderer
     args.outputs.borders << {
       x: avatar_x,
       y: avatar_y,
-      w: PLAYER_BOX_AVATAR_SIZE,
-      h: PLAYER_BOX_AVATAR_SIZE,
+      w: avatar_w,
+      h: avatar_h,
       **border_color
     }
 
-    render_placeholder_player_sprite(args, x: avatar_x, y: avatar_y, size: PLAYER_BOX_AVATAR_SIZE, color: border_color)
+    render_placeholder_player_sprite(args, x: avatar_x, y: avatar_y, w: avatar_w, h: avatar_h, color: border_color)
 
     args.outputs.labels << {
-      x: avatar_x + PLAYER_BOX_AVATAR_SIZE + 12,
-      y: y + PLAYER_BOX_H - 18,
+      x: x + 14,
+      y: avatar_y - 12,
       text: player.name,
+      alignment_enum: 0,
       size_enum: PLAYER_NAME_SIZE_ENUM,
       **PLAYER_NAME_COLOR
     }
@@ -240,31 +243,34 @@ class GameRenderer
     return if indicator.nil? || indicator.empty?
 
     args.outputs.labels << {
-      x: avatar_x + PLAYER_BOX_AVATAR_SIZE + 12,
-      y: y + 28,
+      x: x + 14,
+      y: y + 24,
       text: indicator,
+      alignment_enum: 0,
       size_enum: 1,
       **PLAYER_BOX_ACTIVE_BORDER
     }
   end
 
-  def render_placeholder_player_sprite(args, x:, y:, size:, color:)
-    line_count = 6
+  def render_placeholder_player_sprite(args, x:, y:, w:, h:, color:)
+    line_count = 8
     thickness = 3
-    step = (size / line_count.to_f)
+    step_x = ((w - thickness).to_f / (line_count - 1))
+    step_y = ((h - thickness).to_f / (line_count - 1))
 
     line_count.times do |index|
-      offset = (index * step).to_i
+      offset_x = (index * step_x).to_i
+      offset_y = (index * step_y).to_i
       args.outputs.solids << {
-        x: x + offset,
-        y: y + offset,
+        x: x + offset_x,
+        y: y + offset_y,
         w: thickness,
         h: thickness,
         **color
       }
       args.outputs.solids << {
-        x: x + size - thickness - offset,
-        y: y + offset,
+        x: x + w - thickness - offset_x,
+        y: y + offset_y,
         w: thickness,
         h: thickness,
         **color
