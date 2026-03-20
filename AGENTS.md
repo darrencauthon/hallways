@@ -54,6 +54,13 @@
 - Run tests from parent directory: `../dragonruby ./hallways --test app/test_runner.rb`.
 - Keep `README.md` and `AGENTS.md` aligned when run/test instructions change.
 
+## Docs Usage
+- Prefer local DragonRuby docs in `docs/` as primary reference before guessing API behavior.
+- Start with authored content first: `docs/api/`, `docs/guides/`, and targeted files in `docs/samples/`.
+- Treat `docs/static/` and `docs/oss/` as secondary/reference-only; do not load them unless needed for a specific issue.
+- Load only the smallest relevant doc files for the current task to keep context focused.
+- When behavior is uncertain, cite the specific local doc path used in the change summary.
+
 ## Architecture Snapshot
 - Folder layout:
   - `app/models`: gameplay/state objects (`Game`, `Board`, `Pawn`, `Player`, `Wall`, `WallWell`, `Square`)
