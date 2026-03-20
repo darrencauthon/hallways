@@ -27,6 +27,10 @@ class GameRenderer
   PLAYER_BOX_ACTIVE_BORDER = { r: 255, g: 215, b: 120 }.freeze
   PLAYER_BOX_META_COLOR = { r: 170, g: 176, b: 190 }.freeze
   PLAYER_BOX_AVATAR_FILL = { r: 16, g: 18, b: 22 }.freeze
+  PLAYER_BOX_AWAY_MARGIN_TOP = 16
+  PLAYER_BOX_AWAY_MARGIN_RIGHT = 14
+  PLAYER_BOX_AWAY_LABEL_SIZE_ENUM = -1
+  PLAYER_BOX_AWAY_VALUE_SIZE_ENUM = 3
 
   attr_reader :cell_gap
 
@@ -207,6 +211,9 @@ class GameRenderer
     avatar_y = y + box_h - PLAYER_BOX_AVATAR_MARGIN_TOP - avatar_h
     name_y = avatar_y - PLAYER_BOX_NAME_GAP
     indicator_y = name_y - PLAYER_BOX_TEXT_GAP - 14
+    away_x = x + PLAYER_BOX_W - PLAYER_BOX_AWAY_MARGIN_RIGHT
+    away_y = y + box_h - PLAYER_BOX_AWAY_MARGIN_TOP
+    away_distance = player_away_distance(game, player)
 
     args.outputs.solids << {
       x: x,
@@ -241,6 +248,24 @@ class GameRenderer
     }
 
     render_placeholder_player_sprite(args, x: avatar_x, y: avatar_y, w: avatar_w, h: avatar_h, color: border_color)
+
+    args.outputs.labels << {
+      x: away_x,
+      y: away_y,
+      text: "Away",
+      alignment_enum: 2,
+      size_enum: PLAYER_BOX_AWAY_LABEL_SIZE_ENUM,
+      **PLAYER_NAME_COLOR
+    }
+
+    args.outputs.labels << {
+      x: away_x,
+      y: away_y - 22,
+      text: away_distance.to_s,
+      alignment_enum: 2,
+      size_enum: PLAYER_BOX_AWAY_VALUE_SIZE_ENUM,
+      **PLAYER_NAME_COLOR
+    }
 
     args.outputs.labels << {
       x: x + 14,
@@ -295,6 +320,13 @@ class GameRenderer
         **color
       }
     end
+  end
+
+  def player_away_distance(game, player)
+    distance = game.away_distance_for(player)
+    return "-" if distance.nil?
+
+    distance
   end
 
   def board_pixel_size(game)

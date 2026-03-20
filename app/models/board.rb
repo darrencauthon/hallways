@@ -47,6 +47,34 @@ class Board
     false
   end
 
+  def shortest_distance_to_goal(start_col:, start_row:, goal_row: nil, goal_col: nil, extra_occupied_wall_wells: nil)
+    frontier = [{ col: start_col, row: start_row, distance: 0 }]
+    visited = { "#{start_col},#{start_row}" => true }
+
+    until frontier.empty?
+      current = frontier.shift
+      return current[:distance] if reached_goal?(current[:col], current[:row], goal_row: goal_row, goal_col: goal_col)
+
+      neighbor_positions(
+        current[:col],
+        current[:row],
+        extra_occupied_wall_wells: extra_occupied_wall_wells
+      ).each do |neighbor|
+        key = "#{neighbor[:col]},#{neighbor[:row]}"
+        next if visited[key]
+
+        visited[key] = true
+        frontier << {
+          col: neighbor[:col],
+          row: neighbor[:row],
+          distance: current[:distance] + 1
+        }
+      end
+    end
+
+    nil
+  end
+
   def wall_span_from(wall_well, preferred_side: :positive)
     return nil if wall_well.nil?
 

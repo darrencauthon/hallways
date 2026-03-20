@@ -737,3 +737,54 @@ def test_game_pawns_use_player_box_palette(args, assert)
   assert.equal! [47, 107, 69], game.pawns[2].color, "Expected Player 3 pawn to use the player box forest green."
   assert.equal! [154, 106, 31], game.pawns[3].color, "Expected Player 4 pawn to use the player box burnt gold."
 end
+
+def test_game_shortest_distance_to_goal_matches_initial_position(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+
+  distance = game.board.shortest_distance_to_goal(
+    start_col: pawn.col,
+    start_row: pawn.row,
+    goal_row: pawn.player.winning_row,
+    goal_col: pawn.player.winning_col
+  )
+
+  assert.equal! 8, distance, "Expected initial shortest path to the far side to be eight moves."
+end
+
+def test_game_shortest_distance_to_goal_increases_when_wall_blocks_direct_path(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+  wall = game.walls.find { |candidate| candidate.player == game.players[0] && !candidate.placed? }
+  wall_well = game.board.wall_wells.find { |candidate| candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 0 }
+
+  game.place_wall_in_well(wall, wall_well)
+
+  distance = game.board.shortest_distance_to_goal(
+    start_col: pawn.col,
+    start_row: pawn.row,
+    goal_row: pawn.player.winning_row,
+    goal_col: pawn.player.winning_col
+  )
+
+  assert.equal! 9, distance, "Expected direct wall blockage to increase the shortest path by one move."
+end
+
+def test_game_away_distance_updates_after_pawn_move(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  pawn = game.pawns[0]
+
+  game.move_pawn_to(pawn, 4, 1)
+
+  assert.equal! 7, game.away_distance_for(game.players[0]), "Expected away distance to decrease after a successful pawn move."
+end
+
+def test_game_away_distance_updates_after_wall_placement(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48)
+  wall = game.walls.find { |candidate| candidate.player == game.players[0] && !candidate.placed? }
+  wall_well = game.board.wall_wells.find { |candidate| candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 0 }
+
+  game.place_wall_in_well(wall, wall_well)
+
+  assert.equal! 9, game.away_distance_for(game.players[0]), "Expected away distance to increase after a blocking wall is placed."
+end

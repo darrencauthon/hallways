@@ -38,6 +38,8 @@ class Game
     @pawns = build_pawns(cell_width: cell_width, cell_height: cell_height)
     @walls = build_walls
     @turn_index = 0
+    @away_distances = {}
+    recompute_away_distances!
   end
 
   def current_player
@@ -46,6 +48,10 @@ class Game
 
   def current_controller
     current_player.controller
+  end
+
+  def away_distance_for(player)
+    @away_distances[player]
   end
 
   def next_turn!
@@ -66,6 +72,7 @@ class Game
     return false unless can_move_pawn_to?(pawn, col, row)
 
     pawn.move_to(col, row)
+    recompute_away_distances!
     @winner = pawn.player if pawn.player.goal_reached?(col, row)
     next_turn! if winner.nil?
     true
@@ -102,6 +109,7 @@ class Game
     wall_span = board.wall_span_from(wall_well, preferred_side: preferred_side)
     wall.assign_to_wall_wells(wall_span)
     wall_span.each { |occupied_well| occupied_well.assign_wall(wall) }
+    recompute_away_distances!
     next_turn!
     true
   end
@@ -388,6 +396,22 @@ class Game
         { start_col: 4, start_row: 0, winning_row: 8, winning_col: nil },
         { start_col: 4, start_row: 8, winning_row: 0, winning_col: nil }
       ]
+    end
+  end
+
+  def recompute_away_distances!
+    @away_distances = players.each_with_object({}) do |player, distances|
+      pawn = pawns.find { |candidate| candidate.player == player }
+      distances[player] = if pawn.nil?
+                            nil
+                          else
+                            board.shortest_distance_to_goal(
+                              start_col: pawn.col,
+                              start_row: pawn.row,
+                              goal_row: player.winning_row,
+                              goal_col: player.winning_col
+                            )
+                          end
     end
   end
 end
