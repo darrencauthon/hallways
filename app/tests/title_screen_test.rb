@@ -74,7 +74,7 @@ module TitleScreenTestHelpers
 
   def self.expected_game_version
     metadata_path = File.expand_path("../../metadata/game_metadata.txt", File.dirname(__FILE__))
-    line = File.readlines(metadata_path).find { |entry| entry.start_with?("version=") }
+    line = File.read(metadata_path).split("\n").find { |entry| entry.start_with?("version=") }
     line.split("=", 2)[1].strip
   end
 end

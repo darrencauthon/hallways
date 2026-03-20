@@ -169,7 +169,7 @@ class TitleScreen
     metadata_path = metadata_file_path
     return nil if metadata_path.nil?
 
-    line = File.readlines(metadata_path).find { |entry| entry.start_with?("version=") }
+    line = read_metadata_lines(metadata_path).find { |entry| entry.start_with?("version=") }
     return nil if line.nil?
 
     line.split("=", 2)[1]&.strip
@@ -181,11 +181,15 @@ class TitleScreen
     candidates = [
       "metadata/game_metadata.txt",
       "hallways/metadata/game_metadata.txt",
-      File.expand_path("../../metadata/game_metadata.txt", __dir__)
+      File.expand_path("../../metadata/game_metadata.txt", File.dirname(__FILE__))
     ]
 
     candidates.find { |path| File.exist?(path) }
   rescue StandardError
     nil
+  end
+
+  def read_metadata_lines(metadata_path)
+    File.read(metadata_path).split("\n")
   end
 end
