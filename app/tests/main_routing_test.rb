@@ -13,7 +13,7 @@ end
 def test_main_tick_does_not_require_testing_runtime_for_normal_boot(args, assert)
   fake_args = MainRoutingTestHelpers.build_title_args
 
-  assert.equal! nil, defined?(TestingRuntime), "Expected normal boot test to run without eagerly loading TestingRuntime."
+  assert.equal! false, Object.constants.include?(:TestingRuntime), "Expected normal boot test to run without eagerly loading TestingRuntime."
 
   tick(fake_args)
 
