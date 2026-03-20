@@ -21,13 +21,18 @@ class GameScreen
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
     @computer_thinking = false
-    apply_current_controller_action(args)
-    if human_turn?
-      update_wall_drag_state(args, board_x, board_y)
-      update_pawn_drag_state(args, board_x, board_y)
-    else
+    if pawn_move_animation_in_progress?(args)
       @dragged_wall = nil
       clear_dragged_pawn
+    else
+      apply_current_controller_action(args)
+      if human_turn?
+        update_wall_drag_state(args, board_x, board_y)
+        update_pawn_drag_state(args, board_x, board_y)
+      else
+        @dragged_wall = nil
+        clear_dragged_pawn
+      end
     end
     wall_drop_target = hovered_available_wall_placement(args, board_x, board_y, use_last_hovered: false) if dragged_wall
     pawn_drop_target = available_pawn_drop_target(args, board_x, board_y)
@@ -67,7 +72,8 @@ class GameScreen
     if action[:type] == :thinking
       @computer_thinking = true
     elsif action[:type] == :move_pawn
-      game.move_pawn_to(action[:pawn], action[:col], action[:row])
+      moved = game.move_pawn_to(action[:pawn], action[:col], action[:row])
+      start_pawn_move_animation(args) if moved
       @computer_thinking = false
     elsif action[:type] == :place_wall
       game.place_wall_in_well_with_side(
@@ -163,7 +169,8 @@ class GameScreen
     if mouse_released?(args)
       if dragged_pawn
         square = hovered_square(args, board_x, board_y)
-        game.move_pawn_to(dragged_pawn, square.col, square.row) if square
+        moved = game.move_pawn_to(dragged_pawn, square.col, square.row) if square
+        start_pawn_move_animation(args) if moved
       end
       clear_dragged_pawn
       return
@@ -278,6 +285,16 @@ class GameScreen
     (board_size * cell_size) + ((board_size - 1) * cell_gap)
   end
 
+  def pawn_move_animation_in_progress?(args)
+    return false if @pawn_move_animation_until_tick.nil?
+
+    tick_count(args) < @pawn_move_animation_until_tick
+  end
+
+  def start_pawn_move_animation(args)
+    @pawn_move_animation_until_tick = tick_count(args) + PawnRenderer::MOVE_ANIMATION_TICKS
+  end
+
   def game_screen_renderer
     @game_screen_renderer ||= GameScreenRenderer.new
   end
@@ -307,5 +324,11 @@ class GameScreen
 
   def menu_pressed?(args)
     args.inputs.keyboard.key_down.escape
+  end
+
+  def tick_count(args)
+    return 0 unless args.respond_to?(:state) && args.state
+
+    args.state.tick_count || 0
   end
 end
