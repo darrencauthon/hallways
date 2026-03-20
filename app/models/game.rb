@@ -18,6 +18,12 @@ class Game
   WALL_COLOR = [210, 165, 95]
   WALL_WIDTH = 90
   WALL_HEIGHT = 10
+  PLAYER_COLORS = [
+    [143, 45, 45],
+    [47, 75, 143],
+    [47, 107, 69],
+    [154, 106, 31]
+  ].freeze
 
   attr_reader :pawns, :board, :walls, :players, :winner, :cell_gap, :mode, :player_types, :player_count
 
@@ -366,11 +372,7 @@ class Game
   end
 
   def pawn_color_for(index)
-    return [245, 245, 245] if index == 0
-    return [50, 50, 50] if index == 1
-    return [200, 200, 200] if index == 2
-
-    [85, 85, 85]
+    PLAYER_COLORS[index] || PLAYER_COLORS[0]
   end
 
   def player_start_configs

@@ -365,9 +365,10 @@ class GameRenderer
 
   def player_box_layouts(args, game, board_x, board_y)
     board_size = board_pixel_size(game)
+    box_h = player_box_height
     right_x = board_x + board_size + PLAYER_BOX_RIGHT_MARGIN
     left_x = board_x - PLAYER_BOX_LEFT_MARGIN - PLAYER_BOX_W
-    top_y = board_y + board_size - PLAYER_BOX_H
+    top_y = board_y + board_size - box_h
     bottom_y = board_y
 
     layouts = [

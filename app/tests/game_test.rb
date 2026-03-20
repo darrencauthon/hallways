@@ -728,3 +728,12 @@ def test_game_four_player_initial_pawn_positions(args, assert)
   assert.equal! [0, 4], [game.pawns[2].col, game.pawns[2].row], "Expected Player 3 pawn at left center."
   assert.equal! [8, 4], [game.pawns[3].col, game.pawns[3].row], "Expected Player 4 pawn at right center."
 end
+
+def test_game_pawns_use_player_box_palette(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_count: 4, player_types: [:human, :human, :human, :human])
+
+  assert.equal! [143, 45, 45], game.pawns[0].color, "Expected Player 1 pawn to use the player box crimson."
+  assert.equal! [47, 75, 143], game.pawns[1].color, "Expected Player 2 pawn to use the player box indigo."
+  assert.equal! [47, 107, 69], game.pawns[2].color, "Expected Player 3 pawn to use the player box forest green."
+  assert.equal! [154, 106, 31], game.pawns[3].color, "Expected Player 4 pawn to use the player box burnt gold."
+end

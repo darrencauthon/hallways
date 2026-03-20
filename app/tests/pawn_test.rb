@@ -25,22 +25,24 @@ def test_pawn_render_places_pawn_in_expected_cell(args, assert)
   assert.equal! 426, sprite[:y], "Expected pawn y to be centered in target cell."
   assert.equal! 28, sprite[:w], "Expected pawn width to be 28."
   assert.equal! 28, sprite[:h], "Expected pawn height to be 28."
-  assert.equal! "sprites/pawn.png", sprite[:path], "Expected pawn to use sprite sheet path."
-  assert.equal! 0, sprite[:source_x], "Expected first pawn frame source_x to be 0."
-  assert.equal! 0, sprite[:source_y], "Expected frame row source_y to be 0."
-  assert.equal! 256, sprite[:source_w], "Expected frame width to match sprite sheet frame width."
-  assert.equal! 256, sprite[:source_h], "Expected frame height to match sprite sheet frame height."
+  assert.equal! "sprites/solid-circle.png", sprite[:path], "Expected pawn to use solid circle sprite."
+  assert.equal! 245, sprite[:r], "Expected pawn sprite tint to use pawn red channel."
+  assert.equal! 245, sprite[:g], "Expected pawn sprite tint to use pawn green channel."
+  assert.equal! 245, sprite[:b], "Expected pawn sprite tint to use pawn blue channel."
+  assert.equal! 255, sprite[:a], "Expected pawn sprite alpha to be fully opaque."
 end
 
-def test_pawn_render_uses_second_frame_for_dark_pawn(args, assert)
-  pawn = Pawn.new(2, 4, [50, 50, 50], player: PawnTestFakePlayer.new("Tester"), cell_width: 48, cell_height: 48)
+def test_pawn_render_tints_circle_for_pawn_color(args, assert)
+  pawn = Pawn.new(2, 4, [50, 60, 70], player: PawnTestFakePlayer.new("Tester"), cell_width: 48, cell_height: 48)
   fake_args = PawnTestFakeArgs.new
 
   pawn.render(fake_args, 100, 200, 6)
 
   sprite = fake_args.outputs.sprites[0]
-  assert.equal! "sprites/pawn.png", sprite[:path], "Expected pawn to use sprite sheet path."
-  assert.equal! 256, sprite[:source_x], "Expected dark pawn to use second frame."
+  assert.equal! "sprites/solid-circle.png", sprite[:path], "Expected pawn to use solid circle sprite."
+  assert.equal! 50, sprite[:r], "Expected pawn sprite tint to use pawn red channel."
+  assert.equal! 60, sprite[:g], "Expected pawn sprite tint to use pawn green channel."
+  assert.equal! 70, sprite[:b], "Expected pawn sprite tint to use pawn blue channel."
 end
 
 def test_pawn_renderer_animates_undragged_move_between_cells(args, assert)
