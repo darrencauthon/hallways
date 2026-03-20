@@ -1,5 +1,6 @@
 require "app/models/square.rb"
 require "app/models/wall_well.rb"
+require "app/models/path_distance_calculator.rb"
 
 class Board
   attr_reader :squares, :wall_wells, :size, :cell_width, :cell_height
@@ -48,31 +49,22 @@ class Board
   end
 
   def shortest_distance_to_goal(start_col:, start_row:, goal_row: nil, goal_col: nil, extra_occupied_wall_wells: nil)
-    frontier = [{ col: start_col, row: start_row, distance: 0 }]
-    visited = { "#{start_col},#{start_row}" => true }
+    player = Struct.new(:winning_row, :winning_col) do
+      def goal_reached?(col, row)
+        return true if !winning_row.nil? && row == winning_row
+        return true if !winning_col.nil? && col == winning_col
 
-    until frontier.empty?
-      current = frontier.shift
-      return current[:distance] if reached_goal?(current[:col], current[:row], goal_row: goal_row, goal_col: goal_col)
-
-      neighbor_positions(
-        current[:col],
-        current[:row],
-        extra_occupied_wall_wells: extra_occupied_wall_wells
-      ).each do |neighbor|
-        key = "#{neighbor[:col]},#{neighbor[:row]}"
-        next if visited[key]
-
-        visited[key] = true
-        frontier << {
-          col: neighbor[:col],
-          row: neighbor[:row],
-          distance: current[:distance] + 1
-        }
+        false
       end
-    end
+    end.new(goal_row, goal_col)
 
-    nil
+    path_distance_calculator.shortest_distance_to_goal(
+      board: self,
+      start_col: start_col,
+      start_row: start_row,
+      player: player,
+      extra_occupied_wall_wells: extra_occupied_wall_wells
+    )
   end
 
   def wall_span_from(wall_well, preferred_side: :positive)
@@ -200,5 +192,9 @@ class Board
     return true if !goal_col.nil? && col == goal_col
 
     false
+  end
+
+  def path_distance_calculator
+    @path_distance_calculator ||= PathDistanceCalculator.new
   end
 end

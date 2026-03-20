@@ -1,5 +1,6 @@
 require "app/models/pawn.rb"
 require "app/models/board.rb"
+require "app/models/path_distance_calculator.rb"
 require "app/models/wall.rb"
 require "app/models/player.rb"
 require "app/controllers/null_controller.rb"
@@ -405,13 +406,18 @@ class Game
       distances[player] = if pawn.nil?
                             nil
                           else
-                            board.shortest_distance_to_goal(
+                            path_distance_calculator.shortest_distance_to_goal(
+                              board: board,
                               start_col: pawn.col,
                               start_row: pawn.row,
-                              goal_row: player.winning_row,
-                              goal_col: player.winning_col
+                              player: player,
+                              extra_occupied_wall_wells: nil
                             )
                           end
     end
+  end
+
+  def path_distance_calculator
+    @path_distance_calculator ||= PathDistanceCalculator.new
   end
 end

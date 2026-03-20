@@ -1,3 +1,5 @@
+require "app/models/path_distance_calculator.rb"
+
 class PathBotController < BotController
   MIN_THINK_TICKS = 6
 
@@ -60,50 +62,16 @@ class PathBotController < BotController
   end
 
   def distance_to_goal(board, start_col, start_row, player)
-    return 0 if player.goal_reached?(start_col, start_row)
-
-    visited = {}
-    frontier = [{ col: start_col, row: start_row, steps: 0 }]
-    visited[key_for(start_col, start_row)] = true
-
-    until frontier.empty?
-      current = frontier.shift
-      neighbors_for(board, current[:col], current[:row]).each do |neighbor|
-        key = key_for(neighbor[:col], neighbor[:row])
-        next if visited[key]
-
-        return current[:steps] + 1 if player.goal_reached?(neighbor[:col], neighbor[:row])
-
-        visited[key] = true
-        frontier << {
-          col: neighbor[:col],
-          row: neighbor[:row],
-          steps: current[:steps] + 1
-        }
-      end
-    end
-
-    nil
+    path_distance_calculator.shortest_distance_to_goal(
+      board: board,
+      start_col: start_col,
+      start_row: start_row,
+      player: player,
+      extra_occupied_wall_wells: nil
+    )
   end
 
-  def neighbors_for(board, col, row)
-    [
-      { col: col + 1, row: row },
-      { col: col - 1, row: row },
-      { col: col, row: row + 1 },
-      { col: col, row: row - 1 }
-    ].select do |neighbor|
-      board.square_at(neighbor[:col], neighbor[:row]) &&
-        !board.path_blocked?(
-          from_col: col,
-          from_row: row,
-          to_col: neighbor[:col],
-          to_row: neighbor[:row]
-        )
-    end
-  end
-
-  def key_for(col, row)
-    "#{col},#{row}"
+  def path_distance_calculator
+    @path_distance_calculator ||= PathDistanceCalculator.new
   end
 end

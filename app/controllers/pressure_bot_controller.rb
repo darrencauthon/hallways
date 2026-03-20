@@ -1,3 +1,5 @@
+require "app/models/path_distance_calculator.rb"
+
 class PressureBotController < BotController
   MIN_THINK_TICKS = 8
   WALL_CHECKS_PER_TICK = 14
@@ -211,57 +213,13 @@ class PressureBotController < BotController
   end
 
   def distance_to_goal(board, start_col, start_row, player, extra_occupied_wall_wells:)
-    return 0 if player.goal_reached?(start_col, start_row)
-
-    visited = {}
-    frontier = [{ col: start_col, row: start_row, steps: 0 }]
-    visited[key_for(start_col, start_row)] = true
-
-    until frontier.empty?
-      current = frontier.shift
-      neighbors_for(
-        board,
-        current[:col],
-        current[:row],
-        extra_occupied_wall_wells: extra_occupied_wall_wells
-      ).each do |neighbor|
-        key = key_for(neighbor[:col], neighbor[:row])
-        next if visited[key]
-
-        return current[:steps] + 1 if player.goal_reached?(neighbor[:col], neighbor[:row])
-
-        visited[key] = true
-        frontier << {
-          col: neighbor[:col],
-          row: neighbor[:row],
-          steps: current[:steps] + 1
-        }
-      end
-    end
-
-    nil
-  end
-
-  def neighbors_for(board, col, row, extra_occupied_wall_wells:)
-    [
-      { col: col + 1, row: row },
-      { col: col - 1, row: row },
-      { col: col, row: row + 1 },
-      { col: col, row: row - 1 }
-    ].select do |neighbor|
-      board.square_at(neighbor[:col], neighbor[:row]) &&
-        !board.path_blocked?(
-          from_col: col,
-          from_row: row,
-          to_col: neighbor[:col],
-          to_row: neighbor[:row],
-          extra_occupied_wall_wells: extra_occupied_wall_wells
-        )
-    end
-  end
-
-  def key_for(col, row)
-    "#{col},#{row}"
+    path_distance_calculator.shortest_distance_to_goal(
+      board: board,
+      start_col: start_col,
+      start_row: start_row,
+      player: player,
+      extra_occupied_wall_wells: extra_occupied_wall_wells
+    )
   end
 
   def most_advanced_opponent_pawn(game)
@@ -271,6 +229,10 @@ class PressureBotController < BotController
     candidates.min_by do |pawn|
       distance_to_goal(game.board, pawn.col, pawn.row, pawn.player, extra_occupied_wall_wells: nil) || 9_999
     end
+  end
+
+  def path_distance_calculator
+    @path_distance_calculator ||= PathDistanceCalculator.new
   end
 
   def reset_strategy_state
