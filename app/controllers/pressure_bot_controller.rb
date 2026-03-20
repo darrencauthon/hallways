@@ -4,6 +4,7 @@ class PressureBotController < BotController
   WALL_OPPONENT_WEIGHT = 2.0
   WALL_SELF_WEIGHT = 1.2
   MOVE_IMPROVEMENT_WEIGHT = 1.5
+  WALL_PATH_DEFICIT_WEIGHT = 0.25
 
   def next_action(args:, game:)
     return nil if game.winner
@@ -122,7 +123,12 @@ class PressureBotController < BotController
     my_delta = my_after - (@my_baseline_distance || my_after)
     return if opponent_delta <= 0
 
-    score = (opponent_delta * WALL_OPPONENT_WEIGHT) - (my_delta * WALL_SELF_WEIGHT) + wall_position_bonus(wall_well)
+    path_deficit = (@my_baseline_distance || my_after) - (@opponent_baseline_distance || opponent_after)
+    score =
+      (opponent_delta * WALL_OPPONENT_WEIGHT) -
+      (my_delta * WALL_SELF_WEIGHT) +
+      wall_position_bonus(wall_well) +
+      (path_deficit * WALL_PATH_DEFICIT_WEIGHT)
     action = {
       type: :place_wall,
       wall: @wall_piece,
