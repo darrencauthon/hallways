@@ -8,12 +8,13 @@ class GameRenderer
   PLAYER_NAME_SIZE_ENUM = 2
   PLAYER_NAME_COLOR = { r: 235, g: 235, b: 235 }.freeze
   PLAYER_BOX_W = 220
-  PLAYER_BOX_H = 232
+  PLAYER_BOX_H = 108
   PLAYER_BOX_GAP = 18
   PLAYER_BOX_RIGHT_MARGIN = 58
   PLAYER_BOX_LEFT_MARGIN = 58
   PLAYER_BOX_AVATAR_MARGIN_X = 12
   PLAYER_BOX_AVATAR_MARGIN_TOP = 10
+  PLAYER_BOX_AVATAR_SCALE = 0.3
   PLAYER_BOX_FILL = { r: 24, g: 26, b: 32, a: 220 }.freeze
   PLAYER_BOX_BORDER = { r: 88, g: 94, b: 110 }.freeze
   PLAYER_BOX_ACTIVE_BORDER = { r: 255, g: 215, b: 120 }.freeze
@@ -192,8 +193,9 @@ class GameRenderer
   def render_player_box(args, game, player:, x:, y:, current:)
     border_color = current ? PLAYER_BOX_ACTIVE_BORDER : PLAYER_BOX_BORDER
     avatar_x = x + PLAYER_BOX_AVATAR_MARGIN_X
-    avatar_w = PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)
-    avatar_h = avatar_w
+    avatar_size = ((PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)) * PLAYER_BOX_AVATAR_SCALE).to_i
+    avatar_w = avatar_size
+    avatar_h = avatar_size
     avatar_y = y + PLAYER_BOX_H - PLAYER_BOX_AVATAR_MARGIN_TOP - avatar_h
 
     args.outputs.solids << {
@@ -232,7 +234,7 @@ class GameRenderer
 
     args.outputs.labels << {
       x: x + 14,
-      y: avatar_y - 12,
+      y: avatar_y - 10,
       text: player.name,
       alignment_enum: 0,
       size_enum: PLAYER_NAME_SIZE_ENUM,
@@ -244,7 +246,7 @@ class GameRenderer
 
     args.outputs.labels << {
       x: x + 14,
-      y: y + 24,
+      y: y + 18,
       text: indicator,
       alignment_enum: 0,
       size_enum: 1,
