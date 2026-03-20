@@ -92,6 +92,27 @@ def test_game_screen_clicking_legal_square_moves_current_pawn_with_animation(arg
   assert.equal! true, screen.send(:pawn_move_animation_in_progress?, fake_args), "Expected click-to-move to trigger the standard pawn move animation."
 end
 
+def test_game_screen_clicking_legal_wall_well_places_wall_with_animation(args, assert)
+  screen = GameScreen.new
+  game = Game.new(cell_width: 48, cell_height: 48)
+  board_x = (1280 - ((9 * 48) + (8 * 6))) / 2
+  board_y = 120
+  wall_well = game.board.wall_wells.find { |candidate| candidate.orientation == :horizontal && candidate.col == 4 && candidate.row == 0 }
+  rect = wall_well.rect(board_x, board_y, cell_width: 48, cell_height: 48, cell_gap: 6)
+  fake_args = GameScreenTestHelpers.build_fake_args_with_grid(
+    tick_count: 10,
+    mouse_x: rect[:x] + (rect[:w] / 2),
+    mouse_y: rect[:y] + (rect[:h] / 2),
+    mouse_down: true
+  )
+
+  screen.define_singleton_method(:game) { game }
+  screen.tick(fake_args)
+
+  assert.equal! false, wall_well.wall.nil?, "Expected click-to-place to assign a wall to the hovered wall well."
+  assert.equal! true, screen.send(:wall_place_animation_in_progress?, fake_args), "Expected click-to-place to trigger the standard wall placement animation."
+end
+
 module GameScreenTestHelpers
   def self.build_fake_args_with_grid(tick_count:, mouse_x: nil, mouse_y: nil, mouse_down: false, mouse_up: false)
     key_down = FakeKeyDown.new(false, false, false, false, false, false)
@@ -183,6 +204,11 @@ class GameScreenTestFakeOutputs
     @sprites = []
     @solids = []
     @borders = []
+    @render_targets = {}
+  end
+
+  def [](key)
+    @render_targets[key] ||= WallRendererTestFakeRenderTarget.new
   end
 end
 

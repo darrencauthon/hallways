@@ -34,7 +34,9 @@ class GameScreen
         clear_dragged_pawn
       end
     end
+    clickable_wall_target = available_click_wall_placement(args, board_x, board_y)
     wall_drop_target = hovered_available_wall_placement(args, board_x, board_y) if dragged_wall
+    wall_drop_target ||= clickable_wall_target
     clickable_pawn_target = available_click_move_target(args, board_x, board_y)
     pawn_drop_target = available_pawn_drop_target(args, board_x, board_y) || clickable_pawn_target
     pawn_origin_highlight = clickable_pawn_origin_square(args, board_x, board_y, clickable_pawn_target)
@@ -109,6 +111,20 @@ class GameScreen
 
     return unless mouse_pressed?(args)
 
+    clickable_placement = available_click_wall_placement(args, board_x, board_y)
+    if clickable_placement
+      wall = current_player_wall_piece
+      if wall
+        placed = game.place_wall_in_well_with_side(
+          wall,
+          clickable_placement[:wall_well],
+          preferred_side: clickable_placement[:preferred_side]
+        )
+        start_wall_place_animation(args) if placed
+      end
+      return
+    end
+
     game.reserve_wall_rects(args, board_x, board_y).each do |wall, rect|
       next if rect.nil?
       next unless wall.player == game.current_player
@@ -123,6 +139,23 @@ class GameScreen
   end
 
   def hovered_available_wall_placement(args, board_x, board_y, use_last_hovered: true)
+    return nil if dragged_wall.nil?
+
+    hovered_wall_placement_for(args, board_x, board_y, wall: dragged_wall, use_last_hovered: use_last_hovered)
+  end
+
+  def available_click_wall_placement(args, board_x, board_y)
+    return nil unless human_turn?
+    return nil if dragged_wall
+    return nil if dragged_pawn
+
+    wall = current_player_wall_piece
+    return nil if wall.nil?
+
+    hovered_wall_placement_for(args, board_x, board_y, wall: wall, use_last_hovered: false)
+  end
+
+  def hovered_wall_placement_for(args, board_x, board_y, wall:, use_last_hovered:)
     game.board.wall_wells.each do |wall_well|
       next false if wall_well.occupied?
 
@@ -137,7 +170,7 @@ class GameScreen
 
       preferred_side = preferred_wall_side(args, wall_well, rect)
       wall_span = game.board.wall_span_from(wall_well, preferred_side: preferred_side)
-      next false unless game.can_place_wall_in_well?(dragged_wall, wall_well, preferred_side: preferred_side)
+      next false unless game.can_place_wall_in_well?(wall, wall_well, preferred_side: preferred_side)
 
       placement = { wall_well: wall_well, preferred_side: preferred_side, wall_span: wall_span }
       @last_hovered_wall_placement = placement
@@ -152,7 +185,7 @@ class GameScreen
     end
 
     if game.can_place_wall_in_well?(
-      dragged_wall,
+      wall,
       @last_hovered_wall_placement[:wall_well],
       preferred_side: @last_hovered_wall_placement[:preferred_side]
     )
@@ -295,6 +328,10 @@ class GameScreen
 
   def human_turn?
     game.current_controller.is_a?(HumanController)
+  end
+
+  def current_player_wall_piece
+    game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
   end
 
   def current_player_pawn
