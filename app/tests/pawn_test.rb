@@ -52,6 +52,8 @@ def test_pawn_renderer_animates_undragged_move_between_cells(args, assert)
   renderer.render(fake_args, game, 100, 200, dragged_pawn: nil, dragged_pawn_x: 0, dragged_pawn_y: 0)
   pawn.move_to(4, 1)
   fake_args.state.tick_count = 1
+  renderer.render(fake_args, game, 100, 200, dragged_pawn: nil, dragged_pawn_x: 0, dragged_pawn_y: 0)
+  fake_args.state.tick_count = 2
   fake_args.outputs.sprites = []
 
   renderer.render(fake_args, game, 100, 200, dragged_pawn: nil, dragged_pawn_x: 0, dragged_pawn_y: 0)

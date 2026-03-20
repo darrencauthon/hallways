@@ -7,13 +7,15 @@ def test_wall_renderer_animates_undragged_wall_placement_from_reserve(args, asse
   renderer.render_reserve_walls(fake_args, game, 100, 200)
   wall.placed = true
   fake_args.state.tick_count = 1
+  renderer.render_placed_walls(fake_args, game, 100, 200)
+  fake_args.state.tick_count = 2
   fake_args.outputs.sprites = []
 
   renderer.render_placed_walls(fake_args, game, 100, 200)
 
   sprite = fake_args.outputs.sprites[0]
   assert.equal! true, sprite[:x] > 20, "Expected animated wall placement to move away from its reserve slot."
-  assert.equal! true, sprite[:x] < 100, "Expected animated wall placement to remain short of its board target on the next frame."
+  assert.equal! true, sprite[:x] < 60, "Expected animated wall placement to remain short of its board target on the next frame."
   assert.equal! true, sprite[:angle] > 0, "Expected animated wall placement to rotate toward the board orientation."
 end
 
@@ -45,12 +47,14 @@ end
 
 class WallRendererTestFakeWall
   attr_accessor :placed
-  attr_reader :player, :color
+  attr_reader :player, :color, :width, :height
 
   def initialize
     @placed = false
     @player = Object.new
     @color = [210, 165, 95]
+    @width = 90
+    @height = 10
   end
 
   def placed?
@@ -62,7 +66,7 @@ class WallRendererTestFakeWall
   end
 
   def placed_rect(board_x, board_y, cell_width, cell_height, cell_gap)
-    { x: 100, y: 200, w: 90, h: 10 }
+    { x: 100, y: 200, w: 10, h: 90 }
   end
 end
 
