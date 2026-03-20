@@ -213,20 +213,12 @@ class GameRenderer
       **PLAYER_NAME_COLOR
     }
 
-    args.outputs.labels << {
-      x: x + 14,
-      y: y + PLAYER_BOX_H - 42,
-      text: "Walls #{remaining_walls_for(game, player)}",
-      size_enum: 1,
-      **PLAYER_BOX_META_COLOR
-    }
-
     indicator = player.turn_indicator_text
     return if indicator.nil? || indicator.empty?
 
     args.outputs.labels << {
       x: x + 14,
-      y: y + 22,
+      y: y + 32,
       text: indicator,
       size_enum: 1,
       **PLAYER_BOX_ACTIVE_BORDER
