@@ -7,6 +7,7 @@ class GameRenderer
   DRAGGED_WALL_ROTATE_EPSILON = 0.1
   PLAYER_NAME_SIZE_ENUM = 2
   PLAYER_NAME_COLOR = { r: 235, g: 235, b: 235 }.freeze
+  SIDE_PLAYER_NAME_MARGIN = 32
 
   attr_reader :cell_gap
 
@@ -185,10 +186,12 @@ class GameRenderer
     }
 
     if !left_player.nil?
+      left_label_x, right_label_x = side_player_name_positions(game, board_x)
+
       render_rotated_player_label(
         args,
         key: :player3_name_label,
-        x: board_x - 24,
+        x: left_label_x,
         y: board_y + (board_pixel_size(game) / 2) + 8,
         text: with_turn_indicator(left_player),
         angle: 90
@@ -196,10 +199,12 @@ class GameRenderer
     end
 
     if !right_player.nil?
+      left_label_x, right_label_x = side_player_name_positions(game, board_x) if left_label_x.nil? || right_label_x.nil?
+
       render_rotated_player_label(
         args,
         key: :player4_name_label,
-        x: board_x + board_pixel_size(game) + 24,
+        x: right_label_x,
         y: board_y + (board_pixel_size(game) / 2) + 8,
         text: with_turn_indicator(right_player),
         angle: 270
@@ -309,6 +314,18 @@ class GameRenderer
     end
 
     rects
+  end
+
+  def side_player_name_positions(game, board_x)
+    board_size = board_pixel_size(game)
+    side_wall_width = game.walls[0].height
+    left_wall_x = board_x - 44
+    right_wall_x = board_x + board_size + 34
+
+    [
+      left_wall_x - SIDE_PLAYER_NAME_MARGIN,
+      right_wall_x + side_wall_width + SIDE_PLAYER_NAME_MARGIN
+    ]
   end
 
   def hovered_wall_well(args, game:, board_x:, board_y:)
