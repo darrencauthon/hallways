@@ -11,7 +11,7 @@ class Wall
   end
 
   def render_on_board(args, board_x, board_y, cell_width:, cell_height:, cell_gap:)
-    rect = placed_rect(board_x, board_y, cell_width: cell_width, cell_height: cell_height, cell_gap: cell_gap)
+    rect = placed_rect(board_x, board_y, cell_width, cell_height, cell_gap)
     return if rect.nil?
 
     render(args, rect[:x], rect[:y], rect[:w], rect[:h])
@@ -41,7 +41,7 @@ class Wall
     @wall_wells = wall_wells
   end
 
-  def placed_rect(board_x, board_y, cell_width:, cell_height:, cell_gap:)
+  def placed_rect(board_x, board_y, cell_width, cell_height, cell_gap)
     return nil unless placed?
 
     first_rect = wall_wells[0].rect(

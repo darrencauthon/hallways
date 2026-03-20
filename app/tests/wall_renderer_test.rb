@@ -7,13 +7,14 @@ def test_wall_renderer_animates_undragged_wall_placement_from_reserve(args, asse
   renderer.render_reserve_walls(fake_args, game, 100, 200)
   wall.placed = true
   fake_args.state.tick_count = 1
-  fake_args.outputs.solids = []
+  fake_args.outputs.sprites = []
 
   renderer.render_placed_walls(fake_args, game, 100, 200)
 
-  solid = fake_args.outputs.solids[0]
-  assert.equal! true, solid[:x] > 20, "Expected animated wall placement to move away from its reserve slot."
-  assert.equal! true, solid[:x] < 100, "Expected animated wall placement to remain short of its board target on the next frame."
+  sprite = fake_args.outputs.sprites[0]
+  assert.equal! true, sprite[:x] > 20, "Expected animated wall placement to move away from its reserve slot."
+  assert.equal! true, sprite[:x] < 100, "Expected animated wall placement to remain short of its board target on the next frame."
+  assert.equal! true, sprite[:angle] > 0, "Expected animated wall placement to rotate toward the board orientation."
 end
 
 class WallRendererTestFakeWall
@@ -34,7 +35,7 @@ class WallRendererTestFakeWall
     args.outputs.solids << { x: x, y: y, w: w, h: h }
   end
 
-  def placed_rect(board_x, board_y, cell_width:, cell_height:, cell_gap:)
+  def placed_rect(board_x, board_y, cell_width, cell_height, cell_gap)
     { x: 100, y: 200, w: 90, h: 10 }
   end
 end
@@ -62,6 +63,11 @@ class WallRendererTestFakeOutputs
     @solids = []
     @sprites = []
     @borders = []
+    @render_targets = {}
+  end
+
+  def [](key)
+    @render_targets[key] ||= WallRendererTestFakeRenderTarget.new
   end
 end
 
@@ -79,5 +85,13 @@ class WallRendererTestFakeArgs
   def initialize
     @outputs = WallRendererTestFakeOutputs.new
     @state = WallRendererTestFakeState.new
+  end
+end
+
+class WallRendererTestFakeRenderTarget
+  attr_accessor :w, :h, :background_color, :clear_before_render, :solids
+
+  def initialize
+    @solids = []
   end
 end

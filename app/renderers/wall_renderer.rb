@@ -12,17 +12,11 @@ class WallRenderer
     game.walls.each do |wall|
       next unless wall.placed?
 
-      target_rect = wall.placed_rect(
-        board_x,
-        board_y,
-        cell_width: @cell_size,
-        cell_height: @cell_size,
-        cell_gap: @cell_gap
-      )
+      target_rect = wall.placed_rect(board_x, board_y, @cell_size, @cell_size, @cell_gap)
       next if target_rect.nil?
 
-      rect = animated_rect_for(args, wall, target_rect)
-      wall.render(args, rect[:x], rect[:y], rect[:w], rect[:h])
+      state = animated_state_for(args, wall, target_rect)
+      render_wall_sprite(args, wall, center_x: state[:center_x], center_y: state[:center_y], angle: state[:angle])
     end
   end
 
@@ -75,7 +69,13 @@ class WallRenderer
       end
 
       if wall == dragged_wall && !dragged_angle.nil?
-        render_rotated_dragged_wall(args, wall, x: x, y: y, width: width, height: height, angle: dragged_angle)
+        render_wall_sprite(
+          args,
+          wall,
+          center_x: rect_center_x(x: x, w: width),
+          center_y: rect_center_y(y: y, h: height),
+          angle: dragged_angle
+        )
       else
         wall.render(args, x, y, width, height)
       end
@@ -86,28 +86,30 @@ class WallRenderer
 
   private
 
-  def animated_rect_for(args, wall, target_rect)
+  def animated_state_for(args, wall, target_rect)
     state = @wall_visual_states[wall.object_id]
     if state.nil?
-      @wall_visual_states[wall.object_id] = target_rect.merge(placed: true)
-      return target_rect
+      @wall_visual_states[wall.object_id] = {
+        center_x: rect_center_x(x: target_rect[:x], w: target_rect[:w]),
+        center_y: rect_center_y(y: target_rect[:y], h: target_rect[:h]),
+        angle: angle_for_rect(target_rect[:w], target_rect[:h]),
+        placed: true
+      }
+      return @wall_visual_states[wall.object_id]
     end
 
     if !state[:placed]
       if state[:dragged]
-        state[:x] = target_rect[:x]
-        state[:y] = target_rect[:y]
-        state[:w] = target_rect[:w]
-        state[:h] = target_rect[:h]
+        state[:center_x] = rect_center_x(x: target_rect[:x], w: target_rect[:w])
+        state[:center_y] = rect_center_y(y: target_rect[:y], h: target_rect[:h])
+        state[:angle] = angle_for_rect(target_rect[:w], target_rect[:h])
       else
-        state[:start_x] = state[:x]
-        state[:start_y] = state[:y]
-        state[:start_w] = state[:w]
-        state[:start_h] = state[:h]
-        state[:target_x] = target_rect[:x]
-        state[:target_y] = target_rect[:y]
-        state[:target_w] = target_rect[:w]
-        state[:target_h] = target_rect[:h]
+        state[:start_center_x] = state[:center_x]
+        state[:start_center_y] = state[:center_y]
+        state[:start_angle] = state[:angle]
+        state[:target_center_x] = rect_center_x(x: target_rect[:x], w: target_rect[:w])
+        state[:target_center_y] = rect_center_y(y: target_rect[:y], h: target_rect[:h])
+        state[:target_angle] = angle_for_rect(target_rect[:w], target_rect[:h])
         state[:start_tick] = tick_count(args)
       end
       state[:placed] = true
@@ -116,46 +118,50 @@ class WallRenderer
 
     if animation_active?(args, state)
       progress = animation_progress(args, state)
-      state[:x] = lerp(state[:start_x], state[:target_x], progress)
-      state[:y] = lerp(state[:start_y], state[:target_y], progress)
-      state[:w] = lerp(state[:start_w], state[:target_w], progress)
-      state[:h] = lerp(state[:start_h], state[:target_h], progress)
+      state[:center_x] = lerp(state[:start_center_x], state[:target_center_x], progress)
+      state[:center_y] = lerp(state[:start_center_y], state[:target_center_y], progress)
+      state[:angle] = lerp_angle(state[:start_angle], state[:target_angle], progress)
     else
-      state[:x] = target_rect[:x]
-      state[:y] = target_rect[:y]
-      state[:w] = target_rect[:w]
-      state[:h] = target_rect[:h]
+      state[:center_x] = rect_center_x(x: target_rect[:x], w: target_rect[:w])
+      state[:center_y] = rect_center_y(y: target_rect[:y], h: target_rect[:h])
+      state[:angle] = angle_for_rect(target_rect[:w], target_rect[:h])
     end
 
-    {
-      x: state[:x],
-      y: state[:y],
-      w: state[:w],
-      h: state[:h]
-    }
+    state
   end
 
   def sync_reserve_wall_state(wall, x:, y:, w:, h:, dragged:)
     @wall_visual_states[wall.object_id] = {
-      x: x,
-      y: y,
-      w: w,
-      h: h,
+      center_x: rect_center_x(x: x, w: w),
+      center_y: rect_center_y(y: y, h: h),
+      angle: angle_for_rect(w, h),
       placed: false,
       dragged: dragged
     }
   end
 
-  def render_rotated_dragged_wall(args, wall, x:, y:, width:, height:, angle:)
-    args.outputs.sprites << {
-      x: x,
-      y: y,
-      w: width,
-      h: height,
-      path: :pixel,
+  def render_wall_sprite(args, wall, center_x:, center_y:, angle:)
+    render_target = args.outputs[wall_render_target_name(wall)]
+    render_target.w = wall.width
+    render_target.h = wall.width
+    render_target.background_color = [0, 0, 0, 0]
+    render_target.clear_before_render = true if render_target.respond_to?(:clear_before_render=)
+    render_target.solids << {
+      x: 0,
+      y: (wall.width - wall.height) / 2,
+      w: wall.width,
+      h: wall.height,
       r: wall.color[0],
       g: wall.color[1],
-      b: wall.color[2],
+      b: wall.color[2]
+    }
+
+    args.outputs.sprites << {
+      x: center_x - (wall.width / 2),
+      y: center_y - (wall.width / 2),
+      w: wall.width,
+      h: wall.width,
+      path: wall_render_target_name(wall),
       angle: angle,
       angle_anchor_x: 0.5,
       angle_anchor_y: 0.5
@@ -195,8 +201,28 @@ class WallRenderer
     from + ((to - from) * progress)
   end
 
+  def lerp_angle(from, to, progress)
+    from + ((to - from) * progress)
+  end
+
   def ease_out(progress)
     1 - ((1 - progress) * (1 - progress))
+  end
+
+  def angle_for_rect(width, height)
+    height > width ? 90.0 : 0.0
+  end
+
+  def rect_center_x(x:, w:)
+    x + (w / 2.0)
+  end
+
+  def rect_center_y(y:, h:)
+    y + (h / 2.0)
+  end
+
+  def wall_render_target_name(wall)
+    "wall_sprite_#{wall.object_id}"
   end
 
   def tick_count(args)
