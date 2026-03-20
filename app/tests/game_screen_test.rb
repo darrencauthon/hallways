@@ -22,6 +22,20 @@ def test_game_screen_skips_controller_actions_while_pawn_animation_in_progress(a
   assert.equal! 0, controller.calls, "Expected controller actions to be blocked while pawn animation is playing."
 end
 
+def test_game_screen_skips_controller_actions_while_wall_animation_in_progress(args, assert)
+  screen = GameScreen.new
+  controller = GameScreenTestFakeController.new
+  fake_game = GameScreenTestFakeGame.new(controller)
+  fake_args = GameScreenTestHelpers.build_fake_args_with_grid(tick_count: 10)
+
+  screen.define_singleton_method(:game) { fake_game }
+  screen.send(:start_wall_place_animation, fake_args)
+
+  screen.tick(fake_args)
+
+  assert.equal! 0, controller.calls, "Expected controller actions to be blocked while wall animation is playing."
+end
+
 module GameScreenTestHelpers
   def self.build_fake_args_with_grid(tick_count:)
     key_down = FakeKeyDown.new(false, false, false, false, false, false)

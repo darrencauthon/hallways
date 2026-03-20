@@ -21,7 +21,7 @@ class GameScreen
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
 
     @computer_thinking = false
-    if pawn_move_animation_in_progress?(args)
+    if move_animation_in_progress?(args)
       @dragged_wall = nil
       clear_dragged_pawn
     else
@@ -76,11 +76,12 @@ class GameScreen
       start_pawn_move_animation(args) if moved
       @computer_thinking = false
     elsif action[:type] == :place_wall
-      game.place_wall_in_well_with_side(
+      placed = game.place_wall_in_well_with_side(
         action[:wall],
         action[:wall_well],
         preferred_side: action[:preferred_side]
       )
+      start_wall_place_animation(args) if placed
       @computer_thinking = false
     end
   end
@@ -90,11 +91,12 @@ class GameScreen
       if dragged_wall
         placement = hovered_available_wall_placement(args, board_x, board_y, use_last_hovered: false)
         if placement
-          game.place_wall_in_well_with_side(
+          placed = game.place_wall_in_well_with_side(
             dragged_wall,
             placement[:wall_well],
             preferred_side: placement[:preferred_side]
           )
+          start_wall_place_animation(args) if placed
         end
       end
       @dragged_wall = nil
@@ -285,6 +287,10 @@ class GameScreen
     (board_size * cell_size) + ((board_size - 1) * cell_gap)
   end
 
+  def move_animation_in_progress?(args)
+    pawn_move_animation_in_progress?(args) || wall_place_animation_in_progress?(args)
+  end
+
   def pawn_move_animation_in_progress?(args)
     return false if @pawn_move_animation_until_tick.nil?
 
@@ -293,6 +299,16 @@ class GameScreen
 
   def start_pawn_move_animation(args)
     @pawn_move_animation_until_tick = tick_count(args) + PawnRenderer::MOVE_ANIMATION_TICKS
+  end
+
+  def wall_place_animation_in_progress?(args)
+    return false if @wall_place_animation_until_tick.nil?
+
+    tick_count(args) < @wall_place_animation_until_tick
+  end
+
+  def start_wall_place_animation(args)
+    @wall_place_animation_until_tick = tick_count(args) + WallRenderer::PLACE_ANIMATION_TICKS
   end
 
   def game_screen_renderer

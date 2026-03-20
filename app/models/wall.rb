@@ -41,8 +41,6 @@ class Wall
     @wall_wells = wall_wells
   end
 
-  private
-
   def placed_rect(board_x, board_y, cell_width:, cell_height:, cell_gap:)
     return nil unless placed?
 
