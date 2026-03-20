@@ -304,8 +304,6 @@ class GameRenderer
     right_x = board_x + board_size + PLAYER_BOX_RIGHT_MARGIN
     left_x = board_x - PLAYER_BOX_LEFT_MARGIN - PLAYER_BOX_W
     top_y = board_y + board_size - PLAYER_BOX_H
-    mid_upper_y = board_y + ((board_size * 0.58).to_i)
-    mid_lower_y = board_y + ((board_size * 0.28).to_i)
     bottom_y = board_y
 
     layouts = [
@@ -314,8 +312,8 @@ class GameRenderer
     ]
     return layouts if game.player_count < 4
 
-    layouts << { player: game.players[2], x: left_x, y: mid_upper_y }
-    layouts << { player: game.players[3], x: right_x, y: mid_lower_y }
+    layouts << { player: game.players[2], x: left_x, y: bottom_y }
+    layouts << { player: game.players[3], x: right_x, y: top_y }
     layouts
   end
 
