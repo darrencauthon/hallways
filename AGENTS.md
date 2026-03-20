@@ -28,9 +28,10 @@
   - `app/runtime/testing_runtime.rb` handles `--test` mode.
   - `app/runtime/playing_runtime.rb` handles normal game/screen flow.
   - `app/runtime/shared_runtime.rb` contains shared runtime helpers.
+- Normal boot must not require `app/runtime/testing_runtime.rb`; only require it lazily when `--test` is actually active.
 - Keep rendering logic in renderer classes whenever practical (`app/renderers/**`), and keep gameplay/rules in models/controllers.
 - Keep board-rule logic deterministic and testable.
-- Do not prefix non-test methods with `test_`; DragonRuby test discovery will treat them as tests.
+- Do not prefix non-test methods with `test_`; DragonRuby test discovery will treat them as tests. This applies to runtime helpers in `app/main.rb` too.
 - Naming rule: `Board` is the 9x9 grid; `Wall` is a reserve/placeable wall piece.
 - Be conservative with keyword-argument-heavy interfaces across renderer boundaries; DragonRuby Ruby subset can behave differently than MRI in some call paths.
 
@@ -44,10 +45,12 @@
 - Treat warnings in DragonRuby test output as actionable problems and fix them before considering test runs clean.
 - Agent must run tests directly before moving on; do not rely on user-run tests as the only signal.
 - A test run is not considered clean unless there are zero warnings and zero failures.
+- Before each fresh test verification, clear any stale `errors/last.txt` so old runtime exceptions are not mistaken for the current run.
 - After each test run, inspect `errors/last.txt` (runtime warning/exception signal).
 - If available, also inspect `test-output.txt` (custom runner summary). If `test-output.txt` is not generated, rely on DragonRuby output summary plus `errors/last.txt`.
 - When capturing DragonRuby console output via PowerShell transcript, write to `test-transcript.txt` (not `test-output.txt`) to avoid collisions with custom runner output.
 - When reading captured transcript output, use a high limit (`Get-Content ... -TotalCount 10000`) so failures/warnings are not truncated.
+- If a change touches runtime rendering/layout code, do not rely only on test mode; also consider a normal boot smoke check because some render-path exceptions only appear outside `--test`.
 
 ## Run Commands
 - Run game from parent directory: `../dragonruby ./hallways` (Git Bash on Windows).
@@ -72,7 +75,9 @@
 - `Game` owns core match state and rules.
 - `GameRenderer` owns board/pawn/wall composition rendering.
 - `GameScreenRenderer` owns screen-level visual helpers (for example: thinking indicator and background).
-- Pawn art currently uses sprite sheets (`source_x/source_y/source_w/source_h`) and frame dimensions must match the actual asset frame size.
+- Pawn visuals now render from `sprites/solid-circle.png` tinted from each pawn's RGB color.
+- Player box placeholder art is still a square avatar panel with a solid-drawn `X`.
+- Player palette currently exists in two places: `Game::PLAYER_COLORS` for pawns and `GameRenderer::PLAYER_BOX_PLAYER_FILLS` for UI boxes. Keep them visually aligned whenever player colors change.
 
 ## Communication
 - Be direct and concise.
