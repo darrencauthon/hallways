@@ -2,7 +2,7 @@ require "app/runtime/shared_runtime.rb"
 require "app/runtime/playing_runtime.rb"
 
 def tick(args)
-  if test_mode_requested?(args)
+  if testing_mode_requested?(args)
     run_testing_runtime(args)
     return
   end
@@ -10,7 +10,7 @@ def tick(args)
   PlayingRuntime.tick(args)
 end
 
-def test_mode_requested?(args)
+def testing_mode_requested?(args)
   SharedRuntime.command_line_args(args).include? "--test"
 end
 
