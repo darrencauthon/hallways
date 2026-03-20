@@ -1,10 +1,14 @@
 class TitleScreen
-  MENU_OPTIONS = ["Play", "Quit"].freeze
+  BASE_MENU_OPTIONS = ["Play", "Quit"].freeze
   MENU_X_CENTER = 640
   MENU_Y_START = 250
   MENU_Y_STEP = 45
   MENU_HOVER_HALF_HEIGHT = 24
   MENU_HOVER_X_PADDING = 220
+
+  def initialize(can_continue_game: false)
+    @can_continue_game = can_continue_game
+  end
 
   def tick(args)
     handle_input(args)
@@ -36,6 +40,7 @@ class TitleScreen
     render_version(args)
 
     confirmed = confirm_pressed?(args) || mouse_click_confirm?(args)
+    return :continue_game if confirmed && selected_option == "Continue Game"
     return :open_setup if confirmed && selected_option == "Play"
     return :quit if confirmed && selected_option == "Quit"
 
@@ -56,7 +61,7 @@ class TitleScreen
   end
 
   def render_menu(args)
-    MENU_OPTIONS.each_with_index do |option, index|
+    menu_options.each_with_index do |option, index|
       selected = index == selected_index
       args.outputs.labels << {
         x: MENU_X_CENTER,
@@ -85,11 +90,11 @@ class TitleScreen
   end
 
   def select_next
-    @selected_index = (selected_index + 1) % MENU_OPTIONS.length
+    @selected_index = (selected_index + 1) % menu_options.length
   end
 
   def select_previous
-    @selected_index = (selected_index - 1) % MENU_OPTIONS.length
+    @selected_index = (selected_index - 1) % menu_options.length
   end
 
   def selected_index
@@ -97,7 +102,7 @@ class TitleScreen
   end
 
   def selected_option
-    MENU_OPTIONS[selected_index]
+    menu_options[selected_index]
   end
 
   def up_pressed?(args)
@@ -117,7 +122,7 @@ class TitleScreen
     return nil unless mouse
     return nil if mouse.x.nil? || mouse.y.nil?
 
-    MENU_OPTIONS.each_with_index do |_option, index|
+    menu_options.each_with_index do |_option, index|
       option_y = menu_option_y(index)
       if mouse.x >= (MENU_X_CENTER - MENU_HOVER_X_PADDING) &&
          mouse.x <= (MENU_X_CENTER + MENU_HOVER_X_PADDING) &&
@@ -132,6 +137,12 @@ class TitleScreen
 
   def menu_option_y(index)
     MENU_Y_START - (index * MENU_Y_STEP)
+  end
+
+  def menu_options
+    return ["Continue Game"] + BASE_MENU_OPTIONS if @can_continue_game
+
+    BASE_MENU_OPTIONS
   end
 
   def mouse_click_confirm?(args)

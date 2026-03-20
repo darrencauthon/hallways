@@ -4,6 +4,13 @@ def test_title_screen_default_enter_starts(args, assert)
   assert.equal! :open_setup, action, "Expected Enter on default selection to open setup."
 end
 
+def test_title_screen_continue_game_option_is_default_when_available(args, assert)
+  screen = TitleScreen.new(can_continue_game: true)
+  action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
+
+  assert.equal! :continue_game, action, "Expected Enter on default selection to continue the paused game."
+end
+
 def test_title_screen_down_then_enter_quits(args, assert)
   screen = TitleScreen.new
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
@@ -34,6 +41,15 @@ def test_title_screen_renders_version_label(args, assert)
   assert.equal! false, version_label.nil?, "Expected title screen to render version label v0.2.1."
 end
 
+def test_title_screen_renders_continue_game_option_when_available(args, assert)
+  screen = TitleScreen.new(can_continue_game: true)
+  fake_args = TitleScreenTestHelpers.build_fake_args
+  screen.tick(fake_args)
+
+  continue_label = fake_args.outputs.labels.find { |label| label[:text].include?("Continue Game") }
+  assert.equal! false, continue_label.nil?, "Expected title screen to render Continue Game when a paused game is available."
+end
+
 module TitleScreenTestHelpers
   def self.build_fake_args(options = {})
     up = options[:up] || false
@@ -41,12 +57,13 @@ module TitleScreenTestHelpers
     left = options[:left] || false
     right = options[:right] || false
     enter = options[:enter] || false
+    escape = options[:escape] || false
     mouse_x = options.key?(:mouse_x) ? options[:mouse_x] : nil
     mouse_y = options.key?(:mouse_y) ? options[:mouse_y] : nil
     mouse_down = options[:mouse_down] || false
     mouse_up = options[:mouse_up] || false
 
-    key_down = FakeKeyDown.new(up, down, left, right, enter)
+    key_down = FakeKeyDown.new(up, down, left, right, enter, escape)
     keyboard = FakeKeyboard.new(key_down)
     mouse = FakeMouse.new(mouse_x, mouse_y, mouse_down, mouse_up)
     inputs = FakeInputs.new(keyboard, mouse)
@@ -56,14 +73,15 @@ module TitleScreenTestHelpers
 end
 
 class FakeKeyDown
-  attr_reader :up, :down, :left, :right, :enter
+  attr_reader :up, :down, :left, :right, :enter, :escape
 
-  def initialize(up, down, left, right, enter)
+  def initialize(up, down, left, right, enter, escape)
     @up = up
     @down = down
     @left = left
     @right = right
     @enter = enter
+    @escape = escape
   end
 end
 

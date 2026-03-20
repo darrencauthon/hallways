@@ -14,6 +14,8 @@ class GameScreen
   end
 
   def tick(args)
+    return :main_menu if menu_pressed?(args)
+
     game_screen_renderer.render_background(args)
 
     board_x = ((args.grid.w - board_pixel_size) / 2).to_i
@@ -301,5 +303,9 @@ class GameScreen
     return false unless mouse
 
     !!mouse.up
+  end
+
+  def menu_pressed?(args)
+    args.inputs.keyboard.key_down.escape
   end
 end

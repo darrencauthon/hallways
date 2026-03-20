@@ -19,7 +19,7 @@ module PlayingRuntime
   end
 
   def self.title_screen(args)
-    args.state.title_screen_instance ||= TitleScreen.new
+    args.state.title_screen_instance ||= TitleScreen.new(can_continue_game: resumable_game_available?(args))
   end
 
   def self.game_screen(args)
@@ -39,7 +39,10 @@ module PlayingRuntime
   end
 
   def self.handle_title_action(args, action)
-    if action == :open_setup
+    if action == :continue_game
+      args.state.title_screen_instance = TitleScreen.new
+      args.state.screen_name = :game
+    elsif action == :open_setup
       args.state.setup_screen_instance = SetupScreen.new
       args.state.screen_name = :setup
     elsif action == :quit
@@ -61,7 +64,12 @@ module PlayingRuntime
   def self.handle_game_action(args, action)
     return if action.nil?
 
-    if action[0] == :victory
+    if action == :main_menu
+      args.state.resumable_game_available = true
+      args.state.title_screen_instance = TitleScreen.new(can_continue_game: true)
+      args.state.screen_name = :title
+    elsif action[0] == :victory
+      args.state.resumable_game_available = false
       args.state.winner_name = action[1]
       args.state.screen_name = :victory
     end
@@ -75,16 +83,23 @@ module PlayingRuntime
         player_types: args.state.game_player_types || [:human, :human]
       )
     elsif action == :main_menu
+      args.state.resumable_game_available = false
+      args.state.title_screen_instance = TitleScreen.new
       args.state.screen_name = :title
     end
   end
 
   def self.start_new_game(args, player_count: 2, player_types: [:human, :human])
+    args.state.resumable_game_available = false
     args.state.game_player_count = player_count
     args.state.game_player_types = player_types
     args.state.game_screen_instance = GameScreen.new(player_count: player_count, player_types: player_types)
     args.state.winner_name = nil
     args.state.screen_name = :game
+  end
+
+  def self.resumable_game_available?(args)
+    !!args.state.resumable_game_available
   end
 
   def self.stored_winner_name(args)

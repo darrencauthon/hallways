@@ -9,6 +9,8 @@ require "app/models/pawn.rb"
 require "app/tests/pawn_test.rb"
 require "app/models/game.rb"
 require "app/tests/game_test.rb"
+require "app/screens/game_screen.rb"
+require "app/tests/game_screen_test.rb"
 
 module TestRunner
   def self.run
