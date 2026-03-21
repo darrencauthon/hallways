@@ -277,7 +277,7 @@ class SetupScreen
     args.outputs.labels << {
       x: rect[:x] + 14,
       y: selector_y,
-      text: display_type(player_type),
+      text: "< #{display_type(player_type)} >",
       alignment_enum: 0,
       size_enum: 2,
       **PLAYER_BOX_TEXT_COLOR
