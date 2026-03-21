@@ -1,3 +1,5 @@
+require "app/models/player_palette.rb"
+
 class WallRenderer
   PLACE_ANIMATION_TICKS = 60
 
@@ -72,12 +74,13 @@ class WallRenderer
         render_wall_sprite(
           args,
           wall,
+          color: reserve_wall_color(game, wall),
           center_x: rect_center_x(x: x, w: width),
           center_y: rect_center_y(y: y, h: height),
           angle: dragged_angle
         )
       else
-        wall.render(args, x, y, width, height)
+        wall.render(args, x, y, width, height, reserve_wall_color(game, wall))
       end
       sync_reserve_wall_state(wall, x: x, y: y, w: width, h: height, dragged: wall == dragged_wall)
       draw_hover_border_if_needed(args, game, wall, x, y, width: width, height: height, hover_wall: hover_wall)
@@ -140,7 +143,7 @@ class WallRenderer
     }
   end
 
-  def render_wall_sprite(args, wall, center_x:, center_y:, angle:)
+  def render_wall_sprite(args, wall, center_x:, center_y:, angle:, color: wall.color)
     render_target = args.outputs[wall_render_target_name(wall)]
     render_target.w = wall.width
     render_target.h = wall.width
@@ -151,9 +154,9 @@ class WallRenderer
       y: (wall.width - wall.height) / 2,
       w: wall.width,
       h: wall.height,
-      r: wall.color[0],
-      g: wall.color[1],
-      b: wall.color[2]
+      r: color[0],
+      g: color[1],
+      b: color[2]
     }
 
     args.outputs.sprites << {
@@ -181,6 +184,12 @@ class WallRenderer
       g: 60,
       b: 60
     }
+  end
+
+  def reserve_wall_color(game, wall)
+    player_index = game.players.index(wall.player) || 0
+    player_fill = PlayerPalette::BOX_FILLS[player_index] || PlayerPalette::BOX_FILLS[0]
+    [player_fill[:r], player_fill[:g], player_fill[:b]]
   end
 
   def animation_active?(args, state)

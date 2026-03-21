@@ -17,15 +17,15 @@ class Wall
     render(args, rect[:x], rect[:y], rect[:w], rect[:h])
   end
 
-  def render(args, x, y, width_override = width, height_override = height)
+  def render(args, x, y, width_override = width, height_override = height, color_override = color)
     args.outputs.solids << {
       x: x,
       y: y,
       w: width_override,
       h: height_override,
-      r: color[0],
-      g: color[1],
-      b: color[2]
+      r: color_override[0],
+      g: color_override[1],
+      b: color_override[2]
     }
   end
 
