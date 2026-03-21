@@ -1,9 +1,9 @@
 class DirectionRenderer
   ANGLES = {
     right: 0,
-    down: 90,
+    down: 270,
     left: 180,
-    up: 270
+    up: 90
   }.freeze
 
   def render(args, x:, y:, size:, direction:, color:)
