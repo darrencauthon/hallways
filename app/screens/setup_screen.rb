@@ -10,11 +10,11 @@ class SetupScreen
   MENU_HOVER_HALF_HEIGHT = 24
   MENU_HOVER_X_PADDING = 280
   PLAYER_BOX_W = 220
-  PLAYER_BOX_GAP_X = 70
+  PLAYER_BOX_GAP_X = 170
   PLAYER_BOX_GAP_Y = 26
-  PLAYER_BOX_LEFT_X = 385
+  PLAYER_BOX_LEFT_X = 60
   PLAYER_BOX_RIGHT_X = PLAYER_BOX_LEFT_X + PLAYER_BOX_W + PLAYER_BOX_GAP_X
-  PLAYER_BOX_TOP_Y = 330
+  PLAYER_BOX_TOP_Y = 350
   PLAYER_BOX_AVATAR_MARGIN_X = 12
   PLAYER_BOX_AVATAR_MARGIN_TOP = 10
   PLAYER_BOX_AVATAR_SCALE = 0.72
@@ -212,8 +212,9 @@ class SetupScreen
       end
 
       y = row_y(index)
-      if mouse.x >= (MENU_X_CENTER - MENU_HOVER_X_PADDING) &&
-         mouse.x <= (MENU_X_CENTER + MENU_HOVER_X_PADDING) &&
+      center_x = row == :game_size ? (HEADER_X + 110) : MENU_X_CENTER
+      if mouse.x >= (center_x - MENU_HOVER_X_PADDING) &&
+         mouse.x <= (center_x + MENU_HOVER_X_PADDING) &&
          mouse.y >= (y - MENU_HOVER_HALF_HEIGHT) &&
          mouse.y <= (y + MENU_HOVER_HALF_HEIGHT)
         return index
