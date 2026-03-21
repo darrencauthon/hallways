@@ -1,6 +1,3 @@
-require "app/models/path_distance_calculator.rb"
-require "app/models/pawn_move_finder.rb"
-
 class LastLineBotController < BotController
   WALL_CHECKS_PER_TICK = 12
   MIN_THINK_TICKS = 8
@@ -26,7 +23,7 @@ class LastLineBotController < BotController
 
     @scan_complete = false
     @block_mode = false
-    @my_pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
+    @my_pawn = current_player_pawn(game)
     @opponent_pawn = most_advanced_opponent_pawn(game)
 
     if @my_pawn.nil?
@@ -44,7 +41,7 @@ class LastLineBotController < BotController
       return
     end
 
-    @wall_piece = game.walls.find { |candidate| candidate.player == game.current_player && !candidate.placed? }
+    @wall_piece = current_player_wall_piece(game)
     if @wall_piece.nil? || @opponent_pawn.nil?
       set_ready_action(best_move_action(game, @my_pawn))
       @scan_complete = true
@@ -191,34 +188,4 @@ class LastLineBotController < BotController
     }
   end
 
-  def legal_pawn_moves(game, pawn)
-    legal_pawn_move_finder.moves_for(game: game, pawn: pawn)
-  end
-
-  def distance_to_goal(board, start_col, start_row, player, extra_occupied_wall_wells:)
-    path_distance_calculator.shortest_distance_to_goal(
-      board: board,
-      start_col: start_col,
-      start_row: start_row,
-      player: player,
-      extra_occupied_wall_wells: extra_occupied_wall_wells
-    )
-  end
-
-  def most_advanced_opponent_pawn(game)
-    candidates = game.pawns.select { |candidate| candidate.player != game.current_player }
-    return nil if candidates.empty?
-
-    candidates.min_by do |pawn|
-      distance_to_goal(game.board, pawn.col, pawn.row, pawn.player, extra_occupied_wall_wells: nil) || 9_999
-    end
-  end
-
-  def path_distance_calculator
-    @path_distance_calculator ||= PathDistanceCalculator.new
-  end
-
-  def legal_pawn_move_finder
-    @legal_pawn_move_finder ||= PawnMoveFinder.new
-  end
 end

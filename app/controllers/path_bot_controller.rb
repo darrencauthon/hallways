@@ -1,6 +1,3 @@
-require "app/models/path_distance_calculator.rb"
-require "app/models/pawn_move_finder.rb"
-
 class PathBotController < BotController
   MIN_THINK_TICKS = 6
 
@@ -23,7 +20,7 @@ class PathBotController < BotController
   end
 
   def best_move_action(game)
-    pawn = game.pawns.find { |candidate| candidate.player == game.current_player }
+    pawn = current_player_pawn(game)
     return nil if pawn.nil?
 
     legal_moves = legal_pawn_moves(game, pawn)
@@ -34,7 +31,7 @@ class PathBotController < BotController
     best_moves = []
 
     legal_moves.each do |move|
-      distance = distance_to_goal(game.board, move[:col], move[:row], current_player)
+      distance = distance_to_goal(game.board, move[:col], move[:row], current_player, extra_occupied_wall_wells: nil)
       next if distance.nil?
 
       if best_distance.nil? || distance < best_distance
@@ -54,25 +51,4 @@ class PathBotController < BotController
     }
   end
 
-  def legal_pawn_moves(game, pawn)
-    legal_pawn_move_finder.moves_for(game: game, pawn: pawn)
-  end
-
-  def distance_to_goal(board, start_col, start_row, player)
-    path_distance_calculator.shortest_distance_to_goal(
-      board: board,
-      start_col: start_col,
-      start_row: start_row,
-      player: player,
-      extra_occupied_wall_wells: nil
-    )
-  end
-
-  def path_distance_calculator
-    @path_distance_calculator ||= PathDistanceCalculator.new
-  end
-
-  def legal_pawn_move_finder
-    @legal_pawn_move_finder ||= PawnMoveFinder.new
-  end
 end
