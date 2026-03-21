@@ -4,15 +4,16 @@ class SetupScreen
   PLAYER_TYPES = [:human, :random_bot, :path_bot, :last_line_bot, :pressure_bot].freeze
   PLAYER_COUNT_OPTIONS = [2, 4].freeze
   MENU_X_CENTER = 640
-  MENU_Y_START = 520
-  MENU_Y_STEP = 50
+  GAME_SIZE_Y = 610
+  PLAY_Y = 70
   MENU_HOVER_HALF_HEIGHT = 24
   MENU_HOVER_X_PADDING = 280
   PLAYER_BOX_W = 220
-  PLAYER_BOX_LEFT_X = 120
-  PLAYER_BOX_RIGHT_X = 940
-  PLAYER_BOX_TOP_Y = 360
-  PLAYER_BOX_BOTTOM_Y = 80
+  PLAYER_BOX_GAP_X = 70
+  PLAYER_BOX_GAP_Y = 26
+  PLAYER_BOX_LEFT_X = 385
+  PLAYER_BOX_RIGHT_X = PLAYER_BOX_LEFT_X + PLAYER_BOX_W + PLAYER_BOX_GAP_X
+  PLAYER_BOX_TOP_Y = 330
   PLAYER_BOX_AVATAR_MARGIN_X = 12
   PLAYER_BOX_AVATAR_MARGIN_TOP = 10
   PLAYER_BOX_AVATAR_SCALE = 0.72
@@ -36,7 +37,7 @@ class SetupScreen
     args.outputs.background_color = [18, 20, 28]
     args.outputs.labels << {
       x: 640,
-      y: 420,
+      y: 670,
       text: "Game Setup",
       alignment_enum: 1,
       size_enum: 5,
@@ -294,9 +295,15 @@ class SetupScreen
   end
 
   def player_box_rect(player_index)
+    row_y = if player_index == 0 || player_index == 2
+              PLAYER_BOX_TOP_Y
+            else
+              PLAYER_BOX_TOP_Y - player_box_height - PLAYER_BOX_GAP_Y
+            end
+
     {
-      x: player_index == 0 || player_index == 2 ? PLAYER_BOX_LEFT_X : PLAYER_BOX_RIGHT_X,
-      y: player_index == 0 || player_index == 3 ? PLAYER_BOX_TOP_Y : PLAYER_BOX_BOTTOM_Y,
+      x: player_index == 0 || player_index == 1 ? PLAYER_BOX_LEFT_X : PLAYER_BOX_RIGHT_X,
+      y: row_y,
       w: PLAYER_BOX_W,
       h: player_box_height
     }
@@ -345,7 +352,11 @@ class SetupScreen
   end
 
   def row_y(index)
-    MENU_Y_START - (index * MENU_Y_STEP)
+    row = visible_rows[index]
+    return GAME_SIZE_Y if row == :game_size
+    return PLAY_Y if row == :play
+
+    player_box_rect(player_index_for_row(row))[:y] + 32
   end
 
   def up_pressed?(args)
