@@ -1,4 +1,5 @@
 require "app/models/player_palette.rb"
+require "app/renderers/player_box_renderer.rb"
 
 class SetupScreen
   PLAYER_TYPES = [:human, :random_bot, :path_bot, :last_line_bot, :pressure_bot].freeze
@@ -11,21 +12,11 @@ class SetupScreen
   MAIN_MENU_Y = 300
   MENU_HOVER_HALF_HEIGHT = 24
   MENU_HOVER_X_PADDING = 280
-  PLAYER_BOX_W = 220
   PLAYER_BOX_GAP_X = 80
   PLAYER_BOX_GAP_Y = 26
   PLAYER_BOX_LEFT_X = 60
-  PLAYER_BOX_RIGHT_X = PLAYER_BOX_LEFT_X + PLAYER_BOX_W + PLAYER_BOX_GAP_X
+  PLAYER_BOX_RIGHT_X = PLAYER_BOX_LEFT_X + PlayerBoxRenderer.box_width + PLAYER_BOX_GAP_X
   PLAYER_BOX_TOP_Y = 350
-  PLAYER_BOX_AVATAR_MARGIN_X = 12
-  PLAYER_BOX_AVATAR_MARGIN_TOP = 10
-  PLAYER_BOX_AVATAR_SCALE = 0.72
-  PLAYER_BOX_NAME_GAP = 14
-  PLAYER_BOX_TEXT_GAP = 8
-  PLAYER_BOX_BOTTOM_PADDING = 14
-  PLAYER_BOX_BORDER = { r: 88, g: 94, b: 110 }.freeze
-  PLAYER_BOX_ACTIVE_BORDER = { r: 255, g: 215, b: 120 }.freeze
-  PLAYER_BOX_AVATAR_FILL = { r: 16, g: 18, b: 22 }.freeze
   PLAYER_BOX_LABEL_COLOR = { r: 170, g: 176, b: 190 }.freeze
   PLAYER_BOX_TEXT_COLOR = { r: 235, g: 235, b: 235 }.freeze
 
@@ -250,64 +241,19 @@ class SetupScreen
   end
 
   def render_player_box(args, rect:, selected:, player_index:, player_type:)
-    border_color = selected ? PLAYER_BOX_ACTIVE_BORDER : PLAYER_BOX_BORDER
-    avatar_size = ((PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)) * PLAYER_BOX_AVATAR_SCALE).to_i
-    avatar_x = rect[:x] + PLAYER_BOX_AVATAR_MARGIN_X
-    avatar_y = rect[:y] + rect[:h] - PLAYER_BOX_AVATAR_MARGIN_TOP - avatar_size
-    selector_y = avatar_y - PLAYER_BOX_NAME_GAP
-    label_y = selector_y - PLAYER_BOX_TEXT_GAP - 14
-
-    args.outputs.solids << {
+    player_box_renderer.render(
+      args,
       x: rect[:x],
       y: rect[:y],
-      w: rect[:w],
-      h: rect[:h],
-      **player_box_fill_for(player_index)
-    }
-
-    args.outputs.solids << {
-      x: avatar_x,
-      y: avatar_y,
-      w: avatar_size,
-      h: avatar_size,
-      **PLAYER_BOX_AVATAR_FILL
-    }
-
-    args.outputs.borders << {
-      x: rect[:x],
-      y: rect[:y],
-      w: rect[:w],
-      h: rect[:h],
-      **border_color
-    }
-
-    args.outputs.borders << {
-      x: avatar_x,
-      y: avatar_y,
-      w: avatar_size,
-      h: avatar_size,
-      **border_color
-    }
-
-    render_placeholder_player_sprite(args, x: avatar_x, y: avatar_y, w: avatar_size, h: avatar_size, color: border_color)
-
-    args.outputs.labels << {
-      x: rect[:x] + 14,
-      y: selector_y,
-      text: "< #{display_type(player_type)} >",
-      alignment_enum: 0,
-      size_enum: 2,
-      **PLAYER_BOX_TEXT_COLOR
-    }
-
-    args.outputs.labels << {
-      x: rect[:x] + 14,
-      y: label_y,
-      text: "Player #{player_index + 1}",
-      alignment_enum: 0,
-      size_enum: 1,
-      **PLAYER_BOX_LABEL_COLOR
-    }
+      fill_color: player_box_fill_for(player_index),
+      selected: selected,
+      title: "< #{display_type(player_type)} >",
+      title_size_enum: 2,
+      title_color: PLAYER_BOX_TEXT_COLOR,
+      subtitle: "Player #{player_index + 1}",
+      subtitle_size_enum: 1,
+      subtitle_color: PLAYER_BOX_LABEL_COLOR
+    )
   end
 
   def player_box_rect(player_index)
@@ -320,44 +266,17 @@ class SetupScreen
     {
       x: player_index == 0 || player_index == 1 ? PLAYER_BOX_LEFT_X : PLAYER_BOX_RIGHT_X,
       y: row_y,
-      w: PLAYER_BOX_W,
+      w: PlayerBoxRenderer.box_width,
       h: player_box_height
     }
   end
 
   def player_box_height
-    avatar_size = ((PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)) * PLAYER_BOX_AVATAR_SCALE).to_i
-    PLAYER_BOX_AVATAR_MARGIN_TOP + avatar_size + PLAYER_BOX_NAME_GAP + 14 + PLAYER_BOX_TEXT_GAP + 14 + PLAYER_BOX_BOTTOM_PADDING
+    PlayerBoxRenderer.box_height
   end
 
   def player_box_fill_for(player_index)
     PlayerPalette::BOX_FILLS[player_index] || PlayerPalette::BOX_FILLS[0]
-  end
-
-  def render_placeholder_player_sprite(args, x:, y:, w:, h:, color:)
-    line_count = 8
-    thickness = 3
-    step_x = ((w - thickness).to_f / (line_count - 1))
-    step_y = ((h - thickness).to_f / (line_count - 1))
-
-    line_count.times do |index|
-      offset_x = (index * step_x).to_i
-      offset_y = (index * step_y).to_i
-      args.outputs.solids << {
-        x: x + offset_x,
-        y: y + offset_y,
-        w: thickness,
-        h: thickness,
-        **color
-      }
-      args.outputs.solids << {
-        x: x + w - thickness - offset_x,
-        y: y + offset_y,
-        w: thickness,
-        h: thickness,
-        **color
-      }
-    end
   end
 
   def mouse_inside_rect?(mouse, rect)
@@ -394,5 +313,9 @@ class SetupScreen
 
   def confirm_pressed?(args)
     args.inputs.keyboard.key_down.enter
+  end
+
+  def player_box_renderer
+    @player_box_renderer ||= PlayerBoxRenderer.new
   end
 end

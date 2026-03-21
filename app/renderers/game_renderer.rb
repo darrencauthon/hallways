@@ -1,6 +1,7 @@
 require "app/renderers/board_renderer.rb"
 require "app/renderers/wall_renderer.rb"
 require "app/renderers/pawn_renderer.rb"
+require "app/renderers/player_box_renderer.rb"
 require "app/models/player_palette.rb"
 
 class GameRenderer
@@ -8,22 +9,10 @@ class GameRenderer
   DRAGGED_WALL_ROTATE_EPSILON = 0.1
   PLAYER_NAME_SIZE_ENUM = 2
   PLAYER_NAME_COLOR = { r: 235, g: 235, b: 235 }.freeze
-  PLAYER_BOX_W = 220
   PLAYER_BOX_GAP = 18
   PLAYER_BOX_RIGHT_MARGIN = 58
   PLAYER_BOX_LEFT_MARGIN = 58
-  PLAYER_BOX_AVATAR_MARGIN_X = 12
-  PLAYER_BOX_AVATAR_MARGIN_TOP = 10
-  PLAYER_BOX_AVATAR_SCALE = 0.72
-  PLAYER_BOX_TEXT_GAP = 8
-  PLAYER_BOX_NAME_GAP = 14
-  PLAYER_BOX_BOTTOM_PADDING = 14
-  PLAYER_BOX_BORDER = { r: 88, g: 94, b: 110 }.freeze
-  PLAYER_BOX_ACTIVE_BORDER = { r: 255, g: 215, b: 120 }.freeze
   PLAYER_BOX_META_COLOR = { r: 170, g: 176, b: 190 }.freeze
-  PLAYER_BOX_AVATAR_FILL = { r: 16, g: 18, b: 22 }.freeze
-  PLAYER_BOX_AWAY_MARGIN_TOP = 16
-  PLAYER_BOX_AWAY_MARGIN_RIGHT = 14
   PLAYER_BOX_AWAY_LABEL_SIZE_ENUM = -1
   PLAYER_BOX_AWAY_VALUE_SIZE_ENUM = 3
 
@@ -178,6 +167,10 @@ class GameRenderer
     @pawn_renderer
   end
 
+  def player_box_renderer
+    @player_box_renderer ||= PlayerBoxRenderer.new
+  end
+
   def render_player_boxes(args, game, board_x, board_y)
     player_box_layouts(args, game, board_x, board_y).each do |entry|
       render_player_box(
@@ -199,124 +192,36 @@ class GameRenderer
   end
 
   def render_player_box(args, game, player:, x:, y:, current:)
-    border_color = current ? PLAYER_BOX_ACTIVE_BORDER : PLAYER_BOX_BORDER
-    avatar_x = x + PLAYER_BOX_AVATAR_MARGIN_X
-    avatar_size = ((PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)) * PLAYER_BOX_AVATAR_SCALE).to_i
-    avatar_w = avatar_size
-    avatar_h = avatar_size
-    box_h = player_box_height
-    avatar_y = y + box_h - PLAYER_BOX_AVATAR_MARGIN_TOP - avatar_h
-    name_y = avatar_y - PLAYER_BOX_NAME_GAP
-    indicator_y = name_y - PLAYER_BOX_TEXT_GAP - 14
-    away_x = x + PLAYER_BOX_W - PLAYER_BOX_AWAY_MARGIN_RIGHT
-    away_y = y + box_h - PLAYER_BOX_AWAY_MARGIN_TOP
     away_distance = player_away_distance(game, player)
 
-    args.outputs.solids << {
+    player_box_renderer.render(
+      args,
       x: x,
       y: y,
-      w: PLAYER_BOX_W,
-      h: box_h,
-      **player_box_fill_for(game, player)
-    }
-
-    args.outputs.solids << {
-      x: avatar_x,
-      y: avatar_y,
-      w: avatar_w,
-      h: avatar_h,
-      **PLAYER_BOX_AVATAR_FILL
-    }
-
-    args.outputs.borders << {
-      x: x,
-      y: y,
-      w: PLAYER_BOX_W,
-      h: box_h,
-      **border_color
-    }
-
-    args.outputs.borders << {
-      x: avatar_x,
-      y: avatar_y,
-      w: avatar_w,
-      h: avatar_h,
-      **border_color
-    }
-
-    render_placeholder_player_sprite(args, x: avatar_x, y: avatar_y, w: avatar_w, h: avatar_h, color: border_color)
-
-    args.outputs.labels << {
-      x: away_x,
-      y: away_y,
-      text: "Away",
-      alignment_enum: 2,
-      size_enum: PLAYER_BOX_AWAY_LABEL_SIZE_ENUM,
-      **PLAYER_NAME_COLOR
-    }
-
-    args.outputs.labels << {
-      x: away_x,
-      y: away_y - 22,
-      text: away_distance.to_s,
-      alignment_enum: 2,
-      size_enum: PLAYER_BOX_AWAY_VALUE_SIZE_ENUM,
-      **PLAYER_NAME_COLOR
-    }
-
-    args.outputs.labels << {
-      x: x + 14,
-      y: name_y,
-      text: player.name,
-      alignment_enum: 0,
-      size_enum: PLAYER_NAME_SIZE_ENUM,
-      **PLAYER_NAME_COLOR
-    }
-
-    args.outputs.labels << {
-      x: x + 14,
-      y: indicator_y,
-      text: player.turn_indicator_text || "",
-      alignment_enum: 0,
-      size_enum: 1,
-      **PLAYER_BOX_ACTIVE_BORDER
-    }
+      fill_color: player_box_fill_for(game, player),
+      selected: current,
+      title: player.name,
+      title_size_enum: PLAYER_NAME_SIZE_ENUM,
+      title_color: PLAYER_NAME_COLOR,
+      subtitle: player.turn_indicator_text || "",
+      subtitle_size_enum: 1,
+      subtitle_color: PlayerBoxRenderer::ACTIVE_BORDER,
+      meta_label: "Away",
+      meta_label_size_enum: PLAYER_BOX_AWAY_LABEL_SIZE_ENUM,
+      meta_label_color: PLAYER_NAME_COLOR,
+      meta_value: away_distance.to_s,
+      meta_value_size_enum: PLAYER_BOX_AWAY_VALUE_SIZE_ENUM,
+      meta_value_color: PLAYER_NAME_COLOR
+    )
   end
 
   def player_box_height
-    avatar_size = ((PLAYER_BOX_W - (PLAYER_BOX_AVATAR_MARGIN_X * 2)) * PLAYER_BOX_AVATAR_SCALE).to_i
-    PLAYER_BOX_AVATAR_MARGIN_TOP + avatar_size + PLAYER_BOX_NAME_GAP + 14 + PLAYER_BOX_TEXT_GAP + 14 + PLAYER_BOX_BOTTOM_PADDING
+    PlayerBoxRenderer.box_height
   end
 
   def player_box_fill_for(game, player)
     index = game.players.index(player) || 0
     PlayerPalette::BOX_FILLS[index] || PlayerPalette::BOX_FILLS[0]
-  end
-
-  def render_placeholder_player_sprite(args, x:, y:, w:, h:, color:)
-    line_count = 8
-    thickness = 3
-    step_x = ((w - thickness).to_f / (line_count - 1))
-    step_y = ((h - thickness).to_f / (line_count - 1))
-
-    line_count.times do |index|
-      offset_x = (index * step_x).to_i
-      offset_y = (index * step_y).to_i
-      args.outputs.solids << {
-        x: x + offset_x,
-        y: y + offset_y,
-        w: thickness,
-        h: thickness,
-        **color
-      }
-      args.outputs.solids << {
-        x: x + w - thickness - offset_x,
-        y: y + offset_y,
-        w: thickness,
-        h: thickness,
-        **color
-      }
-    end
   end
 
   def player_away_distance(game, player)
@@ -401,7 +306,7 @@ class GameRenderer
     board_size = board_pixel_size(game)
     box_h = player_box_height
     right_x = board_x + board_size + PLAYER_BOX_RIGHT_MARGIN
-    left_x = board_x - PLAYER_BOX_LEFT_MARGIN - PLAYER_BOX_W
+    left_x = board_x - PLAYER_BOX_LEFT_MARGIN - PlayerBoxRenderer.box_width
     top_y = board_y + board_size - box_h
     bottom_y = board_y
 

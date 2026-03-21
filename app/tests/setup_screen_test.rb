@@ -61,6 +61,7 @@ def test_setup_screen_enter_on_main_menu_returns_main_menu(args, assert)
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
 
   assert.equal! :main_menu, action, "Expected Enter on Main Menu row to return to the title screen."
