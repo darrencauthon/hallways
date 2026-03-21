@@ -1,6 +1,7 @@
 require "app/models/pawn.rb"
 require "app/models/board.rb"
 require "app/models/path_distance_calculator.rb"
+require "app/models/pawn_move_finder.rb"
 require "app/models/wall.rb"
 require "app/models/player.rb"
 require "app/controllers/null_controller.rb"
@@ -64,7 +65,7 @@ class Game
     return false if pawn.nil?
     return false unless pawn.player == current_player
     return false unless board.square_at(col, row)
-    return false unless legal_moves_for(pawn).any? { |move| move[:col] == col && move[:row] == row }
+    return false unless pawn_move_finder.moves_for(game: self, pawn: pawn).any? { |move| move[:col] == col && move[:row] == row }
 
     true
   end
@@ -231,73 +232,6 @@ class Game
     args.inputs.mouse.y || 0
   end
 
-  def adjacent?(from_col, from_row, to_col, to_row)
-    ((from_col - to_col).abs + (from_row - to_row).abs) == 1
-  end
-
-  def legal_moves_for(pawn)
-    orthogonal_neighbors(pawn).flat_map do |neighbor|
-      next [] if board.path_blocked?(from_col: pawn.col, from_row: pawn.row, to_col: neighbor[:col], to_row: neighbor[:row])
-
-      occupant = pawn_at(neighbor[:col], neighbor[:row])
-      if occupant.nil?
-        [neighbor]
-      else
-        jump_moves_for(pawn, occupant)
-      end
-    end
-  end
-
-  def pawn_at?(col, row)
-    pawns.any? { |pawn| pawn.col == col && pawn.row == row }
-  end
-
-  def pawn_at(col, row)
-    pawns.find { |pawn| pawn.col == col && pawn.row == row }
-  end
-
-  def jump_moves_for(pawn, blocking_pawn)
-    dx = blocking_pawn.col - pawn.col
-    dy = blocking_pawn.row - pawn.row
-    jump_col = blocking_pawn.col + dx
-    jump_row = blocking_pawn.row + dy
-
-    if board.square_at(jump_col, jump_row) &&
-       !board.path_blocked?(from_col: blocking_pawn.col, from_row: blocking_pawn.row, to_col: jump_col, to_row: jump_row) &&
-       !pawn_at?(jump_col, jump_row)
-      [{ col: jump_col, row: jump_row }]
-    else
-      diagonal_jump_moves_for(blocking_pawn, dx: dx, dy: dy)
-    end
-  end
-
-  def diagonal_jump_moves_for(blocking_pawn, dx:, dy:)
-    if dx == 0
-      [
-        { col: blocking_pawn.col - 1, row: blocking_pawn.row },
-        { col: blocking_pawn.col + 1, row: blocking_pawn.row }
-      ]
-    else
-      [
-        { col: blocking_pawn.col, row: blocking_pawn.row - 1 },
-        { col: blocking_pawn.col, row: blocking_pawn.row + 1 }
-      ]
-    end.select do |move|
-      board.square_at(move[:col], move[:row]) &&
-        !board.path_blocked?(from_col: blocking_pawn.col, from_row: blocking_pawn.row, to_col: move[:col], to_row: move[:row]) &&
-        !pawn_at?(move[:col], move[:row])
-    end
-  end
-
-  def orthogonal_neighbors(pawn)
-    [
-      { col: pawn.col + 1, row: pawn.row },
-      { col: pawn.col - 1, row: pawn.row },
-      { col: pawn.col, row: pawn.row + 1 },
-      { col: pawn.col, row: pawn.row - 1 }
-    ].select { |move| board.square_at(move[:col], move[:row]) }
-  end
-
   def crosses_existing_wall_span?(wall_span)
     walls.any? do |existing_wall|
       next false unless existing_wall.placed?
@@ -421,5 +355,9 @@ class Game
 
   def path_distance_calculator
     @path_distance_calculator ||= PathDistanceCalculator.new
+  end
+
+  def pawn_move_finder
+    @pawn_move_finder ||= PawnMoveFinder.new
   end
 end

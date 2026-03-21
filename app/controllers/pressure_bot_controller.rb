@@ -1,4 +1,5 @@
 require "app/models/path_distance_calculator.rb"
+require "app/models/pawn_move_finder.rb"
 
 class PressureBotController < BotController
   MIN_THINK_TICKS = 8
@@ -205,11 +206,7 @@ class PressureBotController < BotController
   end
 
   def legal_pawn_moves(game, pawn)
-    game.board.squares.filter_map do |square|
-      next nil unless game.can_move_pawn_to?(pawn, square.col, square.row)
-
-      { col: square.col, row: square.row }
-    end
+    legal_pawn_move_finder.moves_for(game: game, pawn: pawn)
   end
 
   def distance_to_goal(board, start_col, start_row, player, extra_occupied_wall_wells:)
@@ -233,6 +230,10 @@ class PressureBotController < BotController
 
   def path_distance_calculator
     @path_distance_calculator ||= PathDistanceCalculator.new
+  end
+
+  def legal_pawn_move_finder
+    @legal_pawn_move_finder ||= PawnMoveFinder.new
   end
 
   def reset_strategy_state
