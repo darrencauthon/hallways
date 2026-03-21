@@ -2,6 +2,7 @@ require "app/models/pawn.rb"
 require "app/models/board.rb"
 require "app/models/path_distance_calculator.rb"
 require "app/models/pawn_move_finder.rb"
+require "app/models/player_palette.rb"
 require "app/models/wall_placement_rules.rb"
 require "app/models/wall.rb"
 require "app/models/player.rb"
@@ -21,13 +22,6 @@ class Game
   WALL_COLOR = [210, 165, 95]
   WALL_WIDTH = 90
   WALL_HEIGHT = 10
-  PLAYER_COLORS = [
-    [143, 45, 45],
-    [47, 75, 143],
-    [47, 107, 69],
-    [154, 106, 31]
-  ].freeze
-
   attr_reader :pawns, :board, :walls, :players, :winner, :cell_gap, :mode, :player_types, :player_count
 
   def initialize(cell_width:, cell_height:, cell_gap: 6, mode: :human_vs_human, player_types: nil, player_count: nil)
@@ -279,7 +273,7 @@ class Game
   end
 
   def pawn_color_for(index)
-    PLAYER_COLORS[index] || PLAYER_COLORS[0]
+    PlayerPalette::COLORS[index] || PlayerPalette::COLORS[0]
   end
 
   def player_start_configs
