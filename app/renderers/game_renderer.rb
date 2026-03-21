@@ -16,6 +16,8 @@ class GameRenderer
   PLAYER_BOX_META_COLOR = { r: 170, g: 176, b: 190 }.freeze
   PLAYER_BOX_AWAY_LABEL_SIZE_ENUM = -1
   PLAYER_BOX_AWAY_VALUE_SIZE_ENUM = 3
+  PLAYER_BOX_WALLS_LABEL_SIZE_ENUM = -1
+  PLAYER_BOX_WALLS_VALUE_SIZE_ENUM = 2
 
   attr_reader :cell_gap
 
@@ -194,6 +196,7 @@ class GameRenderer
 
   def render_player_box(args, game, player:, x:, y:, current:)
     away_distance = player_away_distance(game, player)
+    remaining_walls = remaining_walls_for(game, player)
     player_index = game.players.index(player) || 0
 
     player_box_renderer.render(
@@ -214,6 +217,12 @@ class GameRenderer
       meta_value: away_distance.to_s,
       meta_value_size_enum: PLAYER_BOX_AWAY_VALUE_SIZE_ENUM,
       meta_value_color: PLAYER_NAME_COLOR,
+      secondary_meta_label: "Walls",
+      secondary_meta_label_size_enum: PLAYER_BOX_WALLS_LABEL_SIZE_ENUM,
+      secondary_meta_label_color: PLAYER_NAME_COLOR,
+      secondary_meta_value: remaining_walls.to_s,
+      secondary_meta_value_size_enum: PLAYER_BOX_WALLS_VALUE_SIZE_ENUM,
+      secondary_meta_value_color: PLAYER_NAME_COLOR,
       arrow_direction: player_box_direction_for(player_index),
       arrow_color: PLAYER_NAME_COLOR
     )

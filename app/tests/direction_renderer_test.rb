@@ -39,7 +39,7 @@ class DirectionRendererTestFakeOutputs
 end
 
 class DirectionRendererTestFakeRenderTarget
-  attr_accessor :w, :h
+  attr_accessor :w, :h, :clear_before_render
   attr_reader :labels
 
   def initialize

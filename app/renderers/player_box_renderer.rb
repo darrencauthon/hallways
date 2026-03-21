@@ -24,7 +24,7 @@ class PlayerBoxRenderer
     AVATAR_MARGIN_TOP + avatar_size + TITLE_GAP + 14 + SUBTITLE_GAP + 14 + BOTTOM_PADDING
   end
 
-  def render(args, x:, y:, fill_color:, selected:, title:, title_size_enum:, title_color:, subtitle:, subtitle_size_enum:, subtitle_color:, meta_label: nil, meta_label_size_enum: nil, meta_label_color: nil, meta_value: nil, meta_value_size_enum: nil, meta_value_color: nil, arrow_direction: nil, arrow_color: nil)
+  def render(args, x:, y:, fill_color:, selected:, title:, title_size_enum:, title_color:, subtitle:, subtitle_size_enum:, subtitle_color:, meta_label: nil, meta_label_size_enum: nil, meta_label_color: nil, meta_value: nil, meta_value_size_enum: nil, meta_value_color: nil, secondary_meta_label: nil, secondary_meta_label_size_enum: nil, secondary_meta_label_color: nil, secondary_meta_value: nil, secondary_meta_value_size_enum: nil, secondary_meta_value_color: nil, arrow_direction: nil, arrow_color: nil)
     border_color = selected ? ACTIVE_BORDER : BORDER
     avatar_x = x + AVATAR_MARGIN_X
     avatar_y = y + self.class.box_height - AVATAR_MARGIN_TOP - self.class.avatar_size
@@ -91,6 +91,28 @@ class PlayerBoxRenderer
         alignment_enum: 2,
         size_enum: meta_value_size_enum,
         **meta_value_color
+      }
+    end
+
+    if secondary_meta_label
+      args.outputs.labels << {
+        x: x + self.class.box_width - 14,
+        y: y + self.class.box_height - 66,
+        text: secondary_meta_label,
+        alignment_enum: 2,
+        size_enum: secondary_meta_label_size_enum,
+        **secondary_meta_label_color
+      }
+    end
+
+    if secondary_meta_value
+      args.outputs.labels << {
+        x: x + self.class.box_width - 14,
+        y: y + self.class.box_height - 88,
+        text: secondary_meta_value,
+        alignment_enum: 2,
+        size_enum: secondary_meta_value_size_enum,
+        **secondary_meta_value_color
       }
     end
 
