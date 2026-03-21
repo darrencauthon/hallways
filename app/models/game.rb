@@ -2,6 +2,7 @@ require "app/models/pawn.rb"
 require "app/models/board.rb"
 require "app/models/path_distance_calculator.rb"
 require "app/models/pawn_move_finder.rb"
+require "app/models/wall_placement_rules.rb"
 require "app/models/wall.rb"
 require "app/models/player.rb"
 require "app/controllers/null_controller.rb"
@@ -81,24 +82,12 @@ class Game
   end
 
   def can_place_wall_in_well?(wall, wall_well, preferred_side: :positive)
-    return false if winner
-    return false if wall.nil? || wall_well.nil?
-    return false if wall.player != current_player
-    return false if wall.placed?
-    wall_span = board.wall_span_from(wall_well, preferred_side: preferred_side)
-    return false if wall_span.nil?
-    return false if wall_span.any?(&:occupied?)
-    return false if crosses_existing_wall_span?(wall_span)
-
-    pawns.all? do |pawn|
-      board.path_exists?(
-        start_col: pawn.col,
-        start_row: pawn.row,
-        goal_row: pawn.player.winning_row,
-        goal_col: pawn.player.winning_col,
-        extra_occupied_wall_wells: wall_span
-      )
-    end
+    wall_placement_rules.can_place?(
+      game: self,
+      wall: wall,
+      wall_well: wall_well,
+      preferred_side: preferred_side
+    )
   end
 
   def place_wall_in_well(wall, wall_well)
@@ -108,7 +97,7 @@ class Game
   def place_wall_in_well_with_side(wall, wall_well, preferred_side:)
     return false unless can_place_wall_in_well?(wall, wall_well, preferred_side: preferred_side)
 
-    wall_span = board.wall_span_from(wall_well, preferred_side: preferred_side)
+    wall_span = wall_placement_rules.wall_span_for(game: self, wall_well: wall_well, preferred_side: preferred_side)
     wall.assign_to_wall_wells(wall_span)
     wall_span.each { |occupied_well| occupied_well.assign_wall(wall) }
     recompute_away_distances!
@@ -232,33 +221,6 @@ class Game
     args.inputs.mouse.y || 0
   end
 
-  def crosses_existing_wall_span?(wall_span)
-    walls.any? do |existing_wall|
-      next false unless existing_wall.placed?
-
-      spans_cross?(wall_span, existing_wall.wall_wells)
-    end
-  end
-
-  def spans_cross?(first_span, second_span)
-    first_orientation = first_span.first.orientation
-    second_orientation = second_span.first.orientation
-    return false if first_orientation == second_orientation
-
-    first_anchor = span_anchor(first_span)
-    second_anchor = span_anchor(second_span)
-
-    first_anchor[:col] == second_anchor[:col] &&
-      first_anchor[:row] == second_anchor[:row]
-  end
-
-  def span_anchor(span)
-    {
-      col: span.first.col,
-      row: span.first.row
-    }
-  end
-
   def build_walls
     walls = []
     walls_per_player = player_count == 4 ? WALLS_PER_PLAYER_FOUR : WALLS_PER_PLAYER_TWO
@@ -359,5 +321,9 @@ class Game
 
   def pawn_move_finder
     @pawn_move_finder ||= PawnMoveFinder.new
+  end
+
+  def wall_placement_rules
+    @wall_placement_rules ||= WallPlacementRules.new
   end
 end
