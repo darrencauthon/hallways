@@ -209,7 +209,7 @@ class GameScreenTestFakeGame
   def sync_render_state(dragged_wall:, dragged_pawn:, dragged_pawn_offset_x:, dragged_pawn_offset_y:)
   end
 
-  def render(args, board_x:, board_y:, wall_drop_target:, pawn_drop_target:)
+  def render(args, board_x:, board_y:, wall_drop_target:, pawn_drop_target:, pawn_origin_highlight: nil)
   end
 end
 

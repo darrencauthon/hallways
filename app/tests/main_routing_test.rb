@@ -52,6 +52,18 @@ def test_handle_title_action_continue_game_returns_to_existing_game(args, assert
   assert.equal! game_screen, fake_args.state.game_screen_instance, "Expected Continue Game to keep the existing game state."
 end
 
+def test_handle_setup_action_main_menu_returns_to_title(args, assert)
+  fake_args = MainRoutingTestHelpers.build_setup_args
+
+  PlayingRuntime.handle_setup_action(fake_args, :main_menu)
+
+  assert.equal! :title, fake_args.state.screen_name, "Expected Main Menu from setup to return to the title screen."
+  title_label_args = TitleScreenTestHelpers.build_fake_args
+  fake_args.state.title_screen_instance.tick(title_label_args)
+  title_label = title_label_args.outputs.labels.find { |label| label[:text] == "Hallways" }
+  assert.equal! false, title_label.nil?, "Expected title screen to be available after leaving setup."
+end
+
 module MainRoutingTestHelpers
   def self.build_victory_args(winner_name)
     state = MainRoutingFakeState.new
@@ -72,6 +84,20 @@ module MainRoutingTestHelpers
     state = MainRoutingFakeState.new
     state.screen_name = :title
     state.title_screen_instance = TitleScreen.new
+
+    key_down = FakeKeyDown.new(false, false, false, false, false, false)
+    keyboard = FakeKeyboard.new(key_down)
+    inputs = FakeInputs.new(keyboard)
+    outputs = FakeOutputs.new
+    gtk = MainRoutingFakeGtk.new
+
+    MainRoutingFakeArgs.new(inputs, outputs, state, gtk)
+  end
+
+  def self.build_setup_args
+    state = MainRoutingFakeState.new
+    state.screen_name = :setup
+    state.setup_screen_instance = SetupScreen.new
 
     key_down = FakeKeyDown.new(false, false, false, false, false, false)
     keyboard = FakeKeyboard.new(key_down)

@@ -5,7 +5,9 @@ def test_pawn_move_finder_returns_opening_move_for_current_pawn(args, assert)
 
   moves = move_finder.moves_for(game: game, pawn: pawn)
 
-  assert.equal! [{ col: 4, row: 1 }], moves, "Expected the move finder to return the legal opening move for the current pawn."
+  assert.equal! true, moves.include?({ col: 4, row: 1 }), "Expected the move finder to include the forward opening move for the current pawn."
+  assert.equal! true, moves.include?({ col: 3, row: 0 }), "Expected the move finder to include the left opening move for the current pawn."
+  assert.equal! true, moves.include?({ col: 5, row: 0 }), "Expected the move finder to include the right opening move for the current pawn."
 end
 
 def test_pawn_move_finder_returns_straight_jump_over_adjacent_pawn(args, assert)

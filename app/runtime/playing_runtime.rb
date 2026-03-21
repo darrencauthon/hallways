@@ -52,6 +52,12 @@ module PlayingRuntime
 
   def self.handle_setup_action(args, action)
     return if action.nil?
+    if action == :main_menu
+      args.state.setup_screen_instance = SetupScreen.new
+      args.state.title_screen_instance = TitleScreen.new(can_continue_game: resumable_game_available?(args))
+      args.state.screen_name = :title
+      return
+    end
     return unless action[0] == :start_game
 
     start_new_game(

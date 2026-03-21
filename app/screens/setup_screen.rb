@@ -6,7 +6,9 @@ class SetupScreen
   MENU_X_CENTER = 640
   HEADER_X = 60
   GAME_SIZE_Y = 610
-  PLAY_Y = 70
+  PLAY_X_CENTER = 1080
+  PLAY_Y = 360
+  MAIN_MENU_Y = 300
   MENU_HOVER_HALF_HEIGHT = 24
   MENU_HOVER_X_PADDING = 280
   PLAYER_BOX_W = 220
@@ -50,6 +52,7 @@ class SetupScreen
     render_menu_rows(args)
     render_player_boxes(args)
     return [:start_game, { player_count: @player_count, player_types: @player_types.dup }] if play_confirmed?(args)
+    return :main_menu if main_menu_confirmed?(args)
 
     nil
   end
@@ -83,12 +86,13 @@ class SetupScreen
 
       selected = index == selected_row_index
       text = row_text(row)
+      x = row == :game_size ? HEADER_X : (action_row?(row) ? PLAY_X_CENTER : MENU_X_CENTER)
       args.outputs.labels << {
-        x: row == :game_size ? HEADER_X : MENU_X_CENTER,
+        x: x,
         y: row_y(index),
         text: selected ? "> #{text} <" : text,
         alignment_enum: row == :game_size ? 0 : 1,
-        size_enum: row == :play ? 5 : 3,
+        size_enum: action_row?(row) ? 5 : 3,
         r: selected ? 255 : 175,
         g: selected ? 220 : 175,
         b: selected ? 100 : 175
@@ -119,15 +123,21 @@ class SetupScreen
       rows << :player_four
     end
     rows << :play
+    rows << :main_menu
     rows
   end
 
   def row_text(row)
     return "Players: #{@player_count}" if row == :game_size
-    return "Play" if row == :play
+    return "Start Game" if row == :play
+    return "Main Menu" if row == :main_menu
 
     player_index = player_index_for_row(row)
     "Player #{player_index + 1}: #{display_type(@player_types[player_index])}"
+  end
+
+  def action_row?(row)
+    [:play, :main_menu].include?(row)
   end
 
   def player_row?(row)
@@ -180,6 +190,10 @@ class SetupScreen
     selected_row == :play && (confirm_pressed?(args) || mouse_clicked_row?(args, :play))
   end
 
+  def main_menu_confirmed?(args)
+    selected_row == :main_menu && (confirm_pressed?(args) || mouse_clicked_row?(args, :main_menu))
+  end
+
   def selected_row
     rows = visible_rows
     rows[selected_row_index % rows.length]
@@ -212,7 +226,7 @@ class SetupScreen
       end
 
       y = row_y(index)
-      center_x = row == :game_size ? (HEADER_X + 110) : MENU_X_CENTER
+      center_x = row == :game_size ? (HEADER_X + 110) : (action_row?(row) ? PLAY_X_CENTER : MENU_X_CENTER)
       if mouse.x >= (center_x - MENU_HOVER_X_PADDING) &&
          mouse.x <= (center_x + MENU_HOVER_X_PADDING) &&
          mouse.y >= (y - MENU_HOVER_HALF_HEIGHT) &&
@@ -357,6 +371,7 @@ class SetupScreen
     row = visible_rows[index]
     return GAME_SIZE_Y if row == :game_size
     return PLAY_Y if row == :play
+    return MAIN_MENU_Y if row == :main_menu
 
     player_box_rect(player_index_for_row(row))[:y] + 32
   end
