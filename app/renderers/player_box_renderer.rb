@@ -11,6 +11,10 @@ class PlayerBoxRenderer
   BORDER = { r: 88, g: 94, b: 110 }.freeze
   ACTIVE_BORDER = { r: 255, g: 215, b: 120 }.freeze
   AVATAR_FILL = { r: 16, g: 18, b: 22 }.freeze
+  WIN_LABEL_RIGHT_MARGIN = 37
+  WIN_ROW_Y_OFFSET = 116
+  WIN_ARROW_RIGHT_MARGIN = 13
+  WIN_ARROW_SIZE = 28
 
   def self.box_width
     BOX_W
@@ -24,7 +28,7 @@ class PlayerBoxRenderer
     AVATAR_MARGIN_TOP + avatar_size + TITLE_GAP + 14 + SUBTITLE_GAP + 14 + BOTTOM_PADDING
   end
 
-  def render(args, x:, y:, fill_color:, selected:, title:, title_size_enum:, title_color:, subtitle:, subtitle_size_enum:, subtitle_color:, meta_label: nil, meta_label_size_enum: nil, meta_label_color: nil, meta_value: nil, meta_value_size_enum: nil, meta_value_color: nil, secondary_meta_label: nil, secondary_meta_label_size_enum: nil, secondary_meta_label_color: nil, secondary_meta_value: nil, secondary_meta_value_size_enum: nil, secondary_meta_value_color: nil, arrow_direction: nil, arrow_color: nil)
+  def render(args, x:, y:, fill_color:, selected:, title:, title_size_enum:, title_color:, subtitle:, subtitle_size_enum:, subtitle_color:, meta_label: nil, meta_label_size_enum: nil, meta_label_color: nil, meta_value: nil, meta_value_size_enum: nil, meta_value_color: nil, secondary_meta_label: nil, secondary_meta_label_size_enum: nil, secondary_meta_label_color: nil, secondary_meta_value: nil, secondary_meta_value_size_enum: nil, secondary_meta_value_color: nil, tertiary_meta_label: nil, tertiary_meta_label_size_enum: nil, tertiary_meta_label_color: nil, arrow_direction: nil, arrow_color: nil)
     border_color = selected ? ACTIVE_BORDER : BORDER
     avatar_x = x + AVATAR_MARGIN_X
     avatar_y = y + self.class.box_height - AVATAR_MARGIN_TOP - self.class.avatar_size
@@ -116,6 +120,17 @@ class PlayerBoxRenderer
       }
     end
 
+    if tertiary_meta_label
+      args.outputs.labels << {
+        x: x + self.class.box_width - WIN_LABEL_RIGHT_MARGIN,
+        y: y + self.class.box_height - WIN_ROW_Y_OFFSET,
+        text: tertiary_meta_label,
+        alignment_enum: 2,
+        size_enum: tertiary_meta_label_size_enum,
+        **tertiary_meta_label_color
+      }
+    end
+
     args.outputs.labels << {
       x: x + 14,
       y: title_y,
@@ -142,9 +157,9 @@ class PlayerBoxRenderer
   def render_arrow(args, x:, y:, direction:, color:)
     direction_renderer.render(
       args,
-      x: x + self.class.box_width - 24 - 28,
-      y: y + 22,
-      size: 28,
+      x: x + self.class.box_width - WIN_ARROW_RIGHT_MARGIN - WIN_ARROW_SIZE,
+      y: y + self.class.box_height - WIN_ROW_Y_OFFSET - 21,
+      size: WIN_ARROW_SIZE,
       direction: direction,
       color: color
     )

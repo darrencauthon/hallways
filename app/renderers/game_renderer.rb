@@ -223,6 +223,9 @@ class GameRenderer
       secondary_meta_value: remaining_walls.to_s,
       secondary_meta_value_size_enum: PLAYER_BOX_WALLS_VALUE_SIZE_ENUM,
       secondary_meta_value_color: PLAYER_NAME_COLOR,
+      tertiary_meta_label: "Win",
+      tertiary_meta_label_size_enum: PLAYER_BOX_WALLS_LABEL_SIZE_ENUM,
+      tertiary_meta_label_color: PLAYER_NAME_COLOR,
       arrow_direction: player_box_direction_for(player_index),
       arrow_color: PLAYER_NAME_COLOR
     )
