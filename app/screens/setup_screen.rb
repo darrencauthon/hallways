@@ -4,6 +4,7 @@ class SetupScreen
   PLAYER_TYPES = [:human, :random_bot, :path_bot, :last_line_bot, :pressure_bot].freeze
   PLAYER_COUNT_OPTIONS = [2, 4].freeze
   MENU_X_CENTER = 640
+  HEADER_X = 60
   GAME_SIZE_Y = 610
   PLAY_Y = 70
   MENU_HOVER_HALF_HEIGHT = 24
@@ -36,10 +37,10 @@ class SetupScreen
 
     args.outputs.background_color = [18, 20, 28]
     args.outputs.labels << {
-      x: 640,
+      x: 60,
       y: 670,
       text: "Game Setup",
-      alignment_enum: 1,
+      alignment_enum: 0,
       size_enum: 5,
       r: 240,
       g: 240,
@@ -83,10 +84,10 @@ class SetupScreen
       selected = index == selected_row_index
       text = row_text(row)
       args.outputs.labels << {
-        x: MENU_X_CENTER,
+        x: row == :game_size ? HEADER_X : MENU_X_CENTER,
         y: row_y(index),
         text: selected ? "> #{text} <" : text,
-        alignment_enum: 1,
+        alignment_enum: row == :game_size ? 0 : 1,
         size_enum: row == :play ? 5 : 3,
         r: selected ? 255 : 175,
         g: selected ? 220 : 175,
