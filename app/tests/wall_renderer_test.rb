@@ -61,7 +61,7 @@ class WallRendererTestFakeWall
     @placed
   end
 
-  def render(args, x, y, w, h)
+  def render(args, x, y, w, h, color_override = color)
     args.outputs.solids << { x: x, y: y, w: w, h: h }
   end
 

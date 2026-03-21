@@ -6,7 +6,7 @@ require "app/renderers/direction_renderer.rb"
 require "app/models/player_palette.rb"
 
 class GameRenderer
-  DRAGGED_WALL_ROTATE_LERP = 0.28
+  DRAGGED_WALL_ROTATE_LERP = 0.56
   DRAGGED_WALL_ROTATE_EPSILON = 0.1
   PLAYER_NAME_SIZE_ENUM = 2
   PLAYER_NAME_COLOR = { r: 235, g: 235, b: 235 }.freeze
