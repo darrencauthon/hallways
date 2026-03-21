@@ -119,9 +119,10 @@ class WallRendererTestFakeArgs
 end
 
 class WallRendererTestFakeRenderTarget
-  attr_accessor :w, :h, :background_color, :clear_before_render, :solids
+  attr_accessor :w, :h, :background_color, :clear_before_render, :solids, :labels
 
   def initialize
     @solids = []
+    @labels = []
   end
 end

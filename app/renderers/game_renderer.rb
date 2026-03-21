@@ -2,6 +2,7 @@ require "app/renderers/board_renderer.rb"
 require "app/renderers/wall_renderer.rb"
 require "app/renderers/pawn_renderer.rb"
 require "app/renderers/player_box_renderer.rb"
+require "app/renderers/direction_renderer.rb"
 require "app/models/player_palette.rb"
 
 class GameRenderer
@@ -193,6 +194,7 @@ class GameRenderer
 
   def render_player_box(args, game, player:, x:, y:, current:)
     away_distance = player_away_distance(game, player)
+    player_index = game.players.index(player) || 0
 
     player_box_renderer.render(
       args,
@@ -211,7 +213,9 @@ class GameRenderer
       meta_label_color: PLAYER_NAME_COLOR,
       meta_value: away_distance.to_s,
       meta_value_size_enum: PLAYER_BOX_AWAY_VALUE_SIZE_ENUM,
-      meta_value_color: PLAYER_NAME_COLOR
+      meta_value_color: PLAYER_NAME_COLOR,
+      arrow_direction: player_box_direction_for(player_index),
+      arrow_color: PLAYER_NAME_COLOR
     )
   end
 
@@ -229,6 +233,14 @@ class GameRenderer
     return "-" if distance.nil?
 
     distance
+  end
+
+  def player_box_direction_for(player_index)
+    return :up if player_index == 0
+    return :up if player_index == 1
+    return :right if player_index == 2
+
+    :left
   end
 
   def board_pixel_size(game)

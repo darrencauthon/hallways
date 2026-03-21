@@ -1,3 +1,5 @@
+require "app/renderers/direction_renderer.rb"
+
 class PlayerBoxRenderer
   BOX_W = 220
   AVATAR_MARGIN_X = 12
@@ -22,7 +24,7 @@ class PlayerBoxRenderer
     AVATAR_MARGIN_TOP + avatar_size + TITLE_GAP + 14 + SUBTITLE_GAP + 14 + BOTTOM_PADDING
   end
 
-  def render(args, x:, y:, fill_color:, selected:, title:, title_size_enum:, title_color:, subtitle:, subtitle_size_enum:, subtitle_color:, meta_label: nil, meta_label_size_enum: nil, meta_label_color: nil, meta_value: nil, meta_value_size_enum: nil, meta_value_color: nil)
+  def render(args, x:, y:, fill_color:, selected:, title:, title_size_enum:, title_color:, subtitle:, subtitle_size_enum:, subtitle_color:, meta_label: nil, meta_label_size_enum: nil, meta_label_color: nil, meta_value: nil, meta_value_size_enum: nil, meta_value_color: nil, arrow_direction: nil, arrow_color: nil)
     border_color = selected ? ACTIVE_BORDER : BORDER
     avatar_x = x + AVATAR_MARGIN_X
     avatar_y = y + self.class.box_height - AVATAR_MARGIN_TOP - self.class.avatar_size
@@ -109,9 +111,26 @@ class PlayerBoxRenderer
       size_enum: subtitle_size_enum,
       **subtitle_color
     }
+
+    render_arrow(args, x: x, y: y, direction: arrow_direction, color: arrow_color) if arrow_direction
   end
 
   private
+
+  def render_arrow(args, x:, y:, direction:, color:)
+    direction_renderer.render(
+      args,
+      x: x + self.class.box_width - 24 - 28,
+      y: y + 22,
+      size: 28,
+      direction: direction,
+      color: color
+    )
+  end
+
+  def direction_renderer
+    @direction_renderer ||= DirectionRenderer.new
+  end
 
   def render_placeholder_player_sprite(args, x:, y:, w:, h:, color:)
     line_count = 8
