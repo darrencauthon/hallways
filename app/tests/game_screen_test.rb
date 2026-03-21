@@ -230,13 +230,14 @@ class GameScreenTestFakeState
 end
 
 class GameScreenTestFakeOutputs
-  attr_accessor :background_color, :labels, :sprites, :solids, :borders
+  attr_accessor :background_color, :labels, :sprites, :solids, :borders, :primitives
 
   def initialize
     @labels = []
     @sprites = []
     @solids = []
     @borders = []
+    @primitives = []
     @render_targets = {}
   end
 

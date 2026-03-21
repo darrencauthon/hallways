@@ -16,6 +16,8 @@ module PlayingRuntime
     elsif current_screen(args) == :victory
       handle_victory_action(args, victory_screen(args).tick(args, winner_name: stored_winner_name(args)))
     end
+
+    args.outputs.primitives << GTK.framerate_diagnostics_primitives
   end
 
   def self.title_screen(args)

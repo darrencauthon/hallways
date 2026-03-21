@@ -115,13 +115,14 @@ class FakeMouse
 end
 
 class FakeOutputs
-  attr_accessor :background_color, :labels, :solids, :borders, :sprites
+  attr_accessor :background_color, :labels, :solids, :borders, :sprites, :primitives
 
   def initialize
     @labels = []
     @solids = []
     @borders = []
     @sprites = []
+    @primitives = []
   end
 end
 
