@@ -71,11 +71,12 @@ class WallRendererTestFakeWall
 end
 
 class WallRendererTestFakeGame
-  attr_reader :walls, :current_player
+  attr_reader :walls, :current_player, :players
 
   def initialize(wall)
     @walls = [wall]
     @current_player = wall.player
+    @players = [wall.player]
     @reserve_rects = {
       wall => { x: 20, y: 40, w: 90, h: 10 }
     }
