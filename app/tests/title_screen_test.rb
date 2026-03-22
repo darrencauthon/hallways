@@ -59,12 +59,13 @@ module TitleScreenTestHelpers
     right = options[:right] || false
     enter = options[:enter] || false
     escape = options[:escape] || false
+    f = options[:f] || false
     mouse_x = options.key?(:mouse_x) ? options[:mouse_x] : nil
     mouse_y = options.key?(:mouse_y) ? options[:mouse_y] : nil
     mouse_down = options[:mouse_down] || false
     mouse_up = options[:mouse_up] || false
 
-    key_down = FakeKeyDown.new(up, down, left, right, enter, escape)
+    key_down = FakeKeyDown.new(up, down, left, right, enter, escape, f)
     keyboard = FakeKeyboard.new(key_down)
     mouse = FakeMouse.new(mouse_x, mouse_y, mouse_down, mouse_up)
     inputs = FakeInputs.new(keyboard, mouse)
@@ -74,15 +75,16 @@ module TitleScreenTestHelpers
 end
 
 class FakeKeyDown
-  attr_reader :up, :down, :left, :right, :enter, :escape
+  attr_reader :up, :down, :left, :right, :enter, :escape, :f
 
-  def initialize(up, down, left, right, enter, escape)
+  def initialize(up, down, left, right, enter, escape, f = false)
     @up = up
     @down = down
     @left = left
     @right = right
     @enter = enter
     @escape = escape
+    @f = f
   end
 end
 

@@ -64,6 +64,22 @@ def test_handle_setup_action_main_menu_returns_to_title(args, assert)
   assert.equal! false, title_label.nil?, "Expected title screen to be available after leaving setup."
 end
 
+def test_main_tick_f_toggles_fullscreen(args, assert)
+  fake_args = MainRoutingTestHelpers.build_title_args(f: true)
+
+  PlayingRuntime.tick(fake_args)
+
+  assert.equal! 1, fake_args.gtk.toggle_window_fullscreen_calls, "Expected F key to toggle fullscreen once per key_down event."
+end
+
+def test_main_tick_without_f_does_not_toggle_fullscreen(args, assert)
+  fake_args = MainRoutingTestHelpers.build_title_args
+
+  PlayingRuntime.tick(fake_args)
+
+  assert.equal! 0, fake_args.gtk.toggle_window_fullscreen_calls, "Expected fullscreen to remain unchanged when F is not pressed."
+end
+
 module MainRoutingTestHelpers
   def self.build_victory_args(winner_name)
     state = MainRoutingFakeState.new
@@ -80,12 +96,13 @@ module MainRoutingTestHelpers
     MainRoutingFakeArgs.new(inputs, outputs, state, gtk)
   end
 
-  def self.build_title_args
+  def self.build_title_args(options = {})
     state = MainRoutingFakeState.new
     state.screen_name = :title
     state.title_screen_instance = TitleScreen.new
 
-    key_down = FakeKeyDown.new(false, false, false, false, false, false)
+    f = options[:f] || false
+    key_down = FakeKeyDown.new(false, false, false, false, false, false, f)
     keyboard = FakeKeyboard.new(key_down)
     inputs = FakeInputs.new(keyboard)
     outputs = FakeOutputs.new
@@ -114,12 +131,22 @@ class MainRoutingFakeState
 end
 
 class MainRoutingFakeGtk
+  attr_reader :toggle_window_fullscreen_calls
+
+  def initialize
+    @toggle_window_fullscreen_calls = 0
+  end
+
   def argv
     []
   end
 
   def cli_arguments
     []
+  end
+
+  def toggle_window_fullscreen
+    @toggle_window_fullscreen_calls += 1
   end
 end
 
