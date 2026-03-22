@@ -10,6 +10,8 @@ class Board
     @cell_width = cell_width
     @cell_height = cell_height
     @squares = build_squares
+    @horizontal_wall_wells = {}
+    @vertical_wall_wells = {}
     @wall_wells = build_wall_wells
   end
 
@@ -71,17 +73,17 @@ class Board
     return nil if wall_well.nil?
 
     if wall_well.orientation == :horizontal
-      second_well = wall_wells.find do |candidate|
-        candidate.orientation == :horizontal &&
-          candidate.col == wall_well.col + span_offset(preferred_side) &&
-          candidate.row == wall_well.row
-      end
+      second_well = wall_well_at(
+        :horizontal,
+        wall_well.col + span_offset(preferred_side),
+        wall_well.row
+      )
     else
-      second_well = wall_wells.find do |candidate|
-        candidate.orientation == :vertical &&
-          candidate.col == wall_well.col &&
-          candidate.row == wall_well.row + span_offset(preferred_side)
-      end
+      second_well = wall_well_at(
+        :vertical,
+        wall_well.col,
+        wall_well.row + span_offset(preferred_side)
+      )
     end
 
     return nil if second_well.nil?
@@ -111,25 +113,29 @@ class Board
 
     (size - 1).times do |row|
       size.times do |col|
-        wells << WallWell.new(
+        wall_well = WallWell.new(
           col: col,
           row: row,
           width: 36,
           height: 10,
           orientation: :horizontal
         )
+        wells << wall_well
+        @horizontal_wall_wells[[col, row]] = wall_well
       end
     end
 
     size.times do |row|
       (size - 1).times do |col|
-        wells << WallWell.new(
+        wall_well = WallWell.new(
           col: col,
           row: row,
           width: 10,
           height: 36,
           orientation: :vertical
         )
+        wells << wall_well
+        @vertical_wall_wells[[col, row]] = wall_well
       end
     end
 
@@ -143,18 +149,18 @@ class Board
   def wall_well_between(from_col:, from_row:, to_col:, to_row:)
     if from_col == to_col
       lower_row = [from_row, to_row].min
-      wall_wells.find do |wall_well|
-        wall_well.orientation == :horizontal &&
-          wall_well.col == from_col &&
-          wall_well.row == lower_row
-      end
+      wall_well_at(:horizontal, from_col, lower_row)
     elsif from_row == to_row
       lower_col = [from_col, to_col].min
-      wall_wells.find do |wall_well|
-        wall_well.orientation == :vertical &&
-          wall_well.col == lower_col &&
-          wall_well.row == from_row
-      end
+      wall_well_at(:vertical, lower_col, from_row)
+    end
+  end
+
+  def wall_well_at(orientation, col, row)
+    if orientation == :horizontal
+      @horizontal_wall_wells[[col, row]]
+    else
+      @vertical_wall_wells[[col, row]]
     end
   end
 
