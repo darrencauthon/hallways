@@ -2,7 +2,7 @@ require "app/models/player_palette.rb"
 require "app/renderers/player_box_renderer.rb"
 
 class SetupScreen
-  PLAYER_TYPES = [:human, :random_bot, :caveman_bot, :path_bot, :last_line_bot, :pressure_bot].freeze
+  PLAYER_TYPES = [:human, :caveman_bot, :last_line_bot, :pressure_bot].freeze
   PLAYER_COUNT_OPTIONS = [2, 4].freeze
   MENU_X_CENTER = 640
   HEADER_X = 60

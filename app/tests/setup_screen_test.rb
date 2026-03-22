@@ -10,27 +10,27 @@ def test_setup_screen_default_enter_on_play_starts_two_player_human_human(args, 
   assert.equal! [:human, :human], action[1][:player_types], "Expected default setup to be Human/Human."
 end
 
-def test_setup_screen_toggle_player_two_to_random_bot(args, assert)
-  screen = SetupScreen.new
-  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
-  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
-  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
-  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
-  action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
-
-  assert.equal! [:human, :random_bot], action[1][:player_types], "Expected toggled setup to keep Player 1 human and set Player 2 RandomBot."
-end
-
 def test_setup_screen_toggle_player_two_to_caveman(args, assert)
   screen = SetupScreen.new
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
-  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
 
   assert.equal! [:human, :caveman_bot], action[1][:player_types], "Expected toggled setup to keep Player 1 human and set Player 2 to Caveman."
+end
+
+def test_setup_screen_toggle_player_two_to_runner(args, assert)
+  screen = SetupScreen.new
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
+
+  assert.equal! [:human, :last_line_bot], action[1][:player_types], "Expected toggled setup to keep Player 1 human and set Player 2 to Runner."
 end
 
 def test_setup_screen_can_switch_to_four_player_mode(args, assert)
@@ -54,7 +54,7 @@ def test_setup_screen_four_player_mode_can_set_player_four_to_pressure_bot(args,
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
-  5.times { screen.tick(TitleScreenTestHelpers.build_fake_args(right: true)) }
+  3.times { screen.tick(TitleScreenTestHelpers.build_fake_args(right: true)) }
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
 
@@ -65,7 +65,7 @@ def test_setup_screen_displays_runner_for_last_line_bot(args, assert)
   screen = SetupScreen.new
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
-  4.times { screen.tick(TitleScreenTestHelpers.build_fake_args(right: true)) }
+  2.times { screen.tick(TitleScreenTestHelpers.build_fake_args(right: true)) }
 
   label_args = TitleScreenTestHelpers.build_fake_args
   screen.tick(label_args)
@@ -78,7 +78,7 @@ def test_setup_screen_displays_cowboy_for_pressure_bot(args, assert)
   screen = SetupScreen.new
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
-  5.times { screen.tick(TitleScreenTestHelpers.build_fake_args(right: true)) }
+  3.times { screen.tick(TitleScreenTestHelpers.build_fake_args(right: true)) }
 
   label_args = TitleScreenTestHelpers.build_fake_args
   screen.tick(label_args)
