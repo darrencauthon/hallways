@@ -165,7 +165,7 @@ class SetupScreen
     return "Caveman" if type == :caveman_bot
     return "PathBot" if type == :path_bot
     return "Runner" if type == :last_line_bot
-    return "PressureBot" if type == :pressure_bot
+    return "Cowboy" if type == :pressure_bot
 
     "Human"
   end

@@ -22,6 +22,10 @@ class PressureBotController < BotController
 
   private
 
+  def bot_name
+    "Cowboy"
+  end
+
   def begin_turn_if_needed(game)
     return unless begin_turn_thinking(game, min_ticks: MIN_THINK_TICKS)
 
