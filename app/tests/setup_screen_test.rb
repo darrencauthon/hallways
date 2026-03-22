@@ -21,6 +21,18 @@ def test_setup_screen_toggle_player_two_to_random_bot(args, assert)
   assert.equal! [:human, :random_bot], action[1][:player_types], "Expected toggled setup to keep Player 1 human and set Player 2 RandomBot."
 end
 
+def test_setup_screen_toggle_player_two_to_caveman(args, assert)
+  screen = SetupScreen.new
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
+
+  assert.equal! [:human, :caveman_bot], action[1][:player_types], "Expected toggled setup to keep Player 1 human and set Player 2 to Caveman."
+end
+
 def test_setup_screen_can_switch_to_four_player_mode(args, assert)
   screen = SetupScreen.new
   screen.tick(TitleScreenTestHelpers.build_fake_args(right: true))
@@ -42,7 +54,7 @@ def test_setup_screen_four_player_mode_can_set_player_four_to_pressure_bot(args,
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
-  4.times { screen.tick(TitleScreenTestHelpers.build_fake_args(right: true)) }
+  5.times { screen.tick(TitleScreenTestHelpers.build_fake_args(right: true)) }
   screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(enter: true))
 

@@ -2,7 +2,7 @@ require "app/models/player_palette.rb"
 require "app/renderers/player_box_renderer.rb"
 
 class SetupScreen
-  PLAYER_TYPES = [:human, :random_bot, :path_bot, :last_line_bot, :pressure_bot].freeze
+  PLAYER_TYPES = [:human, :random_bot, :caveman_bot, :path_bot, :last_line_bot, :pressure_bot].freeze
   PLAYER_COUNT_OPTIONS = [2, 4].freeze
   MENU_X_CENTER = 640
   HEADER_X = 60
@@ -162,6 +162,7 @@ class SetupScreen
 
   def display_type(type)
     return "RandomBot" if type == :random_bot
+    return "Caveman" if type == :caveman_bot
     return "PathBot" if type == :path_bot
     return "LastLineBot" if type == :last_line_bot
     return "PressureBot" if type == :pressure_bot

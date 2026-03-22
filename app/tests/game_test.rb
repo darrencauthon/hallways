@@ -64,6 +64,14 @@ def test_game_supports_path_bot_configuration(args, assert)
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
 end
 
+def test_game_supports_caveman_bot_configuration(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:caveman_bot, :human])
+
+  assert.equal! "Bot 1", game.players[0].name, "Expected Player 1 name to become Bot 1 when configured as Caveman."
+  assert.equal! true, game.players[0].controller.is_a?(CavemanBotController), "Expected Player 1 controller to be Caveman when configured."
+  assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
+end
+
 def test_game_supports_last_line_bot_configuration(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:last_line_bot, :human])
 
@@ -111,6 +119,33 @@ def test_random_bot_controller_can_return_valid_wall_action(args, assert)
   else
     assert.equal! :place_wall, action[:type], "Expected non-move computer action to be a wall placement."
     assert.equal! true, game.can_place_wall_in_well?(action[:wall], action[:wall_well], preferred_side: action[:preferred_side]), "Expected computer wall action to target a valid wall placement."
+  end
+end
+
+def test_caveman_bot_controller_can_return_valid_action(args, assert)
+  game = Game.new(cell_width: 48, cell_height: 48, player_types: [:human, :caveman_bot])
+  game.next_turn!
+  controller = game.current_controller
+
+  saw_thinking = false
+  action = nil
+  60.times do
+    candidate = controller.next_action(args: nil, game: game)
+    saw_thinking = true if candidate && candidate[:type] == :thinking
+    if candidate && candidate[:type] != :thinking
+      action = candidate
+      break
+    end
+  end
+
+  assert.equal! true, saw_thinking, "Expected Caveman to return :thinking while it evaluates options."
+  assert.equal! false, action.nil?, "Expected Caveman to eventually produce an action."
+
+  if action[:type] == :move_pawn
+    assert.equal! true, game.can_move_pawn_to?(action[:pawn], action[:col], action[:row]), "Expected Caveman pawn action to be valid."
+  else
+    assert.equal! :place_wall, action[:type], "Expected non-move Caveman action to be a wall placement."
+    assert.equal! true, game.can_place_wall_in_well?(action[:wall], action[:wall_well], preferred_side: action[:preferred_side]), "Expected Caveman wall action to target a valid wall placement."
   end
 end
 
