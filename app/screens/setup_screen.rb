@@ -164,7 +164,7 @@ class SetupScreen
     return "RandomBot" if type == :random_bot
     return "Caveman" if type == :caveman_bot
     return "PathBot" if type == :path_bot
-    return "LastLineBot" if type == :last_line_bot
+    return "Runner" if type == :last_line_bot
     return "PressureBot" if type == :pressure_bot
 
     "Human"

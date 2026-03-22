@@ -61,6 +61,19 @@ def test_setup_screen_four_player_mode_can_set_player_four_to_pressure_bot(args,
   assert.equal! [:human, :human, :human, :pressure_bot], action[1][:player_types], "Expected Player 4 to cycle to PressureBot."
 end
 
+def test_setup_screen_displays_runner_for_last_line_bot(args, assert)
+  screen = SetupScreen.new
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  screen.tick(TitleScreenTestHelpers.build_fake_args(down: true))
+  4.times { screen.tick(TitleScreenTestHelpers.build_fake_args(right: true)) }
+
+  label_args = TitleScreenTestHelpers.build_fake_args
+  screen.tick(label_args)
+
+  runner_label = label_args.outputs.labels.find { |label| label[:text] == "< Runner >" }
+  assert.equal! false, runner_label.nil?, "Expected setup screen to label last_line_bot as Runner."
+end
+
 def test_setup_screen_mouse_click_start_game_starts_game(args, assert)
   screen = SetupScreen.new
   action = screen.tick(TitleScreenTestHelpers.build_fake_args(mouse_x: 1080, mouse_y: 360, mouse_down: true))
