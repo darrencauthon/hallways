@@ -78,6 +78,7 @@ def test_game_supports_last_line_bot_configuration(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:last_line_bot, :human])
 
   assert.equal! true, game.players[0].controller.is_a?(LastLineBotController), "Expected Player 1 controller to be LastLineBot when configured."
+  assert.equal! "sprites/runner.png", game.players[0].image, "Expected Runner to use the runner portrait."
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
 end
 
