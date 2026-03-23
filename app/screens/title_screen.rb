@@ -5,6 +5,9 @@ class TitleScreen
   MENU_Y_STEP = 45
   MENU_HOVER_HALF_HEIGHT = 24
   MENU_HOVER_X_PADDING = 220
+  BACKGROUND_GRID_CELL_SIZE = 48
+  BACKGROUND_GRID_CELL_GAP = 6
+  BACKGROUND_GRID_ALPHA = 64
 
   def initialize(can_continue_game: false)
     @can_continue_game = can_continue_game
@@ -14,6 +17,7 @@ class TitleScreen
     handle_input(args)
 
     args.outputs.background_color = [20, 20, 28]
+    render_board_pattern_background(args)
     args.outputs.labels << {
       x: 640,
       y: 380,
@@ -156,6 +160,39 @@ class TitleScreen
     return args.grid.w if args.respond_to?(:grid) && args.grid && args.grid.respond_to?(:w)
 
     1280
+  end
+
+  def screen_height(args)
+    return args.grid.h if args.respond_to?(:grid) && args.grid && args.grid.respond_to?(:h)
+
+    720
+  end
+
+  def render_board_pattern_background(args)
+    step = BACKGROUND_GRID_CELL_SIZE + BACKGROUND_GRID_CELL_GAP
+    y = 0
+    row = 0
+    while y < screen_height(args)
+      x = 0
+      col = 0
+      while x < screen_width(args)
+        shade = ((row + col).even? ? 72 : 56)
+        args.outputs.solids << {
+          x: x,
+          y: y,
+          w: BACKGROUND_GRID_CELL_SIZE,
+          h: BACKGROUND_GRID_CELL_SIZE,
+          r: shade,
+          g: shade,
+          b: shade + 12,
+          a: BACKGROUND_GRID_ALPHA
+        }
+        x += step
+        col += 1
+      end
+      y += step
+      row += 1
+    end
   end
 
   def game_version

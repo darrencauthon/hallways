@@ -51,6 +51,15 @@ def test_title_screen_renders_continue_game_option_when_available(args, assert)
   assert.equal! false, continue_label.nil?, "Expected title screen to render Continue Game when a paused game is available."
 end
 
+def test_title_screen_renders_translucent_board_pattern_background(args, assert)
+  screen = TitleScreen.new
+  fake_args = TitleScreenTestHelpers.build_fake_args
+  screen.tick(fake_args)
+
+  translucent_cell = fake_args.outputs.solids.find { |solid| solid[:a] == 64 }
+  assert.equal! false, translucent_cell.nil?, "Expected title screen to render translucent board-pattern cells at 25% opacity."
+end
+
 module TitleScreenTestHelpers
   def self.build_fake_args(options = {})
     up = options[:up] || false

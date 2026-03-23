@@ -57,6 +57,6 @@ class BoardRenderer
     return nil if pawn.nil?
 
     color = pawn.color
-    [color[0] / 2, color[1] / 2, color[2] / 2]
+    [(color[0] * 0.5).round, (color[1] * 0.5).round, (color[2] * 0.5).round]
   end
 end

@@ -6,9 +6,9 @@ def test_board_renderer_highlights_current_player_goal_row(args, assert)
   renderer.render(fake_args, game, 100, 120)
 
   goal_square = fake_args.outputs.solids.find { |solid| solid[:x] == 100 && solid[:y] == 120 + (8 * 54) }
-  assert.equal! 71, goal_square[:r], "Expected current player's goal row to use half the player's red channel."
-  assert.equal! 22, goal_square[:g], "Expected current player's goal row to use half the player's green channel."
-  assert.equal! 22, goal_square[:b], "Expected current player's goal row to use half the player's blue channel."
+  assert.equal! 72, goal_square[:r], "Expected current player's goal row to use half the player's red channel."
+  assert.equal! 23, goal_square[:g], "Expected current player's goal row to use half the player's green channel."
+  assert.equal! 23, goal_square[:b], "Expected current player's goal row to use half the player's blue channel."
 end
 
 def test_board_renderer_leaves_non_goal_square_default_color(args, assert)
