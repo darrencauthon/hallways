@@ -32,7 +32,7 @@ class TitleScreen
     args.outputs.labels << {
       x: 640,
       y: 330,
-      text: "DragonRuby + Quoridor prototype",
+      text: "A DragonRuby implementation of Quoridor",
       alignment_enum: 1,
       size_enum: 2,
       r: 180,
