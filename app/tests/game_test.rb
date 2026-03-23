@@ -45,13 +45,13 @@ def test_game_human_vs_computer_mode_uses_computer_player_two(args, assert)
 
   assert.equal! true, game.players[0].controller.is_a?(HumanController), "Expected Player 1 to use HumanController."
   assert.equal! true, game.players[1].controller.is_a?(RandomBotController), "Expected Player 2 to use RandomBotController in Human vs Computer mode."
-  assert.equal! "Bot 2", game.players[1].name, "Expected computer-controlled player to be named Bot 2."
+  assert.equal! "RandomBot", game.players[1].name, "Expected computer-controlled player to use the RandomBot name."
 end
 
 def test_game_supports_explicit_player_type_configuration(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:random_bot, :human])
 
-  assert.equal! "Bot 1", game.players[0].name, "Expected Player 1 name to become Bot 1 when configured as computer."
+  assert.equal! "RandomBot", game.players[0].name, "Expected Player 1 name to become RandomBot when configured as computer."
   assert.equal! "Player 2", game.players[1].name, "Expected Player 2 name to stay human when configured as human."
   assert.equal! true, game.players[0].controller.is_a?(RandomBotController), "Expected Player 1 controller to be RandomBot when configured."
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
@@ -67,7 +67,7 @@ end
 def test_game_supports_caveman_bot_configuration(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:caveman_bot, :human])
 
-  assert.equal! "Bot 1", game.players[0].name, "Expected Player 1 name to become Bot 1 when configured as Caveman."
+  assert.equal! "Caveman", game.players[0].name, "Expected Player 1 name to become Caveman when configured as Caveman."
   assert.equal! true, game.players[0].controller.is_a?(CavemanBotController), "Expected Player 1 controller to be Caveman when configured."
   assert.equal! "sprites/caveman.png", game.players[0].image, "Expected Caveman to use the caveman portrait."
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
@@ -85,6 +85,7 @@ end
 def test_game_supports_pressure_bot_configuration(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:pressure_bot, :human])
 
+  assert.equal! "Cowboy", game.players[0].name, "Expected Player 1 name to become Cowboy when configured as PressureBot."
   assert.equal! true, game.players[0].controller.is_a?(PressureBotController), "Expected Player 1 controller to be PressureBot when configured."
   assert.equal! "sprites/cowboy.png", game.players[0].image, "Expected Cowboy to use the cowboy portrait."
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."

@@ -176,8 +176,18 @@ class Game
   end
 
   def display_name_for(index, player_type)
-    prefix = bot_player_type?(player_type) ? "Bot" : "Player"
-    "#{prefix} #{index + 1}"
+    return "Player #{index + 1}" unless bot_player_type?(player_type)
+
+    bot_display_name_for(player_type)
+  end
+
+  def bot_display_name_for(player_type)
+    return "Caveman" if player_type == :caveman_bot
+    return "PathBot" if player_type == :path_bot
+    return "Runner" if player_type == :last_line_bot
+    return "Cowboy" if player_type == :pressure_bot
+
+    "RandomBot"
   end
 
   def controller_for(player_type)
