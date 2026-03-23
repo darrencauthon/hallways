@@ -211,6 +211,7 @@ class GameRenderer
       subtitle: player.turn_indicator_text || "",
       subtitle_size_enum: 1,
       subtitle_color: PlayerBoxRenderer::ACTIVE_BORDER,
+      image_path: player.image,
       meta_label: "Away",
       meta_label_size_enum: PLAYER_BOX_AWAY_LABEL_SIZE_ENUM,
       meta_label_color: PLAYER_NAME_COLOR,

@@ -28,7 +28,7 @@ class PlayerBoxRenderer
     AVATAR_MARGIN_TOP + avatar_size + TITLE_GAP + 14 + SUBTITLE_GAP + 14 + BOTTOM_PADDING
   end
 
-  def render(args, x:, y:, fill_color:, selected:, title:, title_size_enum:, title_color:, subtitle:, subtitle_size_enum:, subtitle_color:, meta_label: nil, meta_label_size_enum: nil, meta_label_color: nil, meta_value: nil, meta_value_size_enum: nil, meta_value_color: nil, secondary_meta_label: nil, secondary_meta_label_size_enum: nil, secondary_meta_label_color: nil, secondary_meta_value: nil, secondary_meta_value_size_enum: nil, secondary_meta_value_color: nil, tertiary_meta_label: nil, tertiary_meta_label_size_enum: nil, tertiary_meta_label_color: nil, arrow_direction: nil, arrow_color: nil)
+  def render(args, x:, y:, fill_color:, selected:, title:, title_size_enum:, title_color:, subtitle:, subtitle_size_enum:, subtitle_color:, image_path: nil, meta_label: nil, meta_label_size_enum: nil, meta_label_color: nil, meta_value: nil, meta_value_size_enum: nil, meta_value_color: nil, secondary_meta_label: nil, secondary_meta_label_size_enum: nil, secondary_meta_label_color: nil, secondary_meta_value: nil, secondary_meta_value_size_enum: nil, secondary_meta_value_color: nil, tertiary_meta_label: nil, tertiary_meta_label_size_enum: nil, tertiary_meta_label_color: nil, arrow_direction: nil, arrow_color: nil)
     border_color = selected ? ACTIVE_BORDER : BORDER
     avatar_x = x + AVATAR_MARGIN_X
     avatar_y = y + self.class.box_height - AVATAR_MARGIN_TOP - self.class.avatar_size
@@ -67,14 +67,24 @@ class PlayerBoxRenderer
       **border_color
     }
 
-    render_placeholder_player_sprite(
-      args,
-      x: avatar_x,
-      y: avatar_y,
-      w: self.class.avatar_size,
-      h: self.class.avatar_size,
-      color: border_color
-    )
+    if image_path
+      args.outputs.sprites << {
+        x: avatar_x,
+        y: avatar_y,
+        w: self.class.avatar_size,
+        h: self.class.avatar_size,
+        path: image_path
+      }
+    else
+      render_placeholder_player_sprite(
+        args,
+        x: avatar_x,
+        y: avatar_y,
+        w: self.class.avatar_size,
+        h: self.class.avatar_size,
+        color: border_color
+      )
+    end
 
     if meta_label
       args.outputs.labels << {

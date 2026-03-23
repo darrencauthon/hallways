@@ -170,7 +170,8 @@ class Game
       game: self,
       winning_row: winning_row,
       winning_col: winning_col,
-      controller: controller_for(player_type)
+      controller: controller_for(player_type),
+      image: player_image_for(player_type)
     )
   end
 
@@ -199,6 +200,12 @@ class Game
     end
 
     @game_renderer
+  end
+
+  def player_image_for(player_type)
+    return "sprites/caveman.png" if player_type == :caveman_bot
+
+    nil
   end
 
   def dragged_pawn_x(args)

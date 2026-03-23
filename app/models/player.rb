@@ -1,12 +1,13 @@
 class Player
-  attr_reader :name, :game, :winning_row, :winning_col, :controller
+  attr_reader :name, :game, :winning_row, :winning_col, :controller, :image
 
-  def initialize(name, game:, winning_row:, winning_col: nil, controller:)
+  def initialize(name, game:, winning_row:, winning_col: nil, controller:, image: nil)
     @name = name
     @game = game
     @winning_row = winning_row
     @winning_col = winning_col
     @controller = controller
+    @image = image
   end
 
   def my_turn?

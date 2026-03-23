@@ -253,7 +253,8 @@ class SetupScreen
       title_color: PLAYER_BOX_TEXT_COLOR,
       subtitle: "Player #{player_index + 1}",
       subtitle_size_enum: 1,
-      subtitle_color: PLAYER_BOX_LABEL_COLOR
+      subtitle_color: PLAYER_BOX_LABEL_COLOR,
+      image_path: player_image_for(player_type)
     )
   end
 
@@ -278,6 +279,12 @@ class SetupScreen
 
   def player_box_fill_for(player_index)
     PlayerPalette::BOX_FILLS[player_index] || PlayerPalette::BOX_FILLS[0]
+  end
+
+  def player_image_for(player_type)
+    return "sprites/caveman.png" if player_type == :caveman_bot
+
+    nil
   end
 
   def mouse_inside_rect?(mouse, rect)

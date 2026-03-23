@@ -69,7 +69,9 @@ def test_game_supports_caveman_bot_configuration(args, assert)
 
   assert.equal! "Bot 1", game.players[0].name, "Expected Player 1 name to become Bot 1 when configured as Caveman."
   assert.equal! true, game.players[0].controller.is_a?(CavemanBotController), "Expected Player 1 controller to be Caveman when configured."
+  assert.equal! "sprites/caveman.png", game.players[0].image, "Expected Caveman to use the caveman portrait."
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
+  assert.equal! nil, game.players[1].image, "Expected human players to keep using the placeholder portrait."
 end
 
 def test_game_supports_last_line_bot_configuration(args, assert)
