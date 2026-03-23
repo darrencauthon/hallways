@@ -28,6 +28,7 @@
   - `app/runtime/testing_runtime.rb` handles `--test` mode.
   - `app/runtime/playing_runtime.rb` handles normal game/screen flow.
   - `app/runtime/shared_runtime.rb` contains shared runtime helpers.
+- Keep runtime debug overlays (for example FPS/frame diagnostics) disabled by default; only enable when explicitly requested for debugging.
 - Normal boot must not require `app/runtime/testing_runtime.rb`; only require it lazily when `--test` is actually active.
 - Keep rendering logic in renderer classes whenever practical (`app/renderers/**`), and keep gameplay/rules in models/controllers.
 - Keep board-rule logic deterministic and testable.

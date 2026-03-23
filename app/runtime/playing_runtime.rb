@@ -6,6 +6,8 @@ require "app/models/game.rb"
 require "app/screens/game_screen.rb"
 
 module PlayingRuntime
+  SHOW_DEBUG_DIAGNOSTICS = false
+
   def self.tick(args)
     SharedRuntime.toggle_fullscreen_if_requested(args)
 
@@ -19,7 +21,7 @@ module PlayingRuntime
       handle_victory_action(args, victory_screen(args).tick(args, winner_name: stored_winner_name(args)))
     end
 
-    args.outputs.primitives << GTK.framerate_diagnostics_primitives
+    render_debug_diagnostics(args)
   end
 
   def self.title_screen(args)
@@ -114,5 +116,11 @@ module PlayingRuntime
 
   def self.stored_winner_name(args)
     args.state.winner_name || "Unknown Player"
+  end
+
+  def self.render_debug_diagnostics(args)
+    return unless SHOW_DEBUG_DIAGNOSTICS
+
+    args.outputs.primitives << GTK.framerate_diagnostics_primitives
   end
 end
