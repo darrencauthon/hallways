@@ -199,7 +199,7 @@ class TitleScreen
     version = version_from_metadata
     return version unless version.nil? || version.empty?
 
-    "0.1.9"
+    "1.0.0"
   end
 
   def version_from_metadata

@@ -2,6 +2,6 @@ devid=darre
 devtitle=Darre
 gameid=hallways
 gametitle=Hallways
-version=0.7.0
+version=1.0.0
 hd=true
 highdpi=true
