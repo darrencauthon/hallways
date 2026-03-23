@@ -1,5 +1,5 @@
 class TitleScreen
-  BASE_MENU_OPTIONS = ["Play", "Quit"].freeze
+  BASE_MENU_OPTIONS = ["New Game", "Quit"].freeze
   MENU_X_CENTER = 640
   MENU_Y_START = 250
   MENU_Y_STEP = 45
@@ -45,7 +45,7 @@ class TitleScreen
 
     confirmed = confirm_pressed?(args) || mouse_click_confirm?(args)
     return :continue_game if confirmed && selected_option == "Continue Game"
-    return :open_setup if confirmed && selected_option == "Play"
+    return :open_setup if confirmed && selected_option == "New Game"
     return :quit if confirmed && selected_option == "Quit"
 
     nil
