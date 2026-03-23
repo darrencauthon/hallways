@@ -118,7 +118,8 @@ class Game
     board_y:,
     wall_drop_target:,
     pawn_drop_target:,
-    pawn_origin_highlight:
+    pawn_origin_highlight:,
+    available_pawn_moves:
   )
     renderer = game_renderer
     dragged_wall_preview = renderer.dragged_wall_rect(
@@ -139,6 +140,7 @@ class Game
       wall_drop_target: wall_drop_target,
       pawn_drop_target: pawn_drop_target,
       pawn_origin_highlight: pawn_origin_highlight,
+      available_pawn_moves: available_pawn_moves,
       dragged_wall: @dragged_wall,
       dragged_rect: dragged_wall_preview[:rect],
       dragged_angle: dragged_wall_preview[:angle],

@@ -33,6 +33,7 @@ class GameRenderer
     wall_drop_target:,
     pawn_drop_target:,
     pawn_origin_highlight:,
+    available_pawn_moves:,
     dragged_wall:,
     dragged_rect:,
     dragged_angle:,
@@ -57,6 +58,13 @@ class GameRenderer
         dragged_angle: dragged_angle,
         hover_wall: hover_wall
       }
+    )
+    pawn_renderer.render_available_moves(
+      args,
+      board_x,
+      board_y,
+      available_pawn_moves,
+      game.current_player && current_player_pawn_color(game)
     )
     pawn_renderer.render_drop_target(args, board_x, board_y, pawn_drop_target)
     pawn_renderer.render_origin_highlight(args, board_x, board_y, pawn_origin_highlight, game.current_player && current_player_pawn_color(game))

@@ -1,5 +1,6 @@
 class PawnRenderer
   MOVE_ANIMATION_TICKS = 60
+  AVAILABLE_MOVE_BORDER_THICKNESS = 3
 
   def initialize(cell_size:, cell_gap:)
     @cell_size = cell_size
@@ -41,6 +42,48 @@ class PawnRenderer
       g: 60,
       b: 60
     }
+  end
+
+  def render_available_moves(args, board_x, board_y, squares, color)
+    return if squares.nil? || squares.empty?
+    return if color.nil?
+
+    border = AVAILABLE_MOVE_BORDER_THICKNESS
+    squares.each do |square|
+      x = board_x + (square.col * (@cell_size + @cell_gap))
+      y = board_y + (square.row * (@cell_size + @cell_gap))
+      color_hash = { r: color[0], g: color[1], b: color[2] }
+
+      # DragonRuby borders render at 1px; use solid edge strips for a true 3px stroke.
+      args.outputs.solids << {
+        x: x - border,
+        y: y + @cell_size,
+        w: @cell_size + (border * 2),
+        h: border,
+        **color_hash
+      }
+      args.outputs.solids << {
+        x: x - border,
+        y: y - border,
+        w: @cell_size + (border * 2),
+        h: border,
+        **color_hash
+      }
+      args.outputs.solids << {
+        x: x - border,
+        y: y,
+        w: border,
+        h: @cell_size,
+        **color_hash
+      }
+      args.outputs.solids << {
+        x: x + @cell_size,
+        y: y,
+        w: border,
+        h: @cell_size,
+        **color_hash
+      }
+    end
   end
 
   def render_origin_highlight(args, board_x, board_y, square, color)

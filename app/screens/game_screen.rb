@@ -40,6 +40,7 @@ class GameScreen
     clickable_pawn_target = available_click_move_target(args, board_x, board_y)
     pawn_drop_target = available_pawn_drop_target(args, board_x, board_y) || clickable_pawn_target
     pawn_origin_highlight = clickable_pawn_origin_square(args, board_x, board_y, clickable_pawn_target)
+    available_pawn_moves = available_pawn_move_targets
     game.sync_render_state(
       dragged_wall: dragged_wall,
       dragged_pawn: dragged_pawn,
@@ -53,7 +54,8 @@ class GameScreen
       board_y: board_y,
       wall_drop_target: wall_drop_target,
       pawn_drop_target: pawn_drop_target,
-      pawn_origin_highlight: pawn_origin_highlight
+      pawn_origin_highlight: pawn_origin_highlight,
+      available_pawn_moves: available_pawn_moves
     )
     if @computer_thinking
       game_screen_renderer.render_thinking_indicator(
@@ -305,6 +307,18 @@ class GameScreen
     return nil if pawn.nil?
 
     game.board.square_at(pawn.col, pawn.row)
+  end
+
+  def available_pawn_move_targets
+    return [] unless human_turn?
+    return [] if dragged_wall
+
+    pawn = current_player_pawn
+    return [] if pawn.nil?
+
+    game.board.squares.select do |square|
+      game.can_move_pawn_to?(pawn, square.col, square.row)
+    end
   end
 
   def preferred_wall_side(args, wall_well, rect)

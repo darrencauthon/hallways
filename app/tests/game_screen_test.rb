@@ -146,6 +146,20 @@ def test_game_screen_clicking_between_wall_wells_uses_last_hovered_wall_placemen
   assert.equal! true, screen.send(:wall_place_animation_in_progress?, click_args), "Expected gap click-to-place to trigger the standard wall placement animation."
 end
 
+def test_game_screen_available_pawn_move_targets_returns_legal_moves_for_current_human(args, assert)
+  screen = GameScreen.new
+  game = Game.new(cell_width: 48, cell_height: 48)
+  screen.define_singleton_method(:game) { game }
+
+  targets = screen.send(:available_pawn_move_targets)
+  positions = targets.map { |square| [square.col, square.row] }
+
+  assert.equal! 3, positions.length, "Expected opening position to expose exactly three legal pawn moves."
+  assert.equal! true, positions.include?([4, 1]), "Expected forward move to be highlighted."
+  assert.equal! true, positions.include?([3, 0]), "Expected left move to be highlighted."
+  assert.equal! true, positions.include?([5, 0]), "Expected right move to be highlighted."
+end
+
 module GameScreenTestHelpers
   def self.build_fake_args_with_grid(tick_count:, mouse_x: nil, mouse_y: nil, mouse_down: false, mouse_up: false)
     key_down = FakeKeyDown.new(false, false, false, false, false, false)
@@ -209,7 +223,7 @@ class GameScreenTestFakeGame
   def sync_render_state(dragged_wall:, dragged_pawn:, dragged_pawn_offset_x:, dragged_pawn_offset_y:)
   end
 
-  def render(args, board_x:, board_y:, wall_drop_target:, pawn_drop_target:, pawn_origin_highlight: nil)
+  def render(args, board_x:, board_y:, wall_drop_target:, pawn_drop_target:, pawn_origin_highlight: nil, available_pawn_moves: [])
   end
 end
 
