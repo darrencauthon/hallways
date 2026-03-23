@@ -50,6 +50,7 @@
 - If available, also inspect `test-output.txt` (custom runner summary). If `test-output.txt` is not generated, rely on DragonRuby output summary plus `errors/last.txt`.
 - When capturing DragonRuby console output via PowerShell transcript, write to `test-transcript.txt` (not `test-output.txt`) to avoid collisions with custom runner output.
 - When reading captured transcript output, use a high limit (`Get-Content ... -TotalCount 10000`) so failures/warnings are not truncated.
+- In this workspace, DragonRuby stdout may occasionally be sparse/truncated when run through transcript or shell redirection; treat `errors/last.txt` as the reliable failure signal when detailed summary lines are missing.
 - If a change touches runtime rendering/layout code, do not rely only on test mode; also consider a normal boot smoke check because some render-path exceptions only appear outside `--test`.
 
 ## Run Commands
@@ -77,6 +78,7 @@
 - `GameScreenRenderer` owns screen-level visual helpers (for example: thinking indicator and background).
 - Pawn visuals now render from `sprites/solid-circle.png` tinted from each pawn's RGB color.
 - Player box placeholder art is still a square avatar panel with a solid-drawn `X`.
+- Bot portrait mapping is currently duplicated: `Game#player_image_for` controls in-game player images and `SetupScreen#player_image_for` controls setup card avatars. Keep both mappings in sync when adding/changing bot portraits.
 - Player palette currently exists in two places: `Game::PLAYER_COLORS` for pawns and `GameRenderer::PLAYER_BOX_PLAYER_FILLS` for UI boxes. Keep them visually aligned whenever player colors change.
 
 ## Communication
