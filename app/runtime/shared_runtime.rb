@@ -35,11 +35,33 @@ module SharedRuntime
     end
   end
 
+  def self.take_screenshot_if_requested(args)
+    return unless screenshot_pressed?(args)
+    return if args.outputs.nil?
+    return unless args.outputs.respond_to?(:screenshots)
+
+    args.outputs.screenshots << {
+      x: 0,
+      y: 0,
+      w: 1280,
+      h: 720,
+      path: "screenshot-#{Kernel.tick_count}.png"
+    }
+  end
+
   def self.fullscreen_toggle_pressed?(args)
     keyboard = args.inputs&.keyboard
     return false if keyboard.nil?
     return false if keyboard.key_down.nil?
 
     !!keyboard.key_down.f
+  end
+
+  def self.screenshot_pressed?(args)
+    keyboard = args.inputs&.keyboard
+    return false if keyboard.nil?
+    return false if keyboard.key_down.nil?
+
+    !!keyboard.key_down.s
   end
 end

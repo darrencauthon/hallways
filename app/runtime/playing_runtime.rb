@@ -10,6 +10,7 @@ module PlayingRuntime
 
   def self.tick(args)
     SharedRuntime.toggle_fullscreen_if_requested(args)
+    SharedRuntime.take_screenshot_if_requested(args)
 
     if current_screen(args) == :title
       handle_title_action(args, title_screen(args).tick(args))

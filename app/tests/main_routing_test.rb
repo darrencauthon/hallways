@@ -80,6 +80,24 @@ def test_main_tick_without_f_does_not_toggle_fullscreen(args, assert)
   assert.equal! 0, fake_args.gtk.toggle_window_fullscreen_calls, "Expected fullscreen to remain unchanged when F is not pressed."
 end
 
+def test_main_tick_s_takes_screenshot(args, assert)
+  fake_args = MainRoutingTestHelpers.build_title_args(s: true)
+
+  PlayingRuntime.tick(fake_args)
+
+  assert.equal! 1, fake_args.outputs.screenshots.length, "Expected S key to queue exactly one screenshot."
+  screenshot = fake_args.outputs.screenshots[0]
+  assert.equal! true, screenshot[:path].start_with?("screenshot-"), "Expected screenshot path to use the screenshot- prefix."
+end
+
+def test_main_tick_without_s_does_not_take_screenshot(args, assert)
+  fake_args = MainRoutingTestHelpers.build_title_args
+
+  PlayingRuntime.tick(fake_args)
+
+  assert.equal! 0, fake_args.outputs.screenshots.length, "Expected no screenshot when S is not pressed."
+end
+
 module MainRoutingTestHelpers
   def self.build_victory_args(winner_name)
     state = MainRoutingFakeState.new
@@ -102,7 +120,8 @@ module MainRoutingTestHelpers
     state.title_screen_instance = TitleScreen.new
 
     f = options[:f] || false
-    key_down = FakeKeyDown.new(false, false, false, false, false, false, f)
+    s = options[:s] || false
+    key_down = FakeKeyDown.new(false, false, false, false, false, false, f, s)
     keyboard = FakeKeyboard.new(key_down)
     inputs = FakeInputs.new(keyboard)
     outputs = FakeOutputs.new

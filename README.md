@@ -1,6 +1,14 @@
 # Hallways
 
+## The Game
+
 Hallways is a DragonRuby implementation of the Quoridor board game.
+
+| Quoridor Board | Screenshot |
+| --- | --- |
+| ![Hallways board](board1.jpeg) | ![Hallways screenshot](screenshot1.png) |
+
+## The AI
 
 But more than that, this is a presentation of how I recommend starting with AI coding. What I present here is a strategy that I believe will:
 
@@ -182,4 +190,5 @@ Expected behavior:
 ### Notes
 
 - Quoridor information:  (https://en.wikipedia.org/wiki/Quoridor)
+
 

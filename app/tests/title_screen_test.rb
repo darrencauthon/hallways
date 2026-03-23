@@ -69,12 +69,13 @@ module TitleScreenTestHelpers
     enter = options[:enter] || false
     escape = options[:escape] || false
     f = options[:f] || false
+    s = options[:s] || false
     mouse_x = options.key?(:mouse_x) ? options[:mouse_x] : nil
     mouse_y = options.key?(:mouse_y) ? options[:mouse_y] : nil
     mouse_down = options[:mouse_down] || false
     mouse_up = options[:mouse_up] || false
 
-    key_down = FakeKeyDown.new(up, down, left, right, enter, escape, f)
+    key_down = FakeKeyDown.new(up, down, left, right, enter, escape, f, s)
     keyboard = FakeKeyboard.new(key_down)
     mouse = FakeMouse.new(mouse_x, mouse_y, mouse_down, mouse_up)
     inputs = FakeInputs.new(keyboard, mouse)
@@ -84,9 +85,9 @@ module TitleScreenTestHelpers
 end
 
 class FakeKeyDown
-  attr_reader :up, :down, :left, :right, :enter, :escape, :f
+  attr_reader :up, :down, :left, :right, :enter, :escape, :f, :s
 
-  def initialize(up, down, left, right, enter, escape, f = false)
+  def initialize(up, down, left, right, enter, escape, f = false, s = false)
     @up = up
     @down = down
     @left = left
@@ -94,6 +95,7 @@ class FakeKeyDown
     @enter = enter
     @escape = escape
     @f = f
+    @s = s
   end
 end
 
@@ -126,7 +128,7 @@ class FakeMouse
 end
 
 class FakeOutputs
-  attr_accessor :background_color, :labels, :solids, :borders, :sprites, :primitives
+  attr_accessor :background_color, :labels, :solids, :borders, :sprites, :primitives, :screenshots
 
   def initialize
     @labels = []
@@ -134,6 +136,7 @@ class FakeOutputs
     @borders = []
     @sprites = []
     @primitives = []
+    @screenshots = []
   end
 end
 
