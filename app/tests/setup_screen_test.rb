@@ -84,7 +84,9 @@ def test_setup_screen_displays_cowboy_for_pressure_bot(args, assert)
   screen.tick(label_args)
 
   cowboy_label = label_args.outputs.labels.find { |label| label[:text] == "< Cowboy >" }
+  cowboy_sprite = label_args.outputs.sprites.find { |sprite| sprite[:path] == "sprites/cowboy.png" }
   assert.equal! false, cowboy_label.nil?, "Expected setup screen to label pressure_bot as Cowboy."
+  assert.equal! false, cowboy_sprite.nil?, "Expected setup screen to render the cowboy portrait for pressure_bot."
 end
 
 def test_setup_screen_mouse_click_start_game_starts_game(args, assert)

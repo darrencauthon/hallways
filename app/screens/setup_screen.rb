@@ -284,6 +284,7 @@ class SetupScreen
   def player_image_for(player_type)
     return "sprites/caveman.png" if player_type == :caveman_bot
     return "sprites/runner.png" if player_type == :last_line_bot
+    return "sprites/cowboy.png" if player_type == :pressure_bot
 
     nil
   end

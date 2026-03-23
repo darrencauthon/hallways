@@ -86,6 +86,7 @@ def test_game_supports_pressure_bot_configuration(args, assert)
   game = Game.new(cell_width: 48, cell_height: 48, player_types: [:pressure_bot, :human])
 
   assert.equal! true, game.players[0].controller.is_a?(PressureBotController), "Expected Player 1 controller to be PressureBot when configured."
+  assert.equal! "sprites/cowboy.png", game.players[0].image, "Expected Cowboy to use the cowboy portrait."
   assert.equal! true, game.players[1].controller.is_a?(HumanController), "Expected Player 2 controller to be human when configured."
 end
 
