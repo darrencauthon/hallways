@@ -56,6 +56,7 @@ class BoardRenderer
     pawn = game.pawns.find { |candidate| candidate.player == current_player }
     return nil if pawn.nil?
 
-    pawn.color
+    color = pawn.color
+    [color[0] / 2, color[1] / 2, color[2] / 2]
   end
 end
