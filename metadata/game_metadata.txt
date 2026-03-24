@@ -1,7 +1,10 @@
-devid=darre
-devtitle=Darre
+devid=darrendoom
+devtitle=darrendoom
 gameid=hallways
 gametitle=Hallways
 version=1.0.0
+orientation=landscape
+scale_quality=2
+compile_ruby=true
 hd=true
 highdpi=true
