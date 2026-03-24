@@ -23,3 +23,6 @@ docs/oss/
 # Optional: local docs tooling/cache
 docs/.cache/
 docs/node_modules/
+
+# Local reference project copy
+flippy-flap/
